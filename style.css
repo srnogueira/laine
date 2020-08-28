@@ -1,0 +1,41 @@
+html {
+    font-size: 10pt;
+    font-family: "Lucida Console", Monaco, monospace;
+}
+
+header{
+    display: flex;
+    align-items: center;
+}
+
+main {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.laine{
+    padding: 5px;
+}
+
+.helpText {
+    display: none;
+}
+
+textarea {
+    font-size: 10pt;
+    padding: 10px;
+    line-height: 1.5;
+    border-radius: 5px;
+    border: 2px solid #3d3d3d;
+    box-shadow: 1px 1px 1px #999;
+    overflow: hidden;
+}
+
+div {
+    padding: 5px;
+}
+
+.out {
+    padding: 0px;
+}
+
