@@ -1,1 +1,86 @@
-<h1> Hello </h1>
+<!DOCTYPE html>
+
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="author" content="Rafael Nogueira Nakashima">
+    <meta name="description" content="Laine resolve sistemas de equações não lineares e problemas termodinâmicos">
+    
+    <!-- Include meta info for sites like facebook and twitter -->
+    <title>Laine</title>
+    <link href="styles/style.css" rel="stylesheet">
+  </head>
+  
+  <body>
+    <header>
+      <h1>Laine</h1>
+      <h1>|</h1>
+      <p class="laine"> Resolva sistemas de equações não lineares e problemas termodinâmicos</p>
+    </header>
+
+    <nav>
+      <button class="help">Ajuda?</button>
+      <button class="solve">Resolver (F2)</button>
+      
+    </nav>
+
+    
+    <div class="helpText">
+      <div>
+	<h3>Como usar?</h3>
+	<ol>
+	  <li> Escreva equações em <strong>Equações</strong> </li>
+	  <li> Clique em <strong>Resolver</strong> ou <strong>F2</strong> </li>
+	  <li> Analise o resultado em <strong> Respostas </strong> </li>
+	</ol>
+      </div>
+      <div>
+	<h3>Funções termodinâmicas : CoolProp</h3>
+	<p> PropsSI("prop","X",XX,"Y",YY,"fluido") </p>
+	<ul>
+	  <li> prop, X e Y : código da propriedade </li>
+	  <li> XX e YY : valores das propriedades </li>
+	  <li> fluido : nome do fluido </li>
+	</ul>
+      </div>
+    </div>
+      
+    <main>
+      
+      <div>
+	<h2>Equações</h2>
+	<textarea id="box" class="box" rows="12" cols="50" spellcheck="false">
+# Comente com um sustenido
+
+# Resolva equações implicitamente
+z^2+z=10
+
+# Resolva sistema de equações não lineares
+x^2+y^2=10
+x*y=3
+
+# Use propriedades do CoolProp
+h_air=PropsSI("H","T",298.15,1E6,"Air")
+s_water=PropsSI("S","T",298.15,1E6,"Water")
+	</textarea>
+      </div>
+
+      
+      <div>
+	<h2>Respostas</h2>
+	<div class="out">
+	</div>
+      </div>
+      
+    </main>
+    
+    <script src="scripts/math.min.js"></script>
+    <script src="scripts/coolprop.js"></script>
+    <script src="scripts/main.js"></script>
+    
+  </body>
+  <footer>
+    <hr>
+	<p> Página criada por <em> Rafael Nogueira Nakashima</em> (<a href="mailto:rafaelnnakashima@usp.br">email</a>).</p>
+  </footer>
+</html>
