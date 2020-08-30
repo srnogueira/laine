@@ -1,26 +1,21 @@
 <!DOCTYPE html>
-
 <html lang="pt" dir="ltr">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <meta name="author" content="Rafael Nogueira Nakashima">
     <meta name="description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
-    
-    <!-- Include meta info for sites like facebook and twitter -->
     <title>laine</title>
     <link href="styles/style.css" rel="stylesheet">
   </head>
-  
   <body>
     <header>
       <h1>laine</h1>
       <h1>|</h1>
       <button class="solve">Solve (F2)</button>
-      <button class="function">PropsSI (+)</button>
+      <button class="function">Functions (+)</button>
       <button class="help">Help (+)</button>
     </header>
-
     <div class="helpText">
       <div>
 	<h2>How to use?</h2>
@@ -42,7 +37,9 @@
 	  <a target="_blank" href="https://mathjs.org/docs/reference/functions.html">[List of functions]</a></p>
 	<p><strong>Pure fluids properties</strong> using the PropsSI function and <strong>humid air properties</strong> using the HAPropsSI function from CoolProp.
 	  <br>
-	  <a target="_blank" href="http://www.coolprop.org/coolprop/HighLevelAPI.html">[Function help]</a>
+	  <a target="_blank" href="http://www.coolprop.org/coolprop/HighLevelAPI.html">[Pure substance function]</a>
+	  <br>
+	  <a target="_blank" href="http://www.coolprop.org/fluid_properties/HumidAir.html">[Humid air function]</a>
 	  <br>
 	  <a target="_blank" href="http://www.coolprop.org/fluid_properties/PurePseudoPure.html#list-of-fluids">[List of fluids]</a>
 	</p>
@@ -57,20 +54,16 @@
 	me</a> if you could not solve your problem.</p>
       </div>
     </div>
-
     <div class="functionBox">
       <div>
-	<h2> PropsSI</h2>
+	<h2>PropsSI</h2>
 	<p>Thermodynamic properties of pure fluids</p>
-	<button class="butPropsSI">Output function in equations</button>
-      </div>
-      <div>
 	<label>Select a fluid:</label>
 	<br>
 	<select class="FluidName">
           <option value="1-Butene">1-Butene</option>
           <option value="Acetone">Acetone</option>
-	  <option value="Air">Air</option>
+	  <option value="Air" selected="selected">Air</option>
 	  <option value="Ammonia">Ammonia</option>
 	  <option value="Argon">Argon</option>
 	  <option value="Benzene">Benzene</option>
@@ -190,8 +183,7 @@
 	  <option value="p-Xylene">p-Xylene</option>
 	  <option value="trans-2-Butene">trans-2-Butene</option>
 	</select>
-	<br>
-	<br>
+	<br><br>
 	<label>Select a property:</label>
 	<select class="Property">
           <option value="Dmolar">Molar density (mol/m^3)</option>
@@ -202,7 +194,7 @@
 	  <option value="Q">Mass vapor quality (mol/mol)</option>
 	  <option value="Smolar">Molar specific entropy (J/mol/K)</option>
 	  <option value="S">Mass specific entropy (J/kg/K)</option>
-	  <option value="T">Temperature (K)</option>
+	  <option value="T" select="selected">Temperature (K)</option>
 	  <option value="Umolar">Molar specific internal energy (J/mol)</option>
 	  <option value="U">Mass specific internal energy (J/kg)</option>
 	  <option value="L">Thermal conductivity (W/m/K)</option>
@@ -214,11 +206,10 @@
 	  <option value="G">Mass specific Gibbs energy (J/kg)</option>
 	  <option value="Z">Compressibility factor (-)</option>
 	</select>
-      </div>
-      <div>
+	<br><br>
 	<label>Select the first input:</label>
 	<select class="Input1">
-	            <option value="Dmolar">Molar density (mol/m^3)</option>
+	  <option value="Dmolar">Molar density (mol/m^3)</option>
           <option value="D">Mass density (kg/m^3)</option>
           <option value="Hmolar">Molar specific enthalpy (J/mol)</option>
 	  <option value="H">Mass specific enthalpy (J/kg)</option>
@@ -226,7 +217,7 @@
 	  <option value="Q">Mass vapor quality (mol/mol)</option>
 	  <option value="Smolar">Molar specific entropy (J/mol/K)</option>
 	  <option value="S">Mass specific entropy (J/kg/K)</option>
-	  <option value="T">Temperature (K)</option>
+	  <option value="T" selected="selected">Temperature (K)</option>
 	  <option value="Umolar">Molar specific internal energy (J/mol)</option>
 	  <option value="U">Mass specific internal energy (J/kg)</option>
 	  <option value="L">Thermal conductivity (W/m/K)</option>
@@ -238,17 +229,15 @@
 	  <option value="G">Mass specific Gibbs energy (J/kg)</option>
 	  <option value="Z">Compressibility factor (-)</option>
 	</select>
-	<input class="value1"></input>
-	<br>
-      </div>
-      <div>
+	<input class="value1" placeholder="first input value"></input>
+	<br><br>
 	<label>Select second input:</label>
 	<select class="Input2">
-	            <option value="Dmolar">Molar density (mol/m^3)</option>
+	  <option value="Dmolar">Molar density (mol/m^3)</option>
           <option value="D">Mass density (kg/m^3)</option>
           <option value="Hmolar">Molar specific enthalpy (J/mol)</option>
 	  <option value="H">Mass specific enthalpy (J/kg)</option>
-	  <option value="P">Pressure (Pa)</option>
+	  <option value="P" selected="selected">Pressure (Pa)</option>
 	  <option value="Q">Mass vapor quality (mol/mol)</option>
 	  <option value="Smolar">Molar specific entropy (J/mol/K)</option>
 	  <option value="S">Mass specific entropy (J/kg/K)</option>
@@ -264,11 +253,104 @@
 	  <option value="G">Mass specific Gibbs energy (J/kg)</option>
 	  <option value="Z">Compressibility factor (-)</option>
 	</select>
-	<input class="value2"></input>
+	<input class="value2" placeholder="second input value"></input>
+	<br><br>
+	<button class="butPropsSI">Output function in equations</button>
+      </div>
+      <div>
+	<h2>HAPropsSI</h2>
+	<p>Thermodynamic properties of humid air</p>
+	<label>Select a property:</label>
+	<select class="HAProperty">
+	  <option value="B">Wet-Bulb Temperature (K)</option>
+	  <option value="C">Mixture specific heat per unit dry air (J/kg dry air)</option>
+	  <option value="Cha">Mixture specific heat per unit of humid air (J/kg)</option>
+	  <option value="CV">Mixture specific heat at constant volume per unit dry air</option>
+	  <option value="CVha">Mixture specific heat at constant volume per unit humid air</option>
+	  <option value="D">Dew-Point Temperature (K)</option>
+	  <option value="H">Mixture enthalpy per dry air (J/kg dry air)</option>
+	  <option value="Hha">Mixture enthalpy per humid air (J/kg humid air)</option>
+	  <option value="K">Mixture thermal conductivity (W/m/K)</option>
+	  <option value="M">Mixture viscosity (Pa-s)</option>
+	  <option value="Y">Water mole fraction (mol water/mol humid air)</option>
+	  <option value="R">Relative humidity in [0,1]</option>
+	  <option value="S">Mixture entropy per unit dry air (J/kg dry air/K)</option>
+	  <option value="Sha">Mixture entropy per unit humid air (J/kg humid air/K)</option>
+	  <option value="T">Dry-Bulb Temperature (K)</option>
+	  <option value="V">Mixture volume per unit dry air</option>
+	  <option value="Vha">Mixture volume per unit humid air</option>
+	  <option value="W">Humidity Ratio</option>
+	  <option value="Z">Compressibility factor</option>
+	</select>
+	<br><br>
+	<label>Select the first input:</label>
+	<br>
+	<select class="HAInput1">
+	  <option value="B">Wet-Bulb Temperature (K)</option>
+	  <option value="D">Dew-Point Temperature (K)</option>
+	  <option value="H">Mixture enthalpy per dry air (J/kg dry air)</option>
+	  <option value="Hha">Mixture enthalpy per humid air (J/kg humid air)</option>
+	  <option value="Y">Water mole fraction (mol water/mol humid air)</option>
+	  <option value="P">Pressure</option>
+	  <option value="P_w">Partial pressure of water vapor</option>
+	  <option value="R">Relative humidity in [0,1]</option>
+	  <option value="S">Mixture entropy per unit dry air (J/kg dry air/K)</option>
+	  <option value="Sha">Mixture entropy per unit humid air (J/kg humid air/K)</option>
+	  <option value="T" selected="selected">Dry-Bulb Temperature (K)</option>
+	  <option value="V">Mixture volume per unit dry air</option>
+	  <option value="Vha">Mixture volume per unit humid air</option>
+	  <option value="W">Humidity Ratio</option>
+	  <br>
+	  <input class="HAvalue1" placeholder="first input value"></input>
+	</select>
+	<br><br>
+	<label>Select the second input:</label>
+	<br>
+	<select class="HAInput2">
+	  <option value="B">Wet-Bulb Temperature (K)</option>
+	  <option value="D">Dew-Point Temperature (K)</option>
+	  <option value="H">Mixture enthalpy per dry air (J/kg dry air)</option>
+	  <option value="Hha">Mixture enthalpy per humid air (J/kg humid air)</option>
+	  <option value="Y">Water mole fraction (mol water/mol humid air)</option>
+	  <option value="P" selected="selected">Pressure (Pa)</option>
+	  <option value="P_w">Partial pressure of water vapor (Pa)</option>
+	  <option value="R">Relative humidity in [0,1]</option>
+	  <option value="S">Mixture entropy per unit dry air (J/kg dry air/K)</option>
+	  <option value="Sha">Mixture entropy per unit humid air (J/kg humid air/K)</option>
+	  <option value="T">Dry-Bulb Temperature (K)</option>
+	  <option value="V">Mixture volume per unit dry air (m^3/kg dry air)</option>
+	  <option value="Vha">Mixture volume per unit humid air (m^3/kg humid air)</option>
+	  <option value="W">Humidity Ratio</option>
+	  <br>
+	  <input class="HAvalue2" placeholder="second input value"></input>
+	</select>
+	<br><br>
+	<label>Select the third input:</label>
+	<br>
+	<select class="HAInput3">
+	  <option value="B">Wet-Bulb Temperature (K)</option>
+	  <option value="D">Dew-Point Temperature (K)</option>
+	  <option value="H">Mixture enthalpy per dry air (J/kg dry air)</option>
+	  <option value="Hha">Mixture enthalpy per humid air (J/kg humid air)</option>
+	  <option value="Y">Water mole fraction (mol water/mol humid air)</option>
+	  <option value="P">Pressure (Pa)</option>
+	  <option value="P_w">Partial pressure of water vapor (Pa)</option>
+	  <option value="R" selected="selected">Relative humidity in [0,1]</option>
+	  <option value="S">Mixture entropy per unit dry air (J/kg dry air/K)</option>
+	  <option value="Sha">Mixture entropy per unit humid air (J/kg humid air/K)</option>
+	  <option value="T">Dry-Bulb Temperature (K)</option>
+	  <option value="V">Mixture volume per unit dry air (m^3/kg dry air)</option>
+	  <option value="Vha">Mixture volume per unit humid air (m^3/kg humid air)</option>
+	  <option value="W">Humidity Ratio</option>
+	  <br>
+	  <input class="HAvalue3" placeholder="third input value"></input>
+	</select>
+	<br><br>
+	<button class="butHAPropsSI">Output function in equations</button>
       </div>
     </div>
-    <main>
-      
+    
+    <main>      
       <div>
 	<h2>Equations</h2>
 	<textarea id="box" class="box" rows="7" cols="60" spellcheck="false">
@@ -278,26 +360,20 @@ x*y=3
 
 # Thermodynamic properties
 h_air=PropsSI("H","T",298.15,"P",1E6,"Air")
-s_water=PropsSI("S","T",298.15,"P",1E6,"Water")
-	</textarea>
+s_water=PropsSI("S","T",298.15,"P",1E6,"Water")</textarea>
       </div>
-
-      
       <div class="solBox">
 	<h2>Solution</h2>
 	<div class="out">
 	</div>
       </div>
-      
     </main>
-    
     <script src="scripts/math.min.js"></script>
     <script src="scripts/coolprop.js"></script>
     <script src="scripts/main.js"></script>
-    
   </body>
   <footer>
     <hr>
-	<p> Copyright &#169 2020, Rafael Nogueira Nakashima. <a href="mailto:rafaelnnakashima@usp.br">Contact me</a>.</p>
+    <p> Copyright &#169 2020, Rafael Nogueira Nakashima. <a href="mailto:rafaelnnakashima@usp.br">Contact me</a>.</p>
   </footer>
 </html>
