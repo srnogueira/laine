@@ -4,6 +4,8 @@
 
 const solveButton = document.querySelector(".solve");
 const helpButton = document.querySelector(".help");
+const functionButton = document.querySelector(".function");
+const PropsSIButton = document.querySelector(".butPropsSI");
 const textBox = document.querySelector(".box");
 const outDiv = document.querySelector(".out");
 
@@ -15,6 +17,9 @@ math.import({
     //air:air,
     PropsSI:function (P,X,XX,Y,YY,N){
 	return Module.PropsSI(P,X,XX,Y,YY,N)
+    },
+    HAPropsSI:function (P,X,XX,Y,YY,Z,ZZ){
+	return Module.HAPropsSI(P,X,XX,Y,YY,Z,ZZ)
     },
 });
 
@@ -399,21 +404,58 @@ document.onkeydown=shortcut;
 // Help
 function toggleHelp(){
     let x = document.querySelector(".helpText");
-    console.log(x.style.display);
     if (x.style.display===""){
 	x.style.display="flex";
+	helpButton.innerText="Help (-)";
     }
     else{
 	x.style.display="";
+	helpButton.innerText="Help (+)";
     }
 }
 
 helpButton.onclick = toggleHelp;
 
+// Functions
+function toggleFunctions(){
+    let x = document.querySelector(".functionBox");
+    if (x.style.display===""){
+	x.style.display="flex";
+	functionButton.innerText="PropsSI (-)";
+    }
+    else{
+	x.style.display="";
+	functionButton.innerText="PropsSI (+)";
+    }
+}
+
+functionButton.onclick = toggleFunctions;
+
+// Resize
 function autosize(){
     let lines=(textBox.value).split('\n');
-    console.log(lines.length);
-    textBox.style.height=lines.length*20+"px";
+    textBox.style.height=lines.length*24+"px";
 }
 
 textBox.onkeyup=autosize;
+
+//PropsSI
+function generateFun(){
+    let fluid = document.querySelector(".FluidName");
+    let property = document.querySelector(".Property");
+    let input1 = document.querySelector(".Input1");
+    let input2 = document.querySelector(".Input2");
+    let value1 = document.querySelector(".value1");
+    let value2 = document.querySelector(".value2");
+
+    let fluidName=fluid.options[fluid.selectedIndex].value;
+    let propName=property.options[property.selectedIndex].value;
+    let input1Name=input1.options[input1.selectedIndex].value;
+    let input2Name=input2.options[input2.selectedIndex].value;
+
+    let text = "property=PropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+fluidName+"')";
+    textBox.value+="\n"+text;
+    autosize();
+}
+
+PropsSIButton.onclick = generateFun;
