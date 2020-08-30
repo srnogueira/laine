@@ -28,14 +28,9 @@ button:hover{
     background-color: #F04747;
 }
 
-.helpText,.functionBox {
+.helpText,.functionBox,.functionBox2 {
     display:none;
     flex-wrap:wrap;
-}
-
-.functionBox{
-    border: 2px solid #3d3d3d;
-    border-radius:5px;
 }
 
 label {
@@ -43,15 +38,27 @@ label {
     font-weight: 700;
 }
 
-.helpText div, .functionBox div {
+.helpText div {
     max-width: 300px;
     background-color:#fcec;
     margin:0.5%;
     padding: 0.5%;
 }
 
-select {
+.functionBox div{
+    max-width: 350px;
+    background-color:#fcec;
+    margin:0.5%;
+    padding: 0.5%;
+}
+ 
+select,input {
     max-width: 95%;
+}
+
+input{
+    width:90%;
+    margin-bottom:2%;
 }
 
 main {
@@ -77,6 +84,7 @@ textarea {
     border-radius: 5px;
     border: 2px solid #3d3d3d;
     max-width: 98%;
+    overflow:hidden;
 }
 
 .out{
