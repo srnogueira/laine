@@ -3,79 +3,301 @@
 <html lang="pt" dir="ltr">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
     <meta name="author" content="Rafael Nogueira Nakashima">
-    <meta name="description" content="Laine resolve sistemas de equações não lineares e problemas termodinâmicos">
-    <title>Laine</title>
+    <meta name="description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
+    
+    <!-- Include meta info for sites like facebook and twitter -->
+    <title>laine</title>
     <link href="styles/style.css" rel="stylesheet">
   </head>
   
   <body>
     <header>
-      <h1>Laine</h1>
+      <h1>laine</h1>
       <h1>|</h1>
-      <p class="laine"> Resolva sistemas de equações não lineares e problemas termodinâmicos</p>
+      <button class="solve">Solve (F2)</button>
+      <button class="function">PropsSI (+)</button>
+      <button class="help">Help (+)</button>
     </header>
-
-    <nav>
-      <button class="help">Ajuda?</button>
-      <button class="solve">Resolver (F2)</button>      
-    </nav>
 
     <div class="helpText">
       <div>
-	<h3>Como usar?</h3>
-	<ol>
-	  <li> Escreva equações em <strong>Equações</strong> </li>
-	  <li> Clique em <strong>Resolver</strong> ou <strong>F2</strong> </li>
-	  <li> Analise o resultado em <strong> Respostas </strong> </li>
-	</ol>
+	<h2>How to use?</h2>
+	<p>Write equations in the box below and click in <strong>Solve</strong> or press <strong>F2</strong>.</p>
+	<p><strong>Equations</strong> have to follow the structure <em>left = right</em>
+	  and have a Real solution </p>
       </div>
       <div>
-	<h3>Funções termodinâmicas : CoolProp</h3>
-	<p> PropsSI("prop","X",XX,"Y",YY,"fluido") </p>
-	<ul>
-	  <li> prop, X e Y : código da propriedade </li>
-	  <li> XX e YY : valores das propriedades </li>
-	  <li> fluido : nome do fluido </li>
-	</ul>
+	<h2>How to write problems?</h2>
+	<p> The number of equations has <strong>to be equal</strong>
+	  to the number of variables. </p>
+	<p> You can also include a <strong>comment</strong> by using a
+	hashtag (#) in the beginning of the sentece.</p>
+      </div>
+      <div>
+	<h2>Which functions are available?</h2>
+	<p><strong>Arithmetic and trigonometric</strong> functions from math.js.
+	  <br>
+	  <a target="_blank" href="https://mathjs.org/docs/reference/functions.html">[List of functions]</a></p>
+	<p><strong>Pure fluids properties</strong> using the PropsSI function and <strong>humid air properties</strong> using the HAPropsSI function from CoolProp.
+	  <br>
+	  <a target="_blank" href="http://www.coolprop.org/coolprop/HighLevelAPI.html">[Function help]</a>
+	  <br>
+	  <a target="_blank" href="http://www.coolprop.org/fluid_properties/PurePseudoPure.html#list-of-fluids">[List of fluids]</a>
+	</p>
+      </div>
+      <div>
+	<h2>How to handle errors?</h2>
+	<p>Check if the equations are correct and the number satifies
+	the problem condition</p>
+	<p>The solver is in development and may not converge in some
+	cases,
+	please <a href="mailto:rafaelnnakashima@usp.com">contact
+	me</a> if you could not solve your problem.</p>
       </div>
     </div>
-     
+
+    <div class="functionBox">
+      <div>
+	<h2> PropsSI</h2>
+	<p>Thermodynamic properties of pure fluids</p>
+	<button class="butPropsSI">Output function in equations</button>
+      </div>
+      <div>
+	<label>Select a fluid:</label>
+	<br>
+	<select class="FluidName">
+          <option value="1-Butene">1-Butene</option>
+          <option value="Acetone">Acetone</option>
+	  <option value="Air">Air</option>
+	  <option value="Ammonia">Ammonia</option>
+	  <option value="Argon">Argon</option>
+	  <option value="Benzene">Benzene</option>
+	  <option value="CarbonDioxide">CarbonDioxide</option>
+	  <option value="CarbonMonoxide">CarbonMonoxide</option>
+	  <option value="CarbonylSulfide">CarbonylSulfide</option>
+	  <option value="CycloHexane">CycloHexane</option>
+	  <option value="CycloPropane">CycloPropane</option>
+	  <option value="Cyclopentane">Cyclopentane</option>
+	  <option value="D4">D4</option>
+	  <option value="D5">D5</option>
+	  <option value="D6">D6</option>
+	  <option value="Deuterium">Deuterium</option>
+	  <option value="Dichloroethane">Dichloroethane</option>
+	  <option value="DiethylEther">DiethylEther</option>
+	  <option value="DimethylCarbonate">DimethylCarbonate</option>
+	  <option value="DimethylEther">DimethylEther</option>
+	  <option value="Ethane">Ethane</option>
+	  <option value="Ethanol">Ethanol</option>
+	  <option value="EthylBenzene">EthylBenzene</option>
+	  <option value="Ethylene">Ethylene</option>
+	  <option value="EthyleneOxide">Oxide</option>
+	  <option value="Fluorine">Fluorine</option>
+	  <option value="HFE143m">HFE143m</option>
+	  <option value="HeavyWater">HeavyWater</option>
+	  <option value="Helium">Helium</option>
+	  <option value="Hydrogen">Hydrogen</option>
+	  <option value="HydrogenChloride">HydrogenChloride</option>
+	  <option value="HydrogenSulfide">HydrogenSulfide</option>
+	  <option value="IsoButane">IsoButane</option>
+	  <option value="IsoButene">IsoButene</option>
+	  <option value="Isohexane">Isohexane</option>
+	  <option value="Isopentane">Isopentane</option>
+	  <option value="Krypton">Krypton</option>
+	  <option value="MD2M">MD2M</option>
+	  <option value="MD3M">MD3M</option>
+	  <option value="MD4M">MD4M</option>
+	  <option value="MDM">MDM</option>
+	  <option value="MM">MM</option>
+	  <option value="Methane">Methane</option>
+	  <option value="Methanol">Methanol</option>
+	  <option value="MethylLinoleate">MethylLinoleate</option>
+	  <option value="MethylOleate">MethylOleate</option>
+	  <option value="MethylPalmitate">MethylPalmitate</option>
+	  <option value="MethylStearate">MethylStearate</option>
+	  <option value="Neon">Neon</option>
+	  <option value="Neopentane">Neopentane</option>
+	  <option value="Nitrogen">Nitrogen</option>
+	  <option value="NitrousOxide">NitrousOxide</option>
+	  <option value="Novec649">Novec649</option>
+	  <option value="OrthoDeuterium">OrthoDeterium</option>
+	  <option value="OrthoHydrogen">OrthoHydrogen</option>
+	  <option value="Oxygen">Oxygen</option>
+	  <option value="ParaDeuterium">ParaDeuterium</option>
+	  <option value="ParaHydrogen">ParaHydrogen</option>
+	  <option value="Propylene">Propylene</option>
+	  <option value="R11">R11</option>
+	  <option value="R113">R113</option>
+	  <option value="R114">R114</option>
+	  <option value="R115">R115</option>
+	  <option value="R116">R116</option>
+	  <option value="R12">R12</option>
+	  <option value="R123">R123</option>
+	  <option value="R1233zd(E)">R1233zd(E)</option>
+	  <option value="R1234yf">R1234yf</option>
+	  <option value="R1234ze(E)">R1234ze(E)</option>
+	  <option value="R1234ze(Z)">R1234ze(Z)</option>
+	  <option value="R124">R124</option>
+	  <option value="R1243zf">R1243zf</option>
+	  <option value="R125">R125</option>
+	  <option value="R13">R13</option>
+	  <option value="R134a">R134a</option>
+	  <option value="R13I1">R13I1</option>
+	  <option value="R14">R14</option>
+	  <option value="R141b">R141b</option>
+	  <option value="R142b">R142b</option>
+	  <option value="R143a">R143a</option>
+	  <option value="R152A">R152A</option>
+	  <option value="R161">R161</option>
+	  <option value="R21">R21</option>
+	  <option value="R218">R218</option>
+	  <option value="R22">R22</option>
+	  <option value="R227">R227</option>
+	  <option value="R227EA">R227EA</option>
+	  <option value="R23">R23</option>
+	  <option value="R236EA">R236EA</option>
+	  <option value="R236FA">R236FA</option>
+	  <option value="R245ca">R245ca</option>
+	  <option value="R245fa">R245fa</option>
+	  <option value="R32">R32</option>
+	  <option value="R365MFC">R365MFC</option>
+	  <option value="R40">R40</option>
+	  <option value="R404A">R404A</option>
+	  <option value="R407C">R407C</option>
+	  <option value="R41">R41</option>
+	  <option value="R410A">R410A</option>
+	  <option value="R507A">R507A</option>
+	  <option value="RC318">RC318</option>
+	  <option value="SES36">SES36</option>
+	  <option value="SulfurDioxide">SulfurDioxide</option>
+	  <option value="SulfurHexafluoride">SulfurHexafluoride</option>
+	  <option value="Toluene">Toluene</option>
+	  <option value="Water">Water</option>
+	  <option value="Xenon">Xenon</option>
+	  <option value="cis-2-Butene">cis-2-Butene</option>
+	  <option value="m-Xylene">m-Xylene</option>
+	  <option value="n-Butane">n-Butane</option>
+	  <option value="n-Decane">n-Decane</option>
+	  <option value="n-Dodecane">n-Dodecane</option>
+	  <option value="n-Heptane">n-Heptane</option>
+	  <option value="n-Hexane">n-Hexane</option>
+	  <option value="n-Nonane">n-Nonane</option>
+	  <option value="n-Octane">n-Octane</option>
+	  <option value="n-Pentane">n-Pentane</option>
+	  <option value="n-Undecane">n-Undecane</option>
+	  <option value="o-Xylene">o-Xylene</option>
+	  <option value="p-Xylene">p-Xylene</option>
+	  <option value="trans-2-Butene">trans-2-Butene</option>
+	</select>
+	<br>
+	<br>
+	<label>Select a property:</label>
+	<select class="Property">
+          <option value="Dmolar">Molar density (mol/m^3)</option>
+          <option value="D">Mass density (kg/m^3)</option>
+          <option value="Hmolar">Molar specific enthalpy (J/mol)</option>
+	  <option value="H">Mass specific enthalpy (J/kg)</option>
+	  <option value="P">Pressure (Pa)</option>
+	  <option value="Q">Mass vapor quality (mol/mol)</option>
+	  <option value="Smolar">Molar specific entropy (J/mol/K)</option>
+	  <option value="S">Mass specific entropy (J/kg/K)</option>
+	  <option value="T">Temperature (K)</option>
+	  <option value="Umolar">Molar specific internal energy (J/mol)</option>
+	  <option value="U">Mass specific internal energy (J/kg)</option>
+	  <option value="L">Thermal conductivity (W/m/K)</option>
+	  <option value="Cpmolar">Molar specific constant pressure specififc heat (J/mol/K) </option>
+	  <option value="C">Mass specific constant pressure specififc heat (J/kg/K) </option>
+	  <option value="Cvmolar">Molar specific constant volume specififc heat (J/mol/K) </option>
+	  <option value="Cvmassr">Mass specific constant pressure specififc heat (J/kg/K) </option>
+	  <option value="Gmolar">Molar specific Gibbs energy (J/mol)</option>
+	  <option value="G">Mass specific Gibbs energy (J/kg)</option>
+	  <option value="Z">Compressibility factor (-)</option>
+	</select>
+      </div>
+      <div>
+	<label>Select the first input:</label>
+	<select class="Input1">
+	            <option value="Dmolar">Molar density (mol/m^3)</option>
+          <option value="D">Mass density (kg/m^3)</option>
+          <option value="Hmolar">Molar specific enthalpy (J/mol)</option>
+	  <option value="H">Mass specific enthalpy (J/kg)</option>
+	  <option value="P">Pressure (Pa)</option>
+	  <option value="Q">Mass vapor quality (mol/mol)</option>
+	  <option value="Smolar">Molar specific entropy (J/mol/K)</option>
+	  <option value="S">Mass specific entropy (J/kg/K)</option>
+	  <option value="T">Temperature (K)</option>
+	  <option value="Umolar">Molar specific internal energy (J/mol)</option>
+	  <option value="U">Mass specific internal energy (J/kg)</option>
+	  <option value="L">Thermal conductivity (W/m/K)</option>
+	  <option value="Cpmolar">Molar specific constant pressure specififc heat (J/mol/K) </option>
+	  <option value="C">Mass specific constant pressure specififc heat (J/kg/K) </option>
+	  <option value="Cvmolar">Molar specific constant volume specififc heat (J/mol/K) </option>
+	  <option value="Cvmassr">Mass specific constant pressure specififc heat (J/kg/K) </option>
+	  <option value="Gmolar">Molar specific Gibbs energy (J/mol)</option>
+	  <option value="G">Mass specific Gibbs energy (J/kg)</option>
+	  <option value="Z">Compressibility factor (-)</option>
+	</select>
+	<input class="value1"></input>
+	<br>
+      </div>
+      <div>
+	<label>Select second input:</label>
+	<select class="Input2">
+	            <option value="Dmolar">Molar density (mol/m^3)</option>
+          <option value="D">Mass density (kg/m^3)</option>
+          <option value="Hmolar">Molar specific enthalpy (J/mol)</option>
+	  <option value="H">Mass specific enthalpy (J/kg)</option>
+	  <option value="P">Pressure (Pa)</option>
+	  <option value="Q">Mass vapor quality (mol/mol)</option>
+	  <option value="Smolar">Molar specific entropy (J/mol/K)</option>
+	  <option value="S">Mass specific entropy (J/kg/K)</option>
+	  <option value="T">Temperature (K)</option>
+	  <option value="Umolar">Molar specific internal energy (J/mol)</option>
+	  <option value="U">Mass specific internal energy (J/kg)</option>
+	  <option value="L">Thermal conductivity (W/m/K)</option>
+	  <option value="Cpmolar">Molar specific constant pressure specififc heat (J/mol/K) </option>
+	  <option value="C">Mass specific constant pressure specififc heat (J/kg/K) </option>
+	  <option value="Cvmolar">Molar specific constant volume specififc heat (J/mol/K) </option>
+	  <option value="Cvmassr">Mass specific constant pressure specififc heat (J/kg/K) </option>
+	  <option value="Gmolar">Molar specific Gibbs energy (J/mol)</option>
+	  <option value="G">Mass specific Gibbs energy (J/kg)</option>
+	  <option value="Z">Compressibility factor (-)</option>
+	</select>
+	<input class="value2"></input>
+      </div>
+    </div>
     <main>
       
       <div>
-	<h2>Equações</h2>
-	<textarea id="box" class="box" rows="12" cols="50" spellcheck="false">
-# Comente com um sustenido
-
-# Resolva equações implicitamente
-z^2+z=10
-
-# Resolva sistema de equações não lineares
+	<h2>Equations</h2>
+	<textarea id="box" class="box" rows="7" cols="60" spellcheck="false">
+# Non-linear system of equations
 x^2+y^2=10
 x*y=3
 
-# Use propriedades do CoolProp
+# Thermodynamic properties
 h_air=PropsSI("H","T",298.15,"P",1E6,"Air")
 s_water=PropsSI("S","T",298.15,"P",1E6,"Water")
 	</textarea>
       </div>
+
       
-      <div>
-	<h2>Respostas</h2>
+      <div class="solBox">
+	<h2>Solution</h2>
 	<div class="out">
 	</div>
       </div>
       
     </main>
     
-    <script src="https://unpkg.com/mathjs@7.2.0/dist/math.min.js"></script>
+    <script src="scripts/math.min.js"></script>
     <script src="scripts/coolprop.js"></script>
     <script src="scripts/main.js"></script>
     
   </body>
   <footer>
     <hr>
-	<p> Página criada por <em> Rafael Nogueira Nakashima</em> (<a href="mailto:rafaelnnakashima@usp.br">email</a>).</p>
+	<p> Copyright &#169 2020, Rafael Nogueira Nakashima. <a href="mailto:rafaelnnakashima@usp.br">Contact me</a>.</p>
   </footer>
 </html>
