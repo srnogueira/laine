@@ -1,11 +1,57 @@
 html {
-    font-size: 10pt;
-    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 12pt;
+    font-family: math;
+    margin:1%;
 }
 
 header{
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    margin:0% 0% 1% 0%;
+}
+
+header h1{
+    margin:0% 1% 0% 0%;
+}
+
+button{
+    font-family:math;
+    font-size:12pt;
+    padding: 0.5% 2%;
+    border-radius:5px;
+    border:2px solid #3d3d3d;
+    margin-right:10px;
+}
+
+button:hover{
+    background-color: #F04747;
+}
+
+.helpText,.functionBox {
+    display:none;
+    flex-wrap:wrap;
+}
+
+.functionBox{
+    border: 2px solid #3d3d3d;
+    border-radius:5px;
+}
+
+label {
+    color:#F04747;
+    font-weight: 700;
+}
+
+.helpText div, .functionBox div {
+    max-width: 300px;
+    background-color:#fcec;
+    margin:0.5%;
+    padding: 0.5%;
+}
+
+select {
+    max-width: 95%;
 }
 
 main {
@@ -13,29 +59,39 @@ main {
     flex-wrap: wrap;
 }
 
-.laine{
-    padding: 5px;
+main div {
+    margin-right: 2%;
+    max-width: 100%;
 }
 
-.helpText {
-    display: none;
+h2{
+    font-size:14pt;
+    color: #F04747;
 }
 
 textarea {
-    font-size: 10pt;
-    padding: 10px;
+    font-family:math;
+    font-size: 12pt;
+    padding: 1%;
     line-height: 1.5;
     border-radius: 5px;
     border: 2px solid #3d3d3d;
-    box-shadow: 1px 1px 1px #999;
-    overflow: hidden;
+    max-width: 98%;
 }
 
-div {
-    padding: 5px;
+.out{
+    min-height: 24px;
+    border-radius: 5px;
+    border: 2px solid #3d3d3d;
+    padding: 2%;
+    width: 100%;
+    background-color:#fced;
 }
 
-.out {
-    padding: 0px;
+.out p{
+    margin: 5px;
 }
 
+footer {
+    font-size: 10pt;
+}
