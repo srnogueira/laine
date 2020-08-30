@@ -6,6 +6,7 @@ const solveButton = document.querySelector(".solve");
 const helpButton = document.querySelector(".help");
 const functionButton = document.querySelector(".function");
 const PropsSIButton = document.querySelector(".butPropsSI");
+const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 const textBox = document.querySelector(".box");
 const outDiv = document.querySelector(".out");
 
@@ -200,7 +201,7 @@ function MultiNR(lines,parser,solutions){
     for (let i=0;i<names.length;i++){
 	solutions.set(names[i],guesses[i]);
     }
-    return solutions;
+    return solutions;    
 }
 
 function find_guess(line,name,parser){
@@ -322,7 +323,7 @@ function cleanLines(lines){
 }
 
 function writeAns(value,key,map){
-    value = math.round(value,5);
+    value = math.round(value,3);
     let msg=key+" = "+value.toString();
     let para=document.createElement('p');
     para.textContent=msg;
@@ -421,22 +422,25 @@ function toggleFunctions(){
     let x = document.querySelector(".functionBox");
     if (x.style.display===""){
 	x.style.display="flex";
-	functionButton.innerText="PropsSI (-)";
+	functionButton.innerText="Functions (-)";
     }
     else{
 	x.style.display="";
-	functionButton.innerText="PropsSI (+)";
+	functionButton.innerText="Functions (+)";
     }
 }
 
 functionButton.onclick = toggleFunctions;
 
 // Resize
-function autosize(){
-    let lines=(textBox.value).split('\n');
-    textBox.style.height=lines.length*24+"px";
+function autosize(e){
+    if ((e.keyCode===13)||(e.keyCode===8)||(e.keyCode===46)||(e===true)){
+	textBox.style.height="0";
+	textBox.style.height=textBox.scrollHeight+"px";
+    }
 }
 
+autosize(true);
 textBox.onkeyup=autosize;
 
 //PropsSI
@@ -459,3 +463,25 @@ function generateFun(){
 }
 
 PropsSIButton.onclick = generateFun;
+
+//HAPropsSI
+function generateFun2(){
+    let property = document.querySelector(".HAProperty");
+    let input1 = document.querySelector(".HAInput1");
+    let input2 = document.querySelector(".HAInput2");
+    let input3 = document.querySelector(".HAInput3");
+    let value1 = document.querySelector(".HAvalue1");
+    let value2 = document.querySelector(".HAvalue2");
+    let value3 = document.querySelector(".HAvalue3");
+
+    let propName=property.options[property.selectedIndex].value;
+    let input1Name=input1.options[input1.selectedIndex].value;
+    let input2Name=input2.options[input2.selectedIndex].value;
+    let input3Name=input2.options[input3.selectedIndex].value;
+
+    let text = "property=HAPropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+input3Name+"',"+value3.value+")";
+    textBox.value+="\n"+text;
+    autosize();
+}
+
+HAPropsSIButton.onclick = generateFun2;
