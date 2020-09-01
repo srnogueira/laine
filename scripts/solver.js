@@ -3,10 +3,6 @@
 */
 
 const solveButton = document.querySelector(".solve");
-const helpButton = document.querySelector(".help");
-const functionButton = document.querySelector(".function");
-const PropsSIButton = document.querySelector(".butPropsSI");
-const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 const textBox = document.querySelector(".box");
 const outDiv = document.querySelector(".out");
 
@@ -15,7 +11,6 @@ const outDiv = document.querySelector(".out");
 */
 
 math.import({
-    //air:air,
     PropsSI:function (P,X,XX,Y,YY,N){
 	return Module.PropsSI(P,X,XX,Y,YY,N)
     },
@@ -401,87 +396,3 @@ function shortcut(key){
     }
 }
 document.onkeydown=shortcut;
-
-// Help
-function toggleHelp(){
-    let x = document.querySelector(".helpText");
-    if (x.style.display===""){
-	x.style.display="flex";
-	helpButton.innerText="Help (-)";
-    }
-    else{
-	x.style.display="";
-	helpButton.innerText="Help (+)";
-    }
-}
-
-helpButton.onclick = toggleHelp;
-
-// Functions
-function toggleFunctions(){
-    let x = document.querySelector(".functionBox");
-    if (x.style.display===""){
-	x.style.display="flex";
-	functionButton.innerText="Functions (-)";
-    }
-    else{
-	x.style.display="";
-	functionButton.innerText="Functions (+)";
-    }
-}
-
-functionButton.onclick = toggleFunctions;
-
-// Resize
-function autosize(e){
-    if ((e.keyCode===13)||(e.keyCode===8)||(e.keyCode===46)||(e===true)){
-	textBox.style.height="0";
-	textBox.style.height=textBox.scrollHeight+"px";
-    }
-}
-
-autosize(true);
-textBox.onkeyup=autosize;
-
-//PropsSI
-function generateFun(){
-    let fluid = document.querySelector(".FluidName");
-    let property = document.querySelector(".Property");
-    let input1 = document.querySelector(".Input1");
-    let input2 = document.querySelector(".Input2");
-    let value1 = document.querySelector(".value1");
-    let value2 = document.querySelector(".value2");
-
-    let fluidName=fluid.options[fluid.selectedIndex].value;
-    let propName=property.options[property.selectedIndex].value;
-    let input1Name=input1.options[input1.selectedIndex].value;
-    let input2Name=input2.options[input2.selectedIndex].value;
-
-    let text = "property=PropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+fluidName+"')";
-    textBox.value+="\n"+text;
-    autosize();
-}
-
-PropsSIButton.onclick = generateFun;
-
-//HAPropsSI
-function generateFun2(){
-    let property = document.querySelector(".HAProperty");
-    let input1 = document.querySelector(".HAInput1");
-    let input2 = document.querySelector(".HAInput2");
-    let input3 = document.querySelector(".HAInput3");
-    let value1 = document.querySelector(".HAvalue1");
-    let value2 = document.querySelector(".HAvalue2");
-    let value3 = document.querySelector(".HAvalue3");
-
-    let propName=property.options[property.selectedIndex].value;
-    let input1Name=input1.options[input1.selectedIndex].value;
-    let input2Name=input2.options[input2.selectedIndex].value;
-    let input3Name=input2.options[input3.selectedIndex].value;
-
-    let text = "property=HAPropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+input3Name+"',"+value3.value+")";
-    textBox.value+="\n"+text;
-    autosize();
-}
-
-HAPropsSIButton.onclick = generateFun2;
