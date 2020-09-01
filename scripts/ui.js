@@ -14,6 +14,7 @@ function autosize(){
     textarea.style.height = calcHeight(textarea.value) + "px";
 }
 
+autosize();
 textarea.addEventListener("keyup", autosize);
 
 // Help button
