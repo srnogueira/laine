@@ -1,26 +1,20 @@
 /*
-  Objects from HTML
-*/
-
-const solveButton = document.querySelector(".solve");
-const textBox = document.querySelector(".box");
-const outDiv = document.querySelector(".out");
-
-/*
-  Thermodynamic properties
+  CoolProp to math.js
 */
 
 math.import({
+    // PropsSI
     PropsSI:function (P,X,XX,Y,YY,N){
-	return Module.PropsSI(P,X,XX,Y,YY,N)
+	    return Module.PropsSI(P,X,XX,Y,YY,N)
     },
+    // HAPropsSI
     HAPropsSI:function (P,X,XX,Y,YY,Z,ZZ){
-	return Module.HAPropsSI(P,X,XX,Y,YY,Z,ZZ)
+	    return Module.HAPropsSI(P,X,XX,Y,YY,Z,ZZ)
     },
 });
 
 /*
-  Functions
+  Parser - Auxiliary functions
 */
 
 // To set equations "= 0"
@@ -29,39 +23,80 @@ function minusRight(line){
     return sides[0]+"-("+sides[1]+")";
 }
 
-// To get all variables
+// Check if line is a comment or blank
+function checkLine(line){
+    if ((line==="")||(line.startsWith("#"))){
+	    return false;
+    }
+    return true;
+}
+
+// To get all variables names
 function varsName(line){
-    // Check
+    // Return if is not an equation
     if (!checkLine(line)){
-	return [];
-    }   
+	    return [];
+    }
+
     // Parse string
     let node=math.parse(line);
+    
     // Filter symbol nodes
     let symbolNodes=node.filter(function (node) { 
-	return node.isSymbolNode
+	    return node.isSymbolNode
     })
+
     // Filter function nodes
     let functionNodes=node.filter(function (node) {
-	return node.type=='FunctionNode';
+	    return node.type=='FunctionNode';
     })
+    
     // Store unique symbols that are not functions
     let symbols=[];
     let isFunction=false;
     for (let i=0; i<symbolNodes.length; i++){
-	isFunction=false;
-	for (let j=0; j<functionNodes.length; j++){
-	    if (symbolNodes[i].name == functionNodes[j].fn){
-		isFunction=true;
+	    isFunction=false;
+	    for (let j=0; j<functionNodes.length; j++){
+	        if (symbolNodes[i].name == functionNodes[j].fn){
+		        isFunction=true;
+	        }
+        }   
+	    if (!isFunction){
+	        symbols.push(symbolNodes[i].name);
 	    }
-	}
-	if (!isFunction){
-	    symbols.push(symbolNodes[i].name);
-	}
     }
+    
     // Remove duplicates
     let unique=[...new Set(symbols)];
     return unique;
+}
+
+/* 
+    Solver auxiliary functions
+*/
+
+// Determine answers
+function calcFun(parser,lines,names,guesses){
+    // Set all guesses
+    for (let i=0;i<names.length;i++){
+	    parser.set(names[i],guesses[i]);
+    }
+
+    // Calculate all lines
+    let answers=[];
+    for (let i=0;i<lines.length;i++){
+	    answers.push(parser.evaluate(lines[i]))
+    }
+    return answers;
+}
+
+// Sum absolute difference
+function error(answers){
+    let diff=0;
+    for (let i=0; i<answers.length; i++){
+	    diff+=Math.abs(answers[i]);
+    }
+    return diff;
 }
 
 // Numerical derivative
@@ -70,48 +105,39 @@ function derivative(parser,line,name,f,x){
     let relDelta=1E-8;
     let xNear,fNear,dfdx;
 
+    // Check if x is zero
     if(x===0){
-	xNear = x+absDelta;
+    	xNear = x+absDelta;
     }
     else{
-	xNear = x*(1+relDelta);
+	    xNear = x*(1+relDelta);
     }
+
+    // Calculate derivative
     parser.set(name,xNear)
     fNear=parser.evaluate(line);
     dfdx=(fNear-f)/(xNear-x);
-    parser.set(name,x); // Aparently parser goes in a higher scope
+
+    // Change value back - parser scope
+    parser.set(name,x);
     return dfdx;
 }
 
-// Answers
-function calcFun(parser,lines,names,guesses){
-    // Set all guesses
-    for (let i=0;i<names.length;i++){
-	parser.set(names[i],guesses[i]);
-    }
-
-    // Calculate all lines
-    let answers=[];
-    for (let i=0;i<lines.length;i++){
-	answers.push(parser.evaluate(lines[i]))
-    }
-    return answers;
-}
-
-function find_guessN(lines,names,parser){
-    let guess_list = [1,1E2,1E4,1E6];
-    let ans_list = [0,0,0];
+// Find a suitable first guess
+function find_guess(lines,names,parser){
+    let guess_list = [3E2,1E5];
+    let ans_list = [0,0];
 
     // Set all guesses
     let aux;
     for(let i=0;i<guess_list.length;i++){
-	for (let j=0;j<names.length;j++){
-	    parser.set(names[i],guess_list[i]);
-	}
-	for (let j=0;j<lines.lenght;j++){
-	    aux=parser.evaluate(lines[i]);
-	    ans_list[i]+=aux*aux;
-	}
+	    for (let j=0;j<names.length;j++){
+	        parser.set(names[j],guess_list[i]);
+        } 
+	    for (let z=0;z<lines.length;z++){
+            aux=parser.evaluate(lines[z]);
+            ans_list[i]+=Math.abs(aux);
+	    }
     }
     
     let index;
@@ -125,15 +151,17 @@ function find_guessN(lines,names,parser){
     return guess_list[index];
 }
 
+// Iterate a step
 function step(parser,lines,names,guesses,answers){
-    // Calculate jacobian
-    let jac=math.ones(answers.length,guesses.length);
     let der;
+    let jac=math.ones(answers.length,guesses.length);
+    
+    // Calculate jacobian
     for (let i=0;i<answers.length;i++){
-	for (let j=0;j<guesses.length;j++){
-	    der=derivative(parser,lines[i],names[j],answers[i],guesses[j]);
-	    jac.subset(math.index(i,j),der);
-	}
+	    for (let j=0;j<guesses.length;j++){
+	        der=derivative(parser,lines[i],names[j],answers[i],guesses[j]);
+	        jac.subset(math.index(i,j),der);
+	    }
     }
 
     // Determine step
@@ -141,88 +169,86 @@ function step(parser,lines,names,guesses,answers){
     return dx;
 }
 
-function error(answers){
-    let diff=0;
-    for (let i=0; i<answers.length; i++){
-	diff+=answers[i]*answers[i];
-    }
-    return diff;
-}
-
+// Multivariable Newton-Raphson + Line search
 function MultiNR(lines,parser,solutions){
     // Find variables
     let lineVars;
     let varSet=new Set();
     for (let i=0; i<lines.length; i++){
-	lineVars=varsName(lines[i])
-	for (let j=0; j<lineVars.length; j++){
-	    varSet.add(lineVars[j]);
-	}
+	    lineVars=varsName(lines[i])
+	    for (let j=0; j<lineVars.length; j++){
+	        varSet.add(lineVars[j]);
+	    }
     }
     let names=[... varSet];
 
     // First guess and evaluation
     let guesses=[];
-    let searchGuess=[];
-    let first_guess=find_guessN(lines,names,parser);
+    let Xguesses=[];
+    let first_guess=find_guess(lines,names,parser);
     for (let i=0;i<names.length;i++){
-	guesses.push(first_guess+Math.random()); // Initial guess + random number
-	searchGuess.push(1);
+        guesses.push(first_guess+Math.random()); // Initial guess + random number
+        Xguesses.push(1);
     }
 
     // Newton-Raphson
-    let converged=false;
+    let dx;
     let answers=calcFun(parser,lines,names,guesses);
-    let dx,converged2;
+    let diff=error(answers);
+    let Xdiff;
+    let converged=false;
+    let converged2;
     let count=0;
+    let count2=0;
+    let factor=1;
     while (!converged){
-	dx=step(parser,lines,names,guesses,answers);
-	// Line search?
-	for (let i=0;i<guesses.length;i++){
-	    guesses[i]=guesses[i]-dx.subset(math.index(i));
-	}
-	answers=calcFun(parser,lines,names,guesses);
-	diff=error(answers)
-	if (diff<1E-5){
-	    converged=true;
-	}
-	count++;
-	if (count>50){
-	    console.log('Fail: MultiNR not converged');
-	    break;
-	}
+        dx=step(parser,lines,names,guesses,answers);
+        // Second loop
+        count2=0;
+	    factor=1;
+        converged2=false;
+        while (!converged2){
+            for (let i=0;i<guesses.length;i++){
+	            Xguesses[i]=guesses[i]-dx.subset(math.index(i))*factor;
+	        }
+	        answers=calcFun(parser,lines,names,Xguesses);
+            Xdiff=error(answers)
+            if (Xdiff>diff){
+                factor/=2;
+            }
+            else{
+                converged2=true;
+                diff=Xdiff;
+                for (let i=0;i<guesses.length;i++){
+	                guesses[i]=Xguesses[i];
+	            }
+            }
+            count2++;
+            if (count2>20){
+                break;
+            }
+        }
+        if (diff<1E-5){
+	        converged=true;
+	    }
+	    count++;
+	    if (count>50){
+	        console.log('Fail: MultiNR not converged');
+	        break;
+	    }
     }
 
     for (let i=0;i<names.length;i++){
-	solutions.set(names[i],guesses[i]);
+	    solutions.set(names[i],guesses[i]);
     }
     return solutions;    
 }
 
-function find_guess(line,name,parser){
-    let guess_list = [1,1E2,1E4,1E6];
-    let ans_list = [1,1,1];
-
-    for(let i=0;i<guess_list.length;i++){
-	parser.set(name,guess_list[i]);
-	ans_list[i]=parser.evaluate(line);
-    }
-    let index;
-    let lower=Infinity;
-    for(let i=0;i<guess_list.length;i++){
-	if ((ans_list!==NaN) && (Math.abs(ans_list[i])<Math.abs(lower))){
-	    index=i;
-	    lower=ans_list[i];
-	}
-    }
-    return guess_list[index];
-}
-
-// 1D solver - Newton Raphson + Line search
+// One dimension Newton Raphson + Line search
 function OneNR(line,name,parser){
     // Setup default conditions
     let ans=[1,1];
-    let first_guess=find_guess(line,name,parser);
+    let first_guess=find_guess([line],name,parser);
     let guess=[first_guess+Math.random(),1];
 
     // First eval
@@ -234,47 +260,45 @@ function OneNR(line,name,parser){
     let converged=false;
     let deriv,count2,factor,converged2;
     while (!converged){
-	// Determine derivative
-	deriv=derivative(parser,line,name,ans[0],guess[0])
-	// Second loop - Line search
-	count2=0;
-	factor=1;
-	converged2=false;
-	while (!converged2){
-	    // Test new guess
-	    guess[1]=guess[0]-(ans[0]/deriv)*factor;
-	    parser.set(name,guess[1]);
-	    ans[1]=parser.evaluate(line);
+	    // Determine derivative
+	    deriv=derivative(parser,line,name,ans[0],guess[0])
+	    // Second loop - Line search
+	    count2=0;
+	    factor=1;
+	    converged2=false;
+	    while (!converged2){
+	        // Test new guess
+	        guess[1]=guess[0]-(ans[0]/deriv)*factor;
+	        parser.set(name,guess[1]);
+	        ans[1]=parser.evaluate(line);
 
-	    // Better guess condition
-	    if (Math.abs(ans[1])>Math.abs(ans[0])){
-		converged2=false;
-		factor/=2 // Try again with smaller step
+	        // Better guess condition
+	        if (Math.abs(ans[1])>Math.abs(ans[0])){
+		        factor/=2 // Try again with smaller step
+	        }
+	        else {
+		        converged2=true;
+		        ans[0]=ans[1];
+		        guess[0]=guess[1];
+	        }
+            
+            // Max iterations condition
+	        count2++
+	        if (count2>20){
+		        break; // Prevent infinity loops
+	        }
 	    }
-	    else {
-		converged2=true;
-		ans[0]=ans[1];
-		guess[0]=guess[1];
+	    // Tolerance condition
+	    if (Math.abs(ans[0])<1E-5){
+	        converged=true;
 	    }
-
-	    // Max iterations condition
-	    count2++
-	    if (count2>10){
-		break; // Prevent infinity loops
+    
+        // Max iterations conditions
+	    count++;
+	    if (count>50){
+	        console.log('Fail: OneNR not converged');
+	        break;
 	    }
-	}
-
-	// Tolerance condition
-	if (Math.abs(ans[0])<1E-5){
-	    converged=true;
-	}
-
-	// Max iterations conditions
-	count++;
-	if (count>50){
-	    console.log('Fail: OneNR not converged');
-	    break;
-	}
     }
     return parser;
 }
@@ -293,12 +317,6 @@ function moreVar(a,b){
     return 0;
 }
 
-function checkLine(line){
-    if ((line==="")||(line.startsWith("#"))){
-	return false;
-    }
-    return true;
-}
 
 function cleanLines(lines){
     let right=[]
@@ -318,6 +336,7 @@ function cleanLines(lines){
 }
 
 function writeAns(value,key,map){
+    const outDiv = document.querySelector(".out"); 
     value = math.round(value,3);
     let msg=key+" = "+value.toString();
     let para=document.createElement('p');
@@ -325,9 +344,10 @@ function writeAns(value,key,map){
     outDiv.appendChild(para); // out is a global constant
 }
 
-
 // Solve non-linear system
 function laine() {
+    const textBox = document.querySelector(".box");
+    const outDiv = document.querySelector(".out"); 
     // Clear space
     outDiv.innerHTML="";
     // Start solver
@@ -388,6 +408,8 @@ function laine() {
 /*
   User inputs
 */
+
+const solveButton = document.querySelector(".solve");
 solveButton.onclick = laine;
 
 function shortcut(key){
