@@ -50,6 +50,7 @@ functionButton.onclick = toggleFunctions;
 
 // PropsSI
 function generateFun(){
+    const textBox = document.querySelector(".box");
     let fluid = document.querySelector(".FluidName");
     let property = document.querySelector(".Property");
     let input1 = document.querySelector(".Input1");
@@ -71,6 +72,7 @@ PropsSIButton.onclick = generateFun;
 
 //HAPropsSI
 function generateFun2(){
+    const textBox = document.querySelector(".box");
     let property = document.querySelector(".HAProperty");
     let input1 = document.querySelector(".HAInput1");
     let input2 = document.querySelector(".HAInput2");
