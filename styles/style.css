@@ -28,9 +28,13 @@ button:hover{
     background-color: #F04747;
 }
 
-.helpText,.functionBox,.functionBox2 {
+.helpText,.functionBox,.fileBox {
     display:none;
     flex-wrap:wrap;
+}
+
+.solBox{
+    display:none;
 }
 
 label {
@@ -51,7 +55,15 @@ label {
     margin:0.5%;
     padding: 0.5%;
 }
- 
+
+.fileBox div{
+    min-width: 200px;
+    max-width: 350px;
+    background-color:#fcec;
+    margin:0.5%;
+    padding: 0.5%;
+}
+
 select,input {
     max-width: 95%;
 }
@@ -64,6 +76,7 @@ input{
 main {
     display: flex;
     flex-wrap: wrap;
+    padding:0.5%;
 }
 
 main div {
@@ -76,10 +89,16 @@ h2{
     color: #F04747;
 }
 
+main a{
+    font-size:14pt;
+    color: #F04747;
+    padding:1px;
+}
+
 textarea {
     font-family:math;
     font-size: 12pt;
-    padding: 1px;
+    padding:1px;
     line-height: 1.5;
     border-radius: 5px;
     border: 2px solid #3d3d3d;

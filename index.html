@@ -12,7 +12,7 @@
     <header>
       <h1>laine</h1>
       <h1>|</h1>
-      <button class="solve">Solve (F2)</button>
+      <button class="file">File (+)</button>
       <button class="function">Functions (+)</button>
       <button class="help">Help (+)</button>
     </header>
@@ -349,10 +349,26 @@
 	<button class="butHAPropsSI">Output function in equations</button>
       </div>
     </div>
-    
-    <main>      
+
+    <div class="fileBox">
       <div>
-	<h2>Equations</h2>
+	<h2>Save</h2>
+	<input id="inputFileNameToSaveAs" placeholder="Input filename"></input>
+	<button onclick="saveFile()">Save equations</button>
+      </div>
+      <div>
+	<h2>Load</h2>
+	<input type="file" id="fileToLoad" style="width:100%;">
+	<button onclick="loadFileAsText()">Load equations</button>
+      </div>
+    </div>
+    
+    <main>
+      <div>
+	<a class="eqHead"><b>Equations</b></a>
+	<a>  |  </a>
+	<button class="solve">Solve (F2)</button>
+	<br>
 	<textarea id="box" class="box" rows="7" cols="60" spellcheck="false">
 # Non-linear system of equations
 x^2+y^2=10
@@ -362,11 +378,13 @@ x*y=3
 h_air=PropsSI("H","T",298.15,"P",1E6,"Air")
 s_water=PropsSI("S","T",298.15,"P",1E6,"Water")</textarea>
       </div>
+	
       <div class="solBox">
-	<h2>Solution</h2>
+	<a><b>Solution</b></a>
 	<div class="out">
 	</div>
       </div>
+    
     </main>
     <script src="scripts/third-party/math.min.js"></script>
     <script src="scripts/third-party/coolprop.js"></script>
