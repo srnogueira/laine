@@ -125,8 +125,8 @@ function derivative(parser,line,name,f,x){
 
 // Find a suitable first guess
 function find_guess(lines,names,parser){
-    let guess_list = [3E2,1E5];
-    let ans_list = [0,0];
+    let guess_list = [0.1,3E2,1E5];
+    let ans_list = [0,0,0];
 
     // Set all guesses
     let aux;
@@ -403,6 +403,8 @@ function laine() {
     else{
 	solutions.forEach(writeAns); // Write answers
     }
+    let box = document.querySelector(".solBox");
+    box.style.display="block";
 }
 
 /*
