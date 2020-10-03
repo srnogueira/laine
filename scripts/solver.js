@@ -187,7 +187,7 @@ function MultiNR(lines,parser,solutions){
     let Xguesses=[];
     let first_guess=find_guess(lines,names,parser);
     for (let i=0;i<names.length;i++){
-        guesses.push(first_guess+Math.random()); // Initial guess + random number
+        guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
         Xguesses.push(1);
     }
 
@@ -249,7 +249,7 @@ function OneNR(line,name,parser){
     // Setup default conditions
     let ans=[1,1];
     let first_guess=find_guess([line],name,parser);
-    let guess=[first_guess+Math.random(),1];
+    let guess=[first_guess(1+Math.random()),1];
 
     // First eval
     parser.set(name,guess[0]);
