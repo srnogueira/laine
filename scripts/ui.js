@@ -1,6 +1,22 @@
-// User interface javascript
+/*
+  Solver interface
+*/
 
-// Resize textbox
+const solveButton = document.querySelector(".solve");
+solveButton.onclick = laine;
+
+function shortcut(key){
+    if (key.code === "F2"){
+	laine();
+    }
+}
+document.onkeydown=shortcut;
+
+
+/*
+  Resize textbox
+*/
+
 function calcHeight(value) {
     let numberOfLineBreaks = (value.match(/\n/g) || []).length;
     // min-height + lines x line-height + padding + border
@@ -16,8 +32,15 @@ function autosize(){
 }
 
 function hide(extra){
-    if (extra.key !== "ArrowRight" && extra.key !== "ArrowLeft" && extra.key !== "ArrowDown" && extra.key !== "ArrowUp"){
-	box.style.display="";
+    let special = ["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Control","Shift","Alt"];
+    let decision = true ;
+    for (i=0;i<special.length;i++){
+	if (extra.key == special[i]){
+	    decision = false;
+	}
+    }
+    if (decision){
+    	box.style.display="";
     }
 }
 
@@ -25,7 +48,11 @@ autosize();
 textarea.addEventListener("keyup", autosize);
 textarea.addEventListener("keydown", hide);
 
-// Help button
+/*
+  Help menu
+*/
+
+// Toggle
 function toggleHelp(){
     let x = document.querySelector(".helpText");
     if (x.style.display===""){
@@ -40,7 +67,11 @@ function toggleHelp(){
 const helpButton = document.querySelector(".help");
 helpButton.onclick = toggleHelp;
 
-// Function button
+/* 
+   Function menu
+*/
+
+// Toggle
 function toggleFunctions(){
     let x = document.querySelector(".functionBox");
     if (x.style.display===""){
@@ -57,7 +88,7 @@ const functionButton = document.querySelector(".function");
 functionButton.onclick = toggleFunctions;
 
 // PropsSI
-function generateFun(){
+function writePropsSI(){
     const textBox = document.querySelector(".box");
     let fluid = document.querySelector(".FluidName");
     let property = document.querySelector(".Property");
@@ -77,10 +108,10 @@ function generateFun(){
     toggleFunctions();
 }
 const PropsSIButton = document.querySelector(".butPropsSI");
-PropsSIButton.onclick = generateFun;
+PropsSIButton.onclick = writePropsSI;
 
-//HAPropsSI
-function generateFun2(){
+// HAPropsSI
+function writeHAPropsSI(){
     const textBox = document.querySelector(".box");
     let property = document.querySelector(".HAProperty");
     let input1 = document.querySelector(".HAInput1");
@@ -101,56 +132,38 @@ function generateFun2(){
     toggleFunctions();
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
-HAPropsSIButton.onclick = generateFun2;
+HAPropsSIButton.onclick = writeHAPropsSI;
 
-//Save a file
-function saveFile()
-{
-    var textToSave = document.getElementById("box").value;
-    var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
-    var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+// Nasa Glenn
+function writeNasa(){
+    const textBox = document.querySelector(".box");
+    let property = document.querySelector(".nasaProp");
+    let fluid = document.querySelector(".nasaFluid");
+    let temp = document.querySelector(".nasaT");
+    let press = document.querySelector(".nasaP");
     
-    var downloadLink = document.createElement("a");
-    var filename = document.getElementById("inputFileNameToSaveAs").value;
-    if (filename===""){
-	downloadLink.download="laine_save.txt";
+    let propName=property.options[property.selectedIndex].value;
+    let fluidName=fluid.options[fluid.selectedIndex].value;
+
+    let text;
+    if ((propName == "s") || (propName == "g") || (propName == "f")) {
+	text = "property=nasa_"+propName+"(\""+fluid.value+"\","+temp.value+","+press.value+")";
     }
-    else{ 
-	downloadLink.download = filename;
+    else{
+	text = "property=nasa_"+propName+"(\""+fluid.value+"\","+temp.value+")";
     }
-    downloadLink.innerHTML = "Download File";
-    downloadLink.href = textToSaveAsURL;
-    downloadLink.onclick = destroyClickedElement;
-    downloadLink.style.display = "none";
-    document.body.appendChild(downloadLink);
-    
-    downloadLink.click();
+    textBox.value+="\n"+text;
+    autosize();
+    toggleFunctions();
 }
+const NasaButton = document.querySelector(".butNasa");
+NasaButton.onclick = writeNasa;
 
-function destroyClickedElement(event)
-{
-    document.body.removeChild(event.target);
-}
+/*
+  File menu
+*/
 
-// Load a file
-function loadFileAsText()
-{
-    var downloadLink = document.createElement("a");
-    
-    var fileToLoad = document.getElementById("fileToLoad").files[0];
-    
-    var fileReader = new FileReader();
-    fileReader.onload = function(fileLoadedEvent) 
-    {
-	var textFromFileLoaded = fileLoadedEvent.target.result;
-	document.getElementById("box").value = textFromFileLoaded;
-	autosize();
-    };
-    fileReader.readAsText(fileToLoad, "UTF-8");
-}
-
-
-// File button
+// Toggle
 function toggleFile(){
     let x = document.querySelector(".fileBox");
     if (x.style.display===""){
@@ -165,3 +178,52 @@ function toggleFile(){
 
 const fileButton = document.querySelector(".file");
 fileButton.onclick = toggleFile;
+
+// Save a file
+
+function destroyClickedElement(event)
+{
+    document.body.removeChild(event.target);
+}
+
+function saveFile()
+{
+    let textToSave = document.getElementById("box").value;
+    let textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+    let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+    
+    let downloadLink = document.createElement("a");
+    let filename = document.getElementById("inputFileNameToSaveAs").value;
+    if (filename===""){
+	downloadLink.download="laine_save.txt";
+    }
+    else{ 
+	downloadLink.download = filename;
+    }
+    downloadLink.innerHTML = "Download File";
+    downloadLink.href = textToSaveAsURL;
+    downloadLink.onclick = destroyClickedElement;
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    
+    downloadLink.click();
+    toggleFile();
+}
+
+// Load a file
+function loadFileAsText()
+{
+    let downloadLink = document.createElement("a");
+    
+    let fileToLoad = document.getElementById("fileToLoad").files[0];
+    
+    let fileReader = new FileReader();
+    fileReader.onload = function(fileLoadedEvent) 
+    {
+	let textFromFileLoaded = fileLoadedEvent.target.result;
+	document.getElementById("box").value = textFromFileLoaded;
+	autosize();
+    };
+    fileReader.readAsText(fileToLoad, "UTF-8");
+    toggleFile();
+}
