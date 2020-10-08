@@ -43,6 +43,18 @@ math.import({
     nasa_f:function(n,T,P){
 	return nasa_f(n,T,P)
     },
+    // Lee Kesler - Z
+    leeKesler_Z:function(T,P){
+	return leeKesler_Z(T,P)
+    },
+    // Lee Kesler - h
+    leeKesler_h:function(T,P){
+	return leeKesler_h(T,P)
+    },
+    // Lee Kesler - st
+    leeKesler_st:function(T,P){
+	return leeKesler_st(T,P)
+    },
 });
 
 /*
@@ -157,14 +169,14 @@ function derivative(parser,line,name,f,x){
 
 // Find a suitable first guess
 function find_guess(lines,names,parser){
-    let guess_list = [0.01,0.1,1,10,100,1E3,1E5]; //Lots of tests
+    let guess_list = [0.01,0.1,1,300,1E3,1E5]; //Lots of tests
     let ans_list = [0,0,0,0,0,0,0];
 
     // Set all guesses
     let aux;
     for(let i=0;i<guess_list.length;i++){
 	for (let j=0;j<names.length;j++){
-	    parser.set(names[j],guess_list[i]*(1+Math.random()/10));
+	    parser.set(names[j],guess_list[i]*(1+Math.random()));
         } 
 	for (let z=0;z<lines.length;z++){
             aux=parser.evaluate(lines[z]);
@@ -219,7 +231,7 @@ function MultiNR(lines,parser,solutions){
     let Xguesses=[];
     let first_guess=find_guess(lines,names,parser);
     for (let i=0;i<names.length;i++){
-        guesses.push(first_guess*(1+Math.random()/10)); // Initial guess + random number
+        guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
         Xguesses.push(1);
     }
 
@@ -256,7 +268,7 @@ function MultiNR(lines,parser,solutions){
 	        }
             }
             count2++;
-            if (count2>5){
+            if (count2>10){
                 break;
             }
         }
@@ -264,7 +276,10 @@ function MultiNR(lines,parser,solutions){
 	    converged=true;
 	}
 	count++;
-	if (count>20){
+	if (count>25){
+	    for (let i=0;i<guesses.length;i++){
+		guesses[i]=null;
+	    }
 	    console.log('Fail: MultiNR not converged');
 	    break;
 	}
@@ -281,7 +296,7 @@ function OneNR(line,name,parser){
     // Setup default conditions
     let ans=[1,1];
     let first_guess=find_guess([line],name,parser);
-    let guess=[first_guess*(1+Math.random()/10),1];
+    let guess=[first_guess*(1+Math.random()),1];
 
     // First eval
     parser.set(name,guess[0]);
@@ -315,7 +330,7 @@ function OneNR(line,name,parser){
 	    }
             // Max iterations condition
 	    count2++
-	    if (count2>20){
+	    if (count2>10){
 		break; // Prevent infinity loops
 	    }
 	}
@@ -326,14 +341,14 @@ function OneNR(line,name,parser){
 	
         // Max iterations conditions
 	count++;
-	if (count>30){
+	if (count>25){
+	    parser.set(name,null);
 	    console.log('Fail: OneNR not converged');
 	    break;
 	}
     }
     return parser;
 }
-
 
 // Compare number of vars
 function moreVar(a,b){
@@ -347,7 +362,6 @@ function moreVar(a,b){
     }
     return 0;
 }
-
 
 function cleanLines(lines){
     let right=[]
@@ -367,9 +381,15 @@ function cleanLines(lines){
 }
 
 function writeAns(value,key,map){
-    const outDiv = document.querySelector(".out"); 
-    value = math.round(value,5);
-    let msg=key+" = "+value.toString();
+    const outDiv = document.querySelector(".out");
+    let msg;
+    if (value != null){
+	value = math.round(value,5);
+	msg=key+" = "+value.toString();
+    }
+    else{
+	msg=key+" : not converged";
+    }
     let para=document.createElement('p');
     para.textContent=msg;
     outDiv.appendChild(para); // out is a global constant
