@@ -159,6 +159,29 @@ function writeNasa(){
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
 
+// Nasa Glenn
+function writelk(){
+    const textBox = document.querySelector(".box");
+    let property = document.querySelector(".lkProp");
+    let temp = document.querySelector(".lkT");
+    let press = document.querySelector(".lkP");
+    
+    let propName=property.options[property.selectedIndex].value;
+
+    let text;
+    if ((press.value == "f") || (propName == "g")){
+	text = "property=leeKesler_"+propName+"("+temp.value+",\""+press.value+"\")";
+    }
+    else{
+	text = "property=leeKesler_"+propName+"("+temp.value+","+press.value+")";
+    }
+    textBox.value+="\n"+text;
+    autosize();
+    toggleFunctions();
+}
+const leeKeslerButton = document.querySelector(".butlk");
+leeKeslerButton.onclick = writelk;
+
 /*
   File menu
 */
