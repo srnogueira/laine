@@ -47,7 +47,7 @@
       <div>
 	<h2>How to handle errors?</h2>
 	<p>Check if the equations are correct and the number satifies
-	the problem condition</p>
+	  the problem condition</p>
 	<p>The solver is in development and may not converge in some
 	cases,
 	please <a href="mailto:rafaelnnakashima@usp.com">contact
@@ -301,7 +301,7 @@
 	<select class="HAProperty">
 	  <optgroup label="Temperatures">
 	    <option value="T">Dry-Bulb Temperature (K)</option>
-	    <option value="B">Wet-Bulb Temperature (K)</option>
+	    <option value="B" selected="selected">Wet-Bulb Temperature (K)</option>
 	    <option value="D">Dew-Point Temperature (K)</option>
 	  </optgroup>
 	  <optgroup label="Water fraction">
@@ -469,9 +469,28 @@
 	<input class="nasaP" placeholder="value (only for entropy, gibbs and helmholtz)"></input>
 	<br><br>
 	<button class="butNasa">Paste in Equations</button>
+      </div>
+      
+      <div>
+	<h2>Lee Kesler</h2>
+	<p>Compressibility, enthalpy and entropy departure</p>
+	
+	<label>Select a property:</label>
+	<select class="lkProp">
+	  <option value="Z">Compressibility factor (Z)</option>
+	  <option value="h">Specific enthalpy departure (h*-h)/RTc</option>
+	  <option value="st">Specific entropy departure (s*-s)/R</option>  
+	</select>
+	<br><br>
+	<label>Insert reduced temperature:</label>
+	<input class="lkT" placeholder="value"></input>
+	<br><br>
+	<label>Insert reduced pressure:</label>
+	<input class="lkP" placeholder="value ('f' or 'g' for saturated states)"></input>
+	<br><br>
+	<button class="butlk">Paste in Equations</button>
       </div>  
     </div>
-
     
     <div class="fileBox">
       <div>
@@ -512,6 +531,7 @@ s_water=PropsSI("S","T",298.15,"P",1E6,"Water")</textarea>
     <script src="scripts/third-party/math.min.js"></script>
     <script src="scripts/third-party/coolprop.js"></script>
     <script src="scripts/idealGas.js"></script>
+    <script src="scripts/leeKesler.js"></script>
     <script src="scripts/solver.js"></script>
     <script src="scripts/ui.js"></script>
   </body>
