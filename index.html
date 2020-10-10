@@ -1,59 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt" dir="ltr">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <meta name="author" content="Rafael Nogueira Nakashima">
     <meta name="description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
+    <meta name="author" content="Rafael Nogueira Nakashima">
     <title>laine</title>
     <link href="styles/style.css" rel="stylesheet">
   </head>
   <body>
+    <!-- Main menu -->
     <header>
-      <h1>laine</h1>
-      <h1>|</h1>
-      <button class="file">File (+)</button>
-      <button class="function">Functions (+)</button>
-      <button class="help">Help (+)</button>
+      <table>
+	<tr>
+	  <th> <h1>laine</h1> </th>
+	  <th> <h1>|</h1> </th>
+	  <th> <button class="file">File (+)</button> </th>
+	  <th> <button class="function">Functions (+)</button> </th>
+	  <th> <button class="help">Help (+)</button> </th>
+	</tr>
+      </table>
     </header>
+    <!-- Help Menu -->
     <div class="helpText">
       <div>
 	<h2>How to use?</h2>
 	<p>Write equations in the box below and click in <strong>Solve</strong> or press <strong>F2</strong>.</p>
-	<p><strong>Equations</strong> have to follow the structure <em>left = right</em>
-	  and have a Real solution </p>
-      </div>
-      <div>
-	<h2>How to write problems?</h2>
-	<p> The number of equations has <strong>to be equal</strong>
-	  to the number of variables. </p>
-	<p> You can also include a <strong>comment</strong> by using a
-	hashtag (#) in the beginning of the sentece.</p>
-      </div>
-      <div>
-	<h2>Which functions are available?</h2>
-	<p><strong>Arithmetic and trigonometric</strong> functions from math.js.
-	  <br>
-	  <a target="_blank" href="https://mathjs.org/docs/reference/functions.html">[List of functions]</a></p>
-	<p><strong>Pure fluids properties</strong> using the PropsSI function and <strong>humid air properties</strong> using the HAPropsSI function from CoolProp.
-	  <br>
-	  <a target="_blank" href="http://www.coolprop.org/coolprop/HighLevelAPI.html">[Pure substance function]</a>
-	  <br>
-	  <a target="_blank" href="http://www.coolprop.org/fluid_properties/HumidAir.html">[Humid air function]</a>
-	  <br>
-	  <a target="_blank" href="http://www.coolprop.org/fluid_properties/PurePseudoPure.html#list-of-fluids">[List of fluids]</a>
-	</p>
+	<p>The <strong>equations</strong> have to follow the structure <em>left = right</em>, its number has to be equal to the number of <strong>variables</strong>.</p>
+	<p> You can also include a <strong>comment</strong> by using a 	hashtag (#) in the beginning of the sentece.</p>
       </div>
       <div>
 	<h2>How to handle errors?</h2>
-	<p>Check if the equations are correct and the number satifies
-	  the problem condition</p>
-	<p>The solver is in development and may not converge in some
-	cases,
-	please <a href="mailto:rafaelnnakashima@usp.com">contact
+	<p>Check if the equations are typed correctly.</p>
+	<p>Check if the problem is feasible.</p>
+	<p>Simplify equations and avoid inversions (e.g. x=1/y).</p>
+	<p>Please <a href="mailto:rafaelnnakashima@usp.com">contact
 	me</a> if you could not solve your problem.</p>
       </div>
+      <div>
+	<h2>References</h2>
+	<p>Parser and math functions: <a target="_blank" href="https://mathjs.org">math.js</a></p>
+	<p>LaTeX rendering: <a target="_blank" href="https://www.mathjax.org/">MathJax</a></p>
+	<p>Pure fluids and humid air properties: <a target="_blank" href="http://www.coolprop.org">CoolProp</a></p>
+	<p>Ideal gas properties: <a target="_blank" href="https://www.grc.nasa.gov/WWW/CEAWeb/TP-2002-21556.htm">Nasa Glenn</a></p>
+	<p>Lee-Kesler equation of state: <a target="_blank" href="https://aiche.onlinelibrary.wiley.com/doi/10.1002/aic.690210313">Original publication</a></p>
+      </div>
     </div>
+    <!-- Function Menu -->
     <div class="functionBox">
       <div>
 	<h2>PropsSI</h2>
@@ -180,13 +173,13 @@
 	    <option value="n-Nonane">n-Nonane</option>
 	    <option value="n-Octane">n-Octane</option>
 	    <option value="n-Pentane">n-Pentane</option>
+	    <option value="n-Propane">n-Propane</option>
 	    <option value="n-Undecane">n-Undecane</option>
 	    <option value="o-Xylene">o-Xylene</option>
 	    <option value="p-Xylene">p-Xylene</option>
 	    <option value="trans-2-Butene">trans-2-Butene</option>
 	  </optgroup>
-	</select>
-	
+	</select>	
 	<br><br>
 	<label>Select a property:</label>
 	<select class="Property">
@@ -202,7 +195,7 @@
 	    <option value="S">Entropy (J/kg/K)</option>
 	    <option value="U">Internal energy (J/kg)</option>
 	    <option value="C">Constant pressure specific heat (J/kg/K) </option>
-	    <option value="Cvmass">Constant pressure specififc heat (J/kg/K) </option>
+	    <option value="Cvmass">Constant volume specififc heat (J/kg/K) </option>
 	    <option value="G">Gibbs free energy (J/kg)</option>
 	    <option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
 	  </optgroup>
@@ -227,8 +220,7 @@
 	    <option value="L">Thermal conductivity (W/m/K)</option>
 	    <option value="V">Viscosity (Pa.s)</option>
 	  </optgroup>
-	</select>
-	
+	</select>	
 	<br><br>
 	<label>Select the first input:</label>
 	<select class="Input1">
@@ -259,7 +251,6 @@
 	  </optgroup>
 	</select>
 	<input class="value1" placeholder="value"></input>
-
 	<br><br>
 	<label>Select second input:</label>
 	<select class="Input2">
@@ -293,7 +284,6 @@
 	<br><br>
 	<button class="butPropsSI">Paste in Equations</button>
       </div>
-
       <div>
 	<h2>HAPropsSI</h2>
 	<p>Properties of humid air</p>
@@ -328,8 +318,7 @@
 	    <option value="M">Viscosity (Pa-s)</option>
 	    <option value="Z">Compressibility factor</option>
 	  </optgroup>
-	</select>
-	
+	</select>	
 	<br><br>
 	<label>Select the first input:</label>
 	<br>
@@ -360,8 +349,7 @@
 	  </optgroup>
 	  <br>
 	  <input class="HAvalue1" placeholder="value"></input>
-	</select>
-	
+	</select>	
 	<br><br>
 	<label>Select the second input:</label>
 	<br>
@@ -392,8 +380,7 @@
 	  </optgroup>
 	  <br>
 	  <input class="HAvalue2" placeholder="value"></input>
-	</select>
-	
+	</select>	
 	<br><br>
 	<label>Select the third input:</label>
 	<br>
@@ -430,8 +417,7 @@
       </div>
       <div>
 	<h2>NASA Glenn</h2>
-	<p>Properties of ideal gases</p>
-	
+	<p>Properties of ideal gases</p>	
 	<label>Select a fluid:</label>
 	<select class="nasaFluid">
 	  <option value="CO">Carbon monoxide (CO)</option>
@@ -450,12 +436,12 @@
 	<label>Select a property:</label>
 	<select class="nasaProp">
 	  <optgroup label="Molar basis">
-	    <option value="cp">Specific heat at constant pressure (J/mol)</option>
-	    <option value="cv">Specific heat at constant volume (J/mol)</option>
-	    <option value="h">Enthalpy (J/mol)</option>
-	    <option value="s">Entropy (J/mol.K)</option>
-	    <option value="g">Gibbs free energy (J/mol)</option>
-	    <option value="f">Helmholtz free energy (J/mol)</option>
+	    <option value="Cp">Specific heat at constant pressure (J/mol)</option>
+	    <option value="Cv">Specific heat at constant volume (J/mol)</option>
+	    <option value="H">Enthalpy (J/mol)</option>
+	    <option value="S">Entropy (J/mol.K)</option>
+	    <option value="G">Gibbs free energy (J/mol)</option>
+	    <option value="F">Helmholtz free energy (J/mol)</option>
 	  </optgroup>
 	  <optgroup label="Others">
 	    <option value="mw">Molecular mass (g/mol)</option>
@@ -466,77 +452,111 @@
 	<input class="nasaT" placeholder="value"></input>
 	<br><br>
 	<label>Insert pressure (Pa):</label>
-	<input class="nasaP" placeholder="value (only for entropy, gibbs and helmholtz)"></input>
+	<input class="nasaP" placeholder="value (if necessary)"></input>
 	<br><br>
 	<button class="butNasa">Paste in Equations</button>
-      </div>
-      
+      </div>      
       <div>
 	<h2>Lee Kesler</h2>
-	<p>Compressibility, enthalpy and entropy departure</p>
-	
+	<p>Equation of state for simple fluids</p>
 	<label>Select a property:</label>
 	<select class="lkProp">
-	  <option value="Z">Compressibility factor (Z)</option>
-	  <option value="h">Specific enthalpy departure (h*-h)/RTc</option>
-	  <option value="st">Specific entropy departure (s*-s)/R</option>  
+	  <option value="Prsat">Reduced saturation pressure</option>
+	  <option value="Z">Compressibility factor</option>
+	  <option value="Dh">Specific enthalpy departure : (h*-h)/R.Tc</option>
+	  <option value="Dst">Specific entropy departure : (s*-s)/R</option>  
 	</select>
 	<br><br>
-	<label>Insert reduced temperature:</label>
+	<label>Insert reduced temperature - Tr:</label>
 	<input class="lkT" placeholder="value"></input>
 	<br><br>
-	<label>Insert reduced pressure:</label>
+	<label>Insert reduced pressure - Pr:</label>
 	<input class="lkP" placeholder="value ('f' or 'g' for saturated states)"></input>
 	<br><br>
+	<label>Saturation points</label>
+	<ul>
+	  <li>'f' for saturated liquid</li>
+	  <li>'g' for saturated vapor</li>
+	</ul>
 	<button class="butlk">Paste in Equations</button>
       </div>  
     </div>
-    
+    <!-- File menu -->    
     <div class="fileBox">
       <div>
 	<h2>Save</h2>
-	<input id="inputFileNameToSaveAs" placeholder="Input filename"></input>
-	<button onclick="saveFile()">Save equations</button>
+	<table>
+	  <th><input id="inputFileNameToSaveAs" placeholder="Input filename"></input></th>
+	  <th><button onclick="saveFile()">Save equations</button></th>
+	</table>
       </div>
       <div>
 	<h2>Load</h2>
-	<input type="file" id="fileToLoad" style="width:100%;">
-	<button onclick="loadFileAsText()">Load equations</button>
+	<table>
+	  <th><input type="file" id="fileToLoad" style="width:100%;"></th>
+	  <th><button onclick="loadFileAsText()">Load equations</button></th>
+	</table>
       </div>
     </div>
-    
+    <div>
+      <!-- Equation Menu -->
+      <table>
+	<tr>
+	  <th> <h2>Equations</h2> </th>
+	  <th> <h2> | </h2> </th>
+	  <th> <button class="solve"> Solve (F2)</button> </th>
+	  <th> <button class="edit"> Edit (F4)</button> </th>
+	</tr>
+      </table>
+    </div>
     <main>
-      <div>
-	<a class="eqHead"><b>Equations</b></a>
-	<a>  |  </a>
-	<button class="solve">Solve (F2)</button>
-	<br>
-	<textarea id="box" class="box" rows="7" cols="75" spellcheck="false">
+      <!-- Equations Box -->
+      <textarea id="box" class="box" rows="7" cols="50" spellcheck="false">
 # Non-linear system of equations
 x^2+y^2=10
 x*y=3
 
-# Thermodynamic properties
-h_air=PropsSI("H","T",298.15,"P",1E6,"Air")
-s_water=PropsSI("S","T",298.15,"P",1E6,"Water")</textarea>
-      </div>
-	
-      <div class="solBox">
-	<a><b>Solution</b></a>
-	<div class="out">
-	</div>
-      </div>
-    
+# Fluids properties - PropsSI
+h=PropsSI("H","T",298.15,"P",1E6,"Air")
+
+# Humid air properties - HAPropsSI
+phi=HAPropsSI("R","T",298.15,"P",1E6,"W",0.001)
+
+# Ideal gas properties - Nasa Glenn
+cp=NasaCv("CO",500)
+
+# Simple fluid properties - Lee-Kesler
+dh=LeeKeslerDh(0.9,"f")</textarea>
+      <!-- Report -->
+      <table>
+	<th>
+	  <div class="mathDiv"> </div>
+	</th>
+	<th>
+	  <div class="solBox">
+	    <h2>Solution</h2>
+	    <table class="out">
+	    </table>
+	  </div>
+	</th>
+      </table>
     </main>
+    <!-- Third party javascript -->
     <script src="scripts/third-party/math.min.js"></script>
     <script src="scripts/third-party/coolprop.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Laine javascript -->
     <script src="scripts/idealGas.js"></script>
     <script src="scripts/leeKesler.js"></script>
     <script src="scripts/solver.js"></script>
     <script src="scripts/ui.js"></script>
   </body>
   <footer>
-    <hr>
-    <p> Copyright &#169 2020, Rafael Nogueira Nakashima. <a href="mailto:rafaelnnakashima@usp.br">Contact me</a>.</p>
+    <p>
+      developed by Rafael Nogueira Nakashima |
+      <a href="mailto:rafaelnnakashima@usp.br">Email</a> |
+      <a target="_blank" href="https://github.com/srnogueira/laine">Github</a>
+    </p>
   </footer>
 </html>

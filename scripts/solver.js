@@ -12,48 +12,52 @@ math.import({
 	return Module.HAPropsSI(n,x,xx,y,yy,z,zz)
     },
     // Nasa Glenn - Molecular mass
-    nasa_mw:function(n){
+    NasaMW:function(n){
 	return nasa_mw(n)
     },
     // Nasa Glenn - Enthalpy
-    nasa_h:function(n,T){
+    NasaH:function(n,T){
 	return nasa_h(n,T)
     },
     // Nasa Glenn - cp
-    nasa_cp:function(n,T){
+    NasaCp:function(n,T){
 	return nasa_cp(n,T)
     },
     // Nasa Glenn - Internal energy
-    nasa_u:function(n,T){
+    NasaU:function(n,T){
 	return nasa_u(n,T)
     },
     // Nasa Glenn - cv
-    nasa_cv:function(n,T){
+    NasaCv:function(n,T){
 	return nasa_cv(n,T)
     },
     // Nasa Glenn - Entropy
-    nasa_s:function(n,T,P){
+    NasaS:function(n,T,P){
 	return nasa_s(n,T,P)
     },
     // Nasa Glenn - Entropy
-    nasa_g:function(n,T,P){
+    NasaG:function(n,T,P){
 	return nasa_g(n,T,P)
     },
     // Nasa Glenn - Entropy
-    nasa_f:function(n,T,P){
+    NasaF:function(n,T,P){
 	return nasa_f(n,T,P)
     },
     // Lee Kesler - Z
-    leeKesler_Z:function(T,P){
+    LeeKeslerZ:function(T,P){
 	return leeKesler_Z(T,P)
     },
     // Lee Kesler - h
-    leeKesler_h:function(T,P){
+    LeeKeslerDh:function(T,P){
 	return leeKesler_h(T,P)
     },
     // Lee Kesler - st
-    leeKesler_st:function(T,P){
+    LeeKeslerDst:function(T,P){
 	return leeKesler_st(T,P)
+    },
+    // Lee Kesler - Pr_sat
+    LeeKeslerPrsat:function(T){
+	return Pr_sat(T)
     },
 });
 
@@ -67,12 +71,23 @@ function minusRight(line){
     return sides[0]+"-("+sides[1]+")";
 }
 
+// To set equations "=="
+function doubleEquals(line){
+    let sides=line.split('=');
+    return sides[0]+'=='+sides[1];
+}
+
 // Check if line is a comment or blank
 function checkLine(line){
     if ((line==="")||(line.startsWith("#"))){
 	return false;
     }
     return true;
+}
+
+function removeSideComments(line){
+    let equation=line.split('#');
+    return equation[0];
 }
 
 // To get all variables names
@@ -169,8 +184,8 @@ function derivative(parser,line,name,f,x){
 
 // Find a suitable first guess
 function find_guess(lines,names,parser){
-    let guess_list = [0.01,0.1,1,300,1E3,1E5]; //Lots of tests
-    let ans_list = [0,0,0,0,0,0,0];
+    let guess_list = [0.01,0.1,1,10,100,1E3,1E5]; //Lots of tests
+    let ans_list = [0,0,0,0,0,0,0,0];
 
     // Set all guesses
     let aux;
@@ -374,7 +389,8 @@ function cleanLines(lines){
     let ans=[];
     let transLine;
     for (let i=0;i<right.length;i++){
-	transLine=minusRight(lines[right[i]])
+	transLine=removeSideComments(lines[right[i]]);
+	transLine=minusRight(transLine);
 	ans.push(transLine);
     }
     return ans;
@@ -388,11 +404,84 @@ function writeAns(value,key,map){
 	msg=key+" = "+value.toString();
     }
     else{
-	msg=key+" : not converged";
+	msg=key+"\" : not converged\"";
     }
     let para=document.createElement('p');
-    para.textContent=msg;
+    //para.textContent=msg;
+
+    msg=doubleEquals(msg);
+    msg=changeUnder(msg);
+    para.textContent="$$"+math.parse(msg).toTex({parenthesis: 'keep'})+"$$";
+
     outDiv.appendChild(para); // out is a global constant
+}
+
+function changeUnder(line){
+    if (line.includes("_")){
+	let pieces=line.split("_");
+	let ans=pieces[0];
+	for (let i=1;i<pieces.length;i++){
+	    let piece=pieces[i];
+	    ans+="[";
+	    for (let j=0;j<piece.length;j++){
+		if (piece[j]=='*' || piece[j]=='+' ||piece[j]=='-' || piece[j]=='/' || piece[j]=='(' || piece[j]=='^' || piece[j]=='=' || piece[j]==',' || piece[j]==')'){
+		    ans+=piece.slice(0,j)+"]"+piece.slice(j,piece.length);
+		    break;
+		}
+		else if (j==(piece.length-1)){
+		    ans+=piece+"]";
+		}
+	    }
+	}
+	if (ans.includes("][")){
+	    ans=ans.replace(/\]\[/g,",");
+	}
+	return ans;
+    }
+    else{
+	return line;
+    }
+}
+
+// Write equations
+function writeEqs(lines){
+    let mathDiv = document.querySelector(".mathDiv");
+    // Clear
+    let text;
+    mathDiv.innerHTML="";
+    let title=document.createElement('h2');
+    title.textContent="Report";
+    mathDiv.appendChild(title);
+    
+    for (let i=0;i<lines.length;i++){
+	if (checkLine(lines[i].trim())){
+	    let para=document.createElement('p');
+	    text=doubleEquals(lines[i]);
+	    text=changeUnder(text);
+	    para.textContent="$$"+math.parse(text).toTex({parenthesis: 'keep'})+"$$";
+	    mathDiv.appendChild(para);
+	}
+	else{
+	    let para=document.createElement('p');
+	    //text="";
+	    text=lines[i].slice(1,lines[i].length);
+	    if (i<lines.length-1){
+		while (!checkLine(lines[i+1].trim())){
+		    if (lines[i+1]==''){
+			break;
+		    }
+		    text+=lines[i+1].slice(1,lines[i+1].length);
+		    i++;
+		    if ((i+1)==lines.length){
+			break;
+		    }
+		}
+	    }
+	    para.textContent=text;
+	    mathDiv.appendChild(para);
+	}   
+    }
+    
 }
 
 // Solve non-linear system
@@ -406,6 +495,7 @@ function laine() {
     let name;
     // Clean and sort
     let lines=(textBox.value).split('\n');
+    writeEqs(lines);
     lines = cleanLines(lines);
     lines.sort(moreVar);
     
@@ -454,6 +544,9 @@ function laine() {
     else{
 	solutions.forEach(writeAns); // Write answers
     }
-    let box = document.querySelector(".solBox");
+    
+    MathJax.typeset();
     box.style.display="block";
+    mathDiv.style.display="inline";
+    textBox.style.display="none";
 }
