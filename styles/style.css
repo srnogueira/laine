@@ -8,27 +8,25 @@ header{
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin:0% 0% 1% 0%;
+    margin:0 0 10px 0;
 }
 
 header h1{
-    margin:0% 1% 0% 0%;
+    margin:0;
 }
 
 button{
     font-family:math;
     font-size:12pt;
-    padding: 0.5% 2%;
-    border-radius:5px;
-    border:2px solid #3d3d3d;
-    margin-right:10px;
+    padding: 10px;
+    border-radius:5px;	
 }
 
 button:hover{
     background-color: #F04747;
 }
 
-.helpText,.functionBox,.fileBox {
+.helpText,.functionBox,.fileBox,.mathDiv {
     display:none;
     flex-wrap:wrap;
 }
@@ -43,7 +41,8 @@ label {
 }
 
 .helpText div {
-    max-width: 290px;
+    width: 400px;
+    max-width:45%;
     border-radius: 10px;
     background-color:#fce;
     margin:0.5%;
@@ -60,7 +59,6 @@ label {
 
 .fileBox div{
     min-width: 200px;
-    max-width: 350px;
     border-radius: 10px;
     background-color:#fce;
     margin:0.5%;
@@ -71,57 +69,65 @@ select,input {
     max-width: 95%;
 }
 
+
 input{
     width:90%;
-    margin-bottom:2%;
 }
 
 main {
-    display: flex;
-    flex-wrap: wrap;
-    padding:0.5%;
-}
-
-main div {
-    margin-right: 2%;
-    max-width: 100%;
+    display:block;
+    max-width:98%;
 }
 
 h2{
     font-size:14pt;
     color: #F04747;
-}
-
-main a{
-    font-size:14pt;
-    color: #F04747;
-    padding:1px;
+    margin:0;
 }
 
 textarea {
     font-family:math;
     font-size: 12pt;
-    padding:1px;
+    margin:10px;
+    padding:5px;
     line-height: 1.5;
     border-radius: 5px;
     border: 2px solid #3d3d3d;
-    max-width: 98%;
-    overflow:hidden;
+    max-width: 95%;
+    wrap:soft;
 }
 
 .out{
-    min-height: 24px;
     border-radius: 5px;
     border: 2px solid #3d3d3d;
-    padding: 2%;
-    width: 100%;
+    padding: 10px;
+    max-width: 100%;
     background-color:#fce;
 }
 
 .out p{
-    margin: 5px;
+    margin: 2%;
 }
 
-footer {
-    font-size: 10pt;
+footer p{
+    font-size: 12pt;
+    text-align: left;
+}
+
+
+main th {
+    text-align: left;
+    vertical-align: top;
+    font-weight:normal;
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:10px;
+}
+
+head th {
+    font-weight:normal;
+}
+
+a {
+    color:#F04747;
 }
