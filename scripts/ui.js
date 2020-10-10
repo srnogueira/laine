@@ -9,9 +9,11 @@ function shortcut(key){
     if (key.code === "F2"){
 	laine();
     }
+    else if (key.code === "F4"){
+	edit();
+    }
 }
 document.onkeydown=shortcut;
-
 
 /*
   Resize textbox
@@ -26,10 +28,20 @@ function calcHeight(value) {
 
 let textarea = document.querySelector(".box");
 let box = document.querySelector(".solBox");
+let mathDiv = document.querySelector(".mathDiv");
 
 function autosize(){
     textarea.style.height = calcHeight(textarea.value) + "px";
 }
+
+function edit(){
+    mathDiv.style.display="none";
+    box.style.display="none";
+    textarea.style.display="block";
+}
+
+const editButton = document.querySelector(".edit");
+editButton.onclick = edit;
 
 function hide(extra){
     let special = ["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Control","Shift","Alt"];
@@ -41,6 +53,7 @@ function hide(extra){
     }
     if (decision){
     	box.style.display="";
+	//mathDiv.style.display="none";
     }
 }
 
@@ -147,10 +160,10 @@ function writeNasa(){
 
     let text;
     if ((propName == "s") || (propName == "g") || (propName == "f")) {
-	text = "property=nasa_"+propName+"(\""+fluid.value+"\","+temp.value+","+press.value+")";
+	text = "property=Nasa"+propName+"(\""+fluid.value+"\","+temp.value+","+press.value+")";
     }
     else{
-	text = "property=nasa_"+propName+"(\""+fluid.value+"\","+temp.value+")";
+	text = "property=Nasa"+propName+"(\""+fluid.value+"\","+temp.value+")";
     }
     textBox.value+="\n"+text;
     autosize();
@@ -159,7 +172,7 @@ function writeNasa(){
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
 
-// Nasa Glenn
+// Lee - Kesler
 function writelk(){
     const textBox = document.querySelector(".box");
     let property = document.querySelector(".lkProp");
@@ -169,11 +182,14 @@ function writelk(){
     let propName=property.options[property.selectedIndex].value;
 
     let text;
-    if ((press.value == "f") || (propName == "g")){
-	text = "property=leeKesler_"+propName+"("+temp.value+",\""+press.value+"\")";
+    if (propName=="Prsat"){
+	text = "property=LeeKesler"+propName+"("+temp.value+")";
+    }
+    else if ((press.value == "f") || (propName == "g")){
+	text = "property=LeeKesler"+propName+"("+temp.value+",\""+press.value+"\")";
     }
     else{
-	text = "property=leeKesler_"+propName+"("+temp.value+","+press.value+")";
+	text = "property=LeeKesler"+propName+"("+temp.value+","+press.value+")";
     }
     textBox.value+="\n"+text;
     autosize();
@@ -249,4 +265,5 @@ function loadFileAsText()
     };
     fileReader.readAsText(fileToLoad, "UTF-8");
     toggleFile();
+    edit();
 }
