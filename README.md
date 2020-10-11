@@ -1,15 +1,22 @@
-# About laine
-laine is a web app to solve non-linear equation systems with thermodynamic properties in a friendly way. A problem can be written as a set of equations in any order, just following the simple structure : **left = right**. If the problem has the same number of equations and variables, the solver should be able to give **a real solution** for the problem. The user can also include the functions for **thermodynamic properties** of pure fluids and humid air of CoolProp.
+# laine
+laine is a web app to solve equations with thermodynamic properties in a friendly way. [Try it here!](https://srnogueira.github.io/laine)
 
-## Try laine
-You can try the web app in: https://srnogueira.github.io/laine.
+## How to use it
+- A problem can be written as a set of equations in **any order**, just following the simple structure : *left = right*;
+- If the problem has the same number of equations and variables, the solver should be able to give *a real solution* for the problem;
 
 ## Main features
-1. Integrated parser from math.js : you can input equations in convenient ways;
-2. Thermodynamic properties : you can use functions from CoolProp to solve problems;
-3. Solver for non-linear system of equations : the problems should be solved just pressing a button;
+1. You can input equations in convenient ways and in any order;
+2. You can also include *thermodynamic properties* using some special functions;
+3. It solves most non-linear system of equations without needing extra inputs;
+4. The results are shown in pretty report.
+
+## Dependencies
+1. mathjs: for math functions, parser, evaluation and conversion to TeX;
+2. CoolProp: for thermodynamic functions of pure fluids and humid air;
+3. MathJax: for rendering equations;
+4. Google fonts: for 'Quicksand' font; 
 
 ## Limitations
-1. There is no error messages (yet);
-2. Problems including variables of different orders of magnitude or discontinuities may not convert;
-3. Only one solution is displayed (which usually is fine for thermodynamic problems);
+1. Problems including variables of different orders of magnitude, discontinuities and lots of inversions may not convert;
+2. Only one solution is displayed and the user can not specify guesses or bounds for solutions.

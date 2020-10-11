@@ -2,6 +2,14 @@
   Solver interface
 */
 
+function edit(){
+    mathDiv.style.display="none";
+    box.style.display="none";
+    textarea.style.display="block";
+}
+const editButton = document.querySelector(".edit");
+editButton.onclick = edit;
+
 const solveButton = document.querySelector(".solve");
 solveButton.onclick = laine;
 
@@ -33,15 +41,8 @@ let mathDiv = document.querySelector(".mathDiv");
 function autosize(){
     textarea.style.height = calcHeight(textarea.value) + "px";
 }
-
-function edit(){
-    mathDiv.style.display="none";
-    box.style.display="none";
-    textarea.style.display="block";
-}
-
-const editButton = document.querySelector(".edit");
-editButton.onclick = edit;
+autosize();
+textarea.addEventListener("keyup", autosize);
 
 function hide(extra){
     let special = ["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Control","Shift","Alt"];
@@ -56,9 +57,6 @@ function hide(extra){
 	//mathDiv.style.display="none";
     }
 }
-
-autosize();
-textarea.addEventListener("keyup", autosize);
 textarea.addEventListener("keydown", hide);
 
 /*
@@ -214,7 +212,6 @@ function toggleFile(){
 	fileButton.innerText="File (+)";
     }
 }
-
 const fileButton = document.querySelector(".file");
 fileButton.onclick = toggleFile;
 

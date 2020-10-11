@@ -71,12 +71,6 @@ function minusRight(line){
     return sides[0]+"-("+sides[1]+")";
 }
 
-// To set equations "=="
-function doubleEquals(line){
-    let sides=line.split('=');
-    return sides[0]+'=='+sides[1];
-}
-
 // Check if line is a comment or blank
 function checkLine(line){
     if ((line==="")||(line.startsWith("#"))){
@@ -85,6 +79,7 @@ function checkLine(line){
     return true;
 }
 
+// Remove side comments
 function removeSideComments(line){
     let equation=line.split('#');
     return equation[0];
@@ -228,6 +223,12 @@ function step(parser,lines,names,guesses,answers){
     return dx;
 }
 
+// Create errors
+function laineError(name,message) {
+    this.name = name;
+    this.message = message;
+}
+
 // Multivariable Newton-Raphson + Line search
 function MultiNR(lines,parser,solutions){
     // Find variables
@@ -292,10 +293,17 @@ function MultiNR(lines,parser,solutions){
 	}
 	count++;
 	if (count>25){
+	    let variables='';
 	    for (let i=0;i<guesses.length;i++){
 		guesses[i]=null;
+		if (i != guesses.length-1){
+		    variables+=names[i]+', ';
+		}
+		else{
+		    variables+=names[i];
+		}
 	    }
-	    console.log('Fail: MultiNR not converged');
+	    throw new laineError('[Max. iterations]','Sorry, laine could not find a solution for: '+variables);
 	    break;
 	}
     }
@@ -316,7 +324,6 @@ function OneNR(line,name,parser){
     // First eval
     parser.set(name,guess[0]);
     ans[0]=parser.evaluate(line);
-
     // Root-finding loop
     let count=0;
     let converged=false;
@@ -357,8 +364,8 @@ function OneNR(line,name,parser){
         // Max iterations conditions
 	count++;
 	if (count>25){
-	    parser.set(name,null);
-	    console.log('Fail: OneNR not converged');
+	    parser.set(name,null); // old, may delete
+	    throw new laineError('[Max. iterations]','Sorry, laine could not find a solution for '+name);
 	    break;
 	}
     }
@@ -416,6 +423,17 @@ function writeAns(value,key,map){
     outDiv.appendChild(para); // out is a global constant
 }
 
+/*
+  MathJax rendering auxiliary functions
+*/
+
+// To set equations "=="
+function doubleEquals(line){
+    let sides=line.split('=');
+    return sides[0]+'=='+sides[1];
+}
+
+// Change underlines to [] to render correctly
 function changeUnder(line){
     if (line.includes("_")){
 	let pieces=line.split("_");
@@ -463,7 +481,6 @@ function writeEqs(lines){
 	}
 	else{
 	    let para=document.createElement('p');
-	    //text="";
 	    text=lines[i].slice(1,lines[i].length);
 	    if (i<lines.length-1){
 		while (!checkLine(lines[i+1].trim())){
@@ -484,69 +501,78 @@ function writeEqs(lines){
     
 }
 
+/*
+  laine core function
+*/
+
 // Solve non-linear system
 function laine() {
-    const textBox = document.querySelector(".box");
-    const outDiv = document.querySelector(".out"); 
-    // Clear space
-    outDiv.innerHTML="";
-    // Start solver
-    let parser=math.parser(); // Create parser object
-    let name;
-    // Clean and sort
-    let lines=(textBox.value).split('\n');
-    writeEqs(lines);
-    lines = cleanLines(lines);
-    lines.sort(moreVar);
-    
-    // Solving with substitution
-    let solutions = new Map();
-    let again = false;
-    while (lines.length>0){
-	name=varsName(lines[0]);
-	if (name.length===1){
-	    // Solve
-	    parser=OneNR(lines[0],name,parser);
-	    solutions.set(name[0],parser.get(name));
-	    lines.shift();
-	}
-	else {
-	    // Reduce
-	    again = false;
-	    for (let i=0; i<lines.length; i++){
-		name=varsName(lines[i]);
-		for (let j=0; j<name.length; j++){
-		    if (solutions.has(name[j])){
-			let node = math.parse(lines[i]);
-			let trans = node.transform(function (node,path,parent) {
-			    if (node.isSymbolNode && node.name === name[j]) {
-				return new math.ConstantNode(solutions.get(name[j]))
-			    } else {
-				return node
-			    }
-			})
-			lines[i]=trans.toString();
-			again=true;
+    try {
+	const textBox = document.querySelector(".box");
+	const outDiv = document.querySelector(".out"); 
+	// Clear space
+	outDiv.innerHTML="";
+	// Start solver
+	let parser=math.parser(); // Create parser object
+	let name;
+	// Clean and sort
+	let lines=(textBox.value).split("\n"); //split(/\n|;/); //Unsafe feature
+	writeEqs(lines);
+	lines = cleanLines(lines);
+	lines.sort(moreVar);
+	
+	// Solving with substitution
+	let solutions = new Map();
+	let again = false;
+	while (lines.length>0){
+	    name=varsName(lines[0]);
+	    if (name.length===1){
+		// Solve
+		parser=OneNR(lines[0],name,parser);
+		solutions.set(name[0],parser.get(name));
+		lines.shift();
+	    }
+	    else {
+		// Reduce
+		again = false;
+		for (let i=0; i<lines.length; i++){
+		    name=varsName(lines[i]);
+		    for (let j=0; j<name.length; j++){
+			if (solutions.has(name[j])){
+			    let node = math.parse(lines[i]);
+			    let trans = node.transform(function (node,path,parent) {
+				if (node.isSymbolNode && node.name === name[j]) {
+				    return new math.ConstantNode(solutions.get(name[j]))
+				} else {
+				    return node
+				}
+			    })
+			    lines[i]=trans.toString();
+			    again=true;
+			}
 		    }
 		}
-	    }
-	    lines.sort(moreVar);
-	    if (!again){
-		break; // can not solve
+		lines.sort(moreVar);
+		if (!again){
+		    break; // can not solve
+		}
 	    }
 	}
+	// Check if there is more
+	if (lines.length>0){
+	    solutions=MultiNR(lines,parser,solutions);
+	    solutions.forEach(writeAns);
+	}
+	else{
+	    solutions.forEach(writeAns); // Write answers
+	}
+	
+	MathJax.typeset();
+	box.style.display="block";
+	mathDiv.style.display="inline";
+	textBox.style.display="none";
     }
-    // Check if there is more
-    if (lines.length>0){
-	solutions=MultiNR(lines,parser,solutions);
-	solutions.forEach(writeAns);
+    catch(e) {
+	alert(e.name+" : "+e.message);
     }
-    else{
-	solutions.forEach(writeAns); // Write answers
-    }
-    
-    MathJax.typeset();
-    box.style.display="block";
-    mathDiv.style.display="inline";
-    textBox.style.display="none";
 }
