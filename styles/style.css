@@ -1,7 +1,8 @@
 html {
     font-size: 12pt;
-    font-family: math;
-    margin:1%;
+    font-family: 'Quicksand', sans-serif;
+    margin-left:1%;
+    margin-right:1%;
 }
 
 header{
@@ -13,10 +14,10 @@ header{
 
 header h1{
     margin:0;
+    font-size:30pt;
 }
 
 button{
-    font-family:math;
     font-size:12pt;
     padding: 10px;
     border-radius:5px;	
@@ -26,94 +27,65 @@ button:hover{
     background-color: #F04747;
 }
 
-.helpText,.functionBox,.fileBox,.mathDiv {
+.mainMenu{
+    display:flex;
+    flex-wrap:wrap;
+}
+
+.helpText,.functionBox,.fileBox {
     display:none;
     flex-wrap:wrap;
 }
 
-.solBox{
+.mathDiv,.solBox {
     display:none;
 }
 
-label {
-    color:#F04747;
-    font-weight: 700;
-}
-
 .helpText div {
-    width: 400px;
-    max-width:45%;
-    border-radius: 10px;
-    background-color:#fce;
-    margin:0.5%;
-    padding: 0.5%;
+    width: 385px;
+    max-width:98%;
+    font-size:10pt;
+    border-radius: 5px;
+    border: 2px solid #F04747;
+    box-shadow: -5px -5px 0px #F04747;
+    margin-bottom:25px;
+    margin-right:25px;
+    padding: 10px;
 }
 
 .functionBox div{
-    max-width: 300px;
-    border-radius: 10px;
-    background-color:#fce;
-    margin:0.5%;
-    padding: 0.5%;
+    font-size:10pt;
+    max-width: 265px;
 }
 
-.fileBox div{
-    min-width: 200px;
-    border-radius: 10px;
-    background-color:#fce;
-    margin:0.5%;
-    padding: 0.5%;
+.fileBox div, .functionBox div{
+    border-radius: 5px;
+    border: 2px solid #F04747;
+    box-shadow: -5px -5px 0px #F04747;
+    margin-bottom:25px;
+    margin-right:25px;
+    padding: 10px;
 }
 
-select,input {
-    max-width: 95%;
+.eqMenu{
+    padding-bottom: 2px;
+    border-radius: 5px;
+    border: 2px solid #F04747;
+    box-shadow: -5px 0px 0px #F04747;
 }
 
+select{
+    max-width:70%
+}
 
 input{
-    width:90%;
+    min-width:85%;
 }
 
 main {
     display:block;
-    max-width:98%;
+    max-width:100%;
 }
-
-h2{
-    font-size:14pt;
-    color: #F04747;
-    margin:0;
-}
-
-textarea {
-    font-family:math;
-    font-size: 12pt;
-    margin:10px;
-    padding:5px;
-    line-height: 1.5;
-    border-radius: 5px;
-    border: 2px solid #3d3d3d;
-    max-width: 95%;
-    wrap:soft;
-}
-
-.out{
-    border-radius: 5px;
-    border: 2px solid #3d3d3d;
-    padding: 10px;
-    max-width: 100%;
-    background-color:#fce;
-}
-
-.out p{
-    margin: 2%;
-}
-
-footer p{
-    font-size: 12pt;
-    text-align: left;
-}
-
 
 main th {
     text-align: left;
@@ -124,10 +96,51 @@ main th {
     padding-top:10px;
 }
 
-head th {
-    font-weight:normal;
-}
-
 a {
     color:#F04747;
+    font-weight:bold;
+}
+
+h2{
+    font-size:14pt;
+    color: #F04747;
+    margin:0;
+}
+
+textarea {
+    font-size: 12pt;
+    font-family: 'Quicksand', sans-serif;
+    margin:10px;
+    padding:5px;
+    line-height: 1.5;
+    border-radius: 5px;
+    border: 1px solid black;
+    box-shadow: -10px 0px 0px black;
+    max-width: 98%;
+}
+
+.out{
+    border-radius: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 100%;
+    margin-top: 20px;
+    border: 1px solid #F04747;
+    box-shadow: -5px -5px 0px #F04747;
+}
+
+.out p{
+    margin: 5px;
+}
+
+footer{
+    padding-left:20px;
+    border-radius: 5px;
+    border: 1px solid #F04747;
+    box-shadow: -5px 5px 0px #F04747;
+}
+
+footer p{
+    font-size: 12pt;
+    text-align: left;
 }
