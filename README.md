@@ -6,7 +6,7 @@ laine is a web app to solve equations with thermodynamic properties in a friendl
 - If the problem has the same number of equations and variables, the solver should be able to give *a real solution* for the problem;
 
 ## Main features
-1. You can input equations in convenient ways (e.g. 'x^2+4x+4=0');
+1. You can input equations in convenient ways and in any order;
 2. You can also include *thermodynamic properties* using some special functions;
 3. It solves most non-linear system of equations without needing extra inputs;
 4. The results are shown in pretty report.
