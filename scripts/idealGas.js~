@@ -191,16 +191,22 @@ function glennP(specie,T){
 	else if (T<=2E3){
 	    return nasaGlenn.get(specie)[1];
 	}
-	else {
+	else if (T<=6E3){
 	    return nasaGlenn.get(specie)[2];
+	}
+	else {
+	    throw 'Temperature range error';
 	}
     }
     else{
 	if (T<=1E3){
 	    return nasaGlenn.get(specie)[0];
 	}
-	else {
+	else if (T<=6E3){
 	    return nasa=nasaGlenn.get(specie)[1];
+	}
+	else {
+	    throw 'Temperature range error';
 	}
     }
 }

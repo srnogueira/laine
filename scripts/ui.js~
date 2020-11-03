@@ -13,12 +13,9 @@ editButton.onclick = edit;
 const solveButton = document.querySelector(".solve");
 solveButton.onclick = laine;
 
-const reportButton = document.querySelector(".report");
-reportButton.onclick = laineR;
-
 function shortcut(key){
     if (key.code === "F2"){
-	laine(true);
+	laine();
     }
     else if (key.code === "F4"){
 	edit();

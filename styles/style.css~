@@ -1,0 +1,146 @@
+html {
+    font-size: 12pt;
+    font-family: 'Quicksand', sans-serif;
+    margin-left:1%;
+    margin-right:1%;
+}
+
+header{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin:0 0 10px 0;
+}
+
+header h1{
+    margin:0;
+    font-size:30pt;
+}
+
+button{
+    font-size:12pt;
+    padding: 10px;
+    border-radius:5px;	
+}
+
+button:hover{
+    background-color: #F04747;
+}
+
+.mainMenu{
+    display:flex;
+    flex-wrap:wrap;
+}
+
+.helpText,.functionBox,.fileBox {
+    display:none;
+    flex-wrap:wrap;
+}
+
+.mathDiv,.solBox {
+    display:none;
+}
+
+.helpText div {
+    width: 385px;
+    max-width:98%;
+    font-size:10pt;
+    border-radius: 5px;
+    border: 2px solid #F04747;
+    box-shadow: -5px -5px 0px #F04747;
+    margin-bottom:25px;
+    margin-right:25px;
+    padding: 10px;
+}
+
+.functionBox div{
+    font-size:10pt;
+    max-width: 265px;
+}
+
+.fileBox div, .functionBox div{
+    border-radius: 5px;
+    border: 2px solid #F04747;
+    box-shadow: -5px -5px 0px #F04747;
+    margin-bottom:25px;
+    margin-right:25px;
+    padding: 10px;
+}
+
+.eqMenu{
+    padding-bottom: 2px;
+    border-radius: 5px;
+    border: 2px solid #F04747;
+    box-shadow: -5px 0px 0px #F04747;
+}
+
+select{
+    max-width:70%
+}
+
+input{
+    min-width:85%;
+}
+
+main {
+    display:block;
+    max-width:100%;
+}
+
+main th {
+    text-align: left;
+    vertical-align: top;
+    font-weight:normal;
+    padding-right:10px;
+    padding-left:10px;
+    padding-top:10px;
+}
+
+a {
+    color:#F04747;
+    font-weight:bold;
+}
+
+h2{
+    font-size:14pt;
+    color: #F04747;
+    margin:0;
+}
+
+textarea {
+    font-size: 12pt;
+    font-family: 'Quicksand', sans-serif;
+    margin:10px;
+    padding:5px;
+    line-height: 1.5;
+    border-radius: 5px;
+    border: 1px solid black;
+    box-shadow: -10px 0px 0px black;
+    max-width: 98%;
+}
+
+.out{
+    border-radius: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 100%;
+    margin-top: 20px;
+    border: 1px solid #F04747;
+    box-shadow: -5px -5px 0px #F04747;
+}
+
+.out p{
+    margin: 5px;
+}
+
+footer{
+    padding-left:20px;
+    border-radius: 5px;
+    border: 1px solid #F04747;
+    box-shadow: -5px 5px 0px #F04747;
+}
+
+footer p{
+    font-size: 12pt;
+    text-align: left;
+}

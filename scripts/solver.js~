@@ -31,39 +31,6 @@ math.import({
     LeeKeslerPrsat:function(T){
 	return Pr_sat(T)
     },
-    // Old functions - compatibility
-    // Nasa Glenn - Molecular mass
-    NasaMW:function(n){
-	return nasaFun('MW',0,0,n)
-    },
-    // Nasa Glenn - Enthalpy
-    NasaH:function(n,T){
-	return nasaFun('Hmolar',T,0,n)
-    },
-    // Nasa Glenn - cp
-    NasaCp:function(n,T){
-	return nasaFun('Cpmolar',T,0,n)
-    },
-    // Nasa Glenn - Internal energy
-    NasaU:function(n,T){
-	return nasaFun('Umolar',T,0,n)
-    },
-    // Nasa Glenn - cv
-    NasaCv:function(n,T){
-	return nasaFun('Cvmolar',T,0,n)
-    },
-    // Nasa Glenn - Entropy
-    NasaS:function(n,T,P){
-	return nasaFun('Smolar',T,P,n)
-    },
-    // Nasa Glenn - Gibbs
-    NasaG:function(n,T,P){
-	return nasaFun('Gmolar',T,P,n)
-    },
-    // Nasa Glenn - Helmholtz
-    NasaF:function(n,T,P){
-	return nasaFun('HELMHOLTZMOLAR',T,P,n)
-    },
 });
 
 /*
@@ -176,16 +143,16 @@ function find_guess(lines,names,parser){
     // Size of the problem
     guess_list = [0.1,1E3,1E5];
     ans_list = [0,0,0];
-    
+	
     // Set guesses and calculate expressions
     let aux;
     for(let i=0;i<guess_list.length;i++){
 	for (let j=0;j<names.length;j++){
 	    parser.set(names[j],guess_list[i]*(1+Math.random()));
-        }
+        } 
 	for (let z=0;z<lines.length;z++){
-	    aux=parser.evaluate(lines[z]);
-	    ans_list[i]+=Math.abs(aux);
+            aux=parser.evaluate(lines[z]);
+            ans_list[i]+=Math.abs(aux);
 	}
     }
     
@@ -249,6 +216,8 @@ function binary_search(lines,names,parser){
 	    break;
 	}
     }
+
+    console.log(count);
     return mid;
 }
 
@@ -496,24 +465,7 @@ function writeAns(value,key,map){
     let para=document.createElement('p');
 
     para.textContent=formatMathJax(msg);
-    
-    outDiv.appendChild(para); // out is a global constant
-}
-
-function writeFast(value,key,map){
-    const outDiv = document.querySelector(".out");
-    let msg;
-    if (value != null){
-	value = math.round(value,5);
-	msg=key+" = "+value.toString();
-    }
-    else{
-	msg=key+"\" : not converged\"";
-    }
-    let para=document.createElement('p');
-
-    para.textContent=msg
-    
+	
     outDiv.appendChild(para); // out is a global constant
 }
 
@@ -610,7 +562,7 @@ function writeEqs(lines){
 */
 
 // Solve non-linear system
-function laine(fast) {
+function laine() {
     try {
 	const textBox = document.querySelector(".box");
 	const outDiv = document.querySelector(".out"); 
@@ -680,32 +632,21 @@ function laine(fast) {
 	    
 	    // Here I would have to check for blocks
 	    solutions=MultiNR(lines,parser,solutions);
+	    solutions.forEach(writeAns);
+	}
+	else{
+	    solutions.forEach(writeAns); // Write answers
 	}
 
-	if (fast)
-	{
-	    solutions.forEach(writeFast); // Write answers
-	    box.style.display="block";
-	    mathDiv.style.display="none";
-	    textBox.style.display="block";
-	}
-	else
-	{
-	    solutions.forEach(writeAns);
-	    MathJax.typeset();
-	    mathDiv.style.display="inline";
-	    textBox.style.display="none";
-	    box.style.display="block";
-	}
 	
+	//MathJax.typeset();
+	box.style.display="block";
+	//mathDiv.style.display="inline";
+	//textBox.style.display="none";
     }
     catch(e) {
 	alert(e.name+" : "+e.message);
     }
-}
-
-function laineR() {
-    laine(false);
 }
 
 function checkSets(as,bs){
