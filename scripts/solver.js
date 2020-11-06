@@ -15,22 +15,11 @@ math.import({
     NasaSI:function(prop,T,P,specie){
 	return nasaFun(prop,T,P,specie)
     },
-    // Lee Kesler - Z
-    LeeKeslerZ:function(T,P){
-	return leeKesler_Z(T,P)
+    // LeeKesler
+    LeeKesler:function(prop,Tr,inputX){
+	return lkFun(prop,Tr,inputX)
     },
-    // Lee Kesler - h
-    LeeKeslerDh:function(T,P){
-	return leeKesler_h(T,P)
-    },
-    // Lee Kesler - st
-    LeeKeslerDst:function(T,P){
-	return leeKesler_st(T,P)
-    },
-    // Lee Kesler - Pr_sat
-    LeeKeslerPrsat:function(T){
-	return Pr_sat(T)
-    },
+    
     // Old functions - compatibility
     // Nasa Glenn - Molecular mass
     NasaMW:function(n){
@@ -63,6 +52,22 @@ math.import({
     // Nasa Glenn - Helmholtz
     NasaF:function(n,T,P){
 	return nasaFun('HELMHOLTZMOLAR',T,P,n)
+    },
+    // Lee Kesler - Z
+    LeeKeslerZ:function(T,P){
+	return leeKesler_Z(T,P)
+    },
+    // Lee Kesler - h
+    LeeKeslerDh:function(T,P){
+	return leeKesler_h(T,P)
+    },
+    // Lee Kesler - st
+    LeeKeslerDst:function(T,P){
+	return leeKesler_st(T,P)
+    },
+    // Lee Kesler - Pr_sat
+    LeeKeslerPrsat:function(T){
+	return Pr_sat(T)
     },
 });
 
@@ -174,28 +179,40 @@ function find_guess(lines,names,parser){
     let ans_list;
     
     // Size of the problem
-    guess_list = [0.1,1E3,1E5];
-    ans_list = [0,0,0];
+    guess_list = [0.05,0.1,0.5,1,10,1E3,1E5];
+    ans_list = [0,0,0,0,0,0,0];
     
     // Set guesses and calculate expressions
     let aux;
-    for(let i=0;i<guess_list.length;i++){
-	for (let j=0;j<names.length;j++){
-	    parser.set(names[j],guess_list[i]*(1+Math.random()));
-        }
-	for (let z=0;z<lines.length;z++){
-	    aux=parser.evaluate(lines[z]);
-	    ans_list[i]+=Math.abs(aux);
+    let avg=[0,0,0,0,0,0];
+    for(let n=0;n<3;n++){
+	for(let i=0;i<guess_list.length;i++){
+	    for (let j=0;j<names.length;j++){
+		parser.set(names[j],guess_list[i]*(1+Math.random()));
+            }
+	    for (let z=0;z<lines.length;z++){
+		aux=parser.evaluate(lines[z]);
+		ans_list[i]+=Math.abs(aux);
+	    }
 	}
+	
+	// Find the index of the lower value
+	let index;
+	let lower=Infinity;
+	for(let i=0;i<guess_list.length;i++){
+	    if ((ans_list[i]!=NaN)&&(Math.abs(ans_list[i])<Math.abs(lower))){
+		index=i;
+		lower=ans_list[i];
+	    }
+	}
+	avg[index]+=1;
     }
     
-    // Find the index of the lower value
-    let index;
-    let lower=Infinity;
-    for(let i=0;i<guess_list.length;i++){
-	if ((ans_list[i]!=NaN)&&(Math.abs(ans_list[i])<Math.abs(lower))){
+    let big=0;
+    for(let i=0;i<avg.length;i++){
+	if (avg[i]>big){
 	    index=i;
-	    lower=ans_list[i];
+	    big=avg[i];
 	}
     }
     return guess_list[index];
@@ -293,7 +310,6 @@ function MultiNR(lines,parser,solutions){
     let guesses=[];
     let Xguesses=[];
     let first_guess=find_guess(lines,names,parser);
-    console.log(first_guess);
     for (let i=0;i<names.length;i++){
 	guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
 	Xguesses.push(1);
@@ -309,8 +325,8 @@ function MultiNR(lines,parser,solutions){
     let count2=0;
     let factor=1;
     let complex=false;
+    let pre_diff=0;
     while (!converged){
-	console.log(guesses);
 	dx=step(parser,lines,names,guesses,answers);
 	// Second loop
         count2=0;
@@ -339,14 +355,20 @@ function MultiNR(lines,parser,solutions){
 	        }
             }
             count2++;
-            if (count2>10){
+            if (count2>20){
                 break;
             }
         }
-	console.log(Xdiff);
-        if (diff<1E-6){
+	if (diff<1E-6){
 	    converged=true;
 	}
+	else if(pre_diff==diff){
+	    return false;
+	}
+	else{
+	    pre_diff=diff;
+	}
+	
 	count++;
 	if (count>50){
 	    let variables='';
@@ -429,7 +451,7 @@ function OneNR(line,name,parser,flag){
 	
         // Max iterations conditions
 	count++;
-	if (count>25){
+	if (count>30){
 	    parser.set(name,null); // old, may delete
 	    throw new laineError('[Max. iterations]','Sorry, laine could not find a solution for '+name);
 	    break;
@@ -460,34 +482,66 @@ function formatEquation(line){
     return sides[0]+"-("+sides[1]+")";
 }
 
+// Check if simple equation => var = expression
+function simpleEquation(line){
+    line=line.trim(); // remove spaces
+    let parts = line.split('=')
+    let first = parts[0]; // get first right side expression
+    let list = ['*','/','+','-','^','('];
+    let numb = ['0','1','2','3','4','5','6','7','8','9'];
+
+    for (let i=0; i<numb.length ; i++){
+	if (first[0]==numb[i]){
+	    return false;
+	}
+    }
+    for (let i=0; i<list.length ; i++){
+	if (first.includes(list[i])){
+	    return false;
+	}
+    }
+    return true;
+}
+
 function cleanLines(lines){
-    let right=[]
+    let right=[];
+    let book=[];
     for (let i=0; i<lines.length; i++){
 	// Remove spaces
 	lines[i]=lines[i].trim();
 	// Check if is an equation
-	if (checkLine(lines[i])){
+	if (checkLine(lines[i])){	    
 	    // Check for lines with multiple equations
 	    if (lines[i].includes(';')){
 		// Separate the equations
 		let aux = lines[i].split(';');
 		for (let j=0;j<aux.length;j++){
 		    right.push(formatEquation(aux[j]));
+		    // Store
+		    if (simpleEquation(aux[j])){
+			let sides = aux[j].split('=')
+			book.push([sides[0],sides[1]]);
+		    }
 		}
 	    }
 	    else{
 		right.push(formatEquation(lines[i]));
+		// Store
+		if (simpleEquation(lines[i])){
+		    let sides = lines[i].split('=')
+		    book.push([sides[0],sides[1]]);
+		}
 	    }
 	}
     }
-    return right;
+    return [right,book];
 }
 
 function writeAns(value,key,map){
     const outDiv = document.querySelector(".out");
     let msg;
     if (value != null){
-	value = math.round(value,5);
+	value = value.toPrecision(5);
 	msg=key+" = "+value.toString();
     }
     else{
@@ -504,7 +558,7 @@ function writeFast(value,key,map){
     const outDiv = document.querySelector(".out");
     let msg;
     if (value != null){
-	value = math.round(value,5);
+	value = value.toPrecision(5);
 	msg=key+" = "+value.toString();
     }
     else{
@@ -567,10 +621,11 @@ function writeEqs(lines){
     for (let i=0;i<lines.length;i++){
 	// Check if is an equation or comment
 	if (checkLine(lines[i].trim())){
+	    // Remove side comments
+	    lines[i]=(lines[i].split('#'))[0]
 	    // Check if is there is more than one equation
 	    if (lines[i].includes(';')){
 		let aux = lines[i].split(';');
-		console.log(aux);
 		for (let j=0;j<aux.length;j++){
 		    let para=document.createElement('p');
 		    para.textContent=formatMathJax(aux[j]);
@@ -608,49 +663,66 @@ function writeEqs(lines){
 /*
   laine core function
 */
-
+const textBox = document.querySelector(".box");
+const outDiv = document.querySelector(".out"); 
+	
 // Solve non-linear system
 function laine(fast) {
     try {
-	const textBox = document.querySelector(".box");
-	const outDiv = document.querySelector(".out"); 
-	// Clear space
-	outDiv.innerHTML="";
 	// Start solver
-	let parser=math.parser(); // Create parser object
+	outDiv.innerHTML="";  // clear space
+	let parser=math.parser();  // create parser object
+	let lines=(textBox.value).split("\n");  // break text into lines
 	let name;
-	// Clean and sort
-	let lines=(textBox.value).split("\n");
-	writeEqs(lines);
-	lines = cleanLines(lines);
-	lines.sort(moreVar);
+	
+	// MathJax equations
+	if (!fast){
+	    writeEqs(lines);
+	}
+	
+	// Get expression lines and 'substitution book'
+	let aux =cleanLines(lines);  // clean text
+	lines = aux[0];
+	book = aux[1];
 	
 	// Solving with substitution
-	let solutions = new Map();
-	let again = false;
+	lines.sort(moreVar);  // sorting
+	let solutions = new Map();  // solution dictionary
+	let again = false;  // loop flag
 	while (lines.length>0){
-	    name=varsName(lines[0]);
+	    name=varsName(lines[0]);  // get vars in line
+	    // Solve one var problems 
 	    if (name.length===1){
-		// Solve easy problems with one variable
 		try {
-		    parser=OneNR(lines[0],name,parser,false);
+		    parser=OneNR(lines[0],name,parser,false);  // Newton-Raphson
 		}
 		catch{
-		    parser=OneNR(lines[0],name,parser,true);
+		    parser=OneNR(lines[0],name,parser,true);  // Bisecant 
 		}
-		solutions.set(name[0],parser.get(name));
-		lines.shift();
+		// Check if solution has already been computed
+		if (solutions.has(name[0])){
+		    throw new laineError('[Redefined variable]','This variable has been redefined: '+name[0]);
+		}
+		// Remove from the book (important for multi variable problems)
+		for (let i=0; i<book.length; i++){
+		    if (lines[0].includes(book[i][0]) && lines[0].includes(book[i][1])){
+			book.splice(i,1);
+			break;
+		    }
+		}
+		// Store and clear
+		solutions.set(name[0],parser.get(name));  // store solution
+		lines.shift();  // clear solved line
 	    }
 	    else {
-		// Reduce the number of variables
-		again = false;
+		again=false;  // flag
+		// Reduce the number of variables (if possible)
 		for (let i=0; i<lines.length; i++){
 		    name=varsName(lines[i]);
 		    for (let j=0; j<name.length; j++){
 			if (solutions.has(name[j])){
-			    // ANOTATION : THIS COULD BE A FUNCTION
-			    let node = math.parse(lines[i]);
 			    // Using mathjs, update symbol node to numerical answer
+			    let node = math.parse(lines[i]);
 			    let trans = node.transform(function (node,path,parent) {
 				if (node.isSymbolNode && node.name === name[j]) {
 				    return new math.ConstantNode(solutions.get(name[j]))
@@ -658,41 +730,107 @@ function laine(fast) {
 				    return node
 				}
 			    })
-			    // Update the line text
+			    // Revert line(node) to text
 			    lines[i]=trans.toString();
-			    again=true;
+			    again=true; // flag
 			}
 		    }
 		}
-		lines.sort(moreVar);
+		// If there is no modifications flag is false
 		if (!again){
-		    break; // can not solve
+		    break;
+		}
+		// Otherwise, maybe there is new one variable problems
+		lines.sort(moreVar);
+		// Make same modifications to the book
+		for (let i=0; i<book.length; i++){
+		    name=varsName(book[i][1]);
+		    for (let j=0; j<name.length; j++){
+			if (solutions.has(name[j])){
+			    let node = math.parse(book[i][1]);
+			    let trans = node.transform(function (node,path,parent) {
+				if (node.isSymbolNode && node.name === name[j]) {
+				    return new math.ConstantNode(solutions.get(name[j]))
+				} else {
+				    return node
+				}
+			    })
+			    book[i][1]=trans.toString();
+			}
+		    }
 		}
 	    }
 	}
+
+
 	
 	// Solving multiple equations at the same time
 	if (lines.length>0){
-	    /*
-	    // Check for pairs of equations
-	    Use the jacobian to search for blocks
-	    */
+	    // Apply text substitution using math.js (reduces the chances of failure)
+	    let changeLine=false;
+	    let maxTimes=0;
+	    for(let i=0;i<lines.length;i++){
+		changeLine=false;
+		name=varsName(lines[i]);
+		for (let k=0; k<name.length; k++){ // Its not the max number of changes
+		    for(let j=0;j<book.length;j++){
+			// Warning: this condition works, but I not 100% sure.
+			if (name[k]==book[j][0] && !lines[i].includes(book[j][1])){
+			    let node = math.parse(lines[i]);
+			    let node2 = math.parse(book[j][1]);
+			    let trans = node.transform(function (node,path,parent) {
+				if (node.isSymbolNode && node.name === name[k]) {
+				    return node2
+				} else {
+					return node
+				}
+			    })
+			    lines[i]=trans.toString();
+			    changeLine=true;
+			}
+		    }
+		}
+
+		
+		if (changeLine){
+		    maxTimes++
+		}
+		if (maxTimes==(lines.length-1)){
+		    break;
+		}
+	    }
 	    
-	    // Here I would have to check for blocks
-	    solutions=MultiNR(lines,parser,solutions);
+	    // Try solving using Newton-Raphson with random guesses multiple times 
+	    let test=false;
+	    let count=0;
+	    while (test==false){
+		try {
+		    test=MultiNR(lines,parser,solutions);
+		}
+		catch{
+		    test=false
+		}
+		count++
+		if (count>10){
+		    throw new laineError('[Max. tries]','Sorry, laine tried 10 times and could not find a solution');
+		    break
+		}
+	    }
+	    solutions=test; // update solutions
+	    
 	}
 
 	if (fast)
 	{
-	    solutions.forEach(writeFast); // Write answers
+	    solutions.forEach(writeFast); // write text
 	    box.style.display="block";
 	    mathDiv.style.display="none";
 	    textBox.style.display="block";
 	}
 	else
 	{
-	    solutions.forEach(writeAns);
-	    MathJax.typeset();
+	    solutions.forEach(writeAns); // write MathJax
+	    MathJax.typeset();  // render MathJax (slow)
 	    mathDiv.style.display="inline";
 	    textBox.style.display="none";
 	    box.style.display="block";
@@ -706,10 +844,4 @@ function laine(fast) {
 
 function laineR() {
     laine(false);
-}
-
-function checkSets(as,bs){
-    if (as.size !== bs.size) return false;
-    for (var a of as) if (!bs.has(a)) return false;
-    return true;
 }

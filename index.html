@@ -424,31 +424,35 @@
 	<p>Fluid:
 	  <select class="nasaSpecie">
 	    <optgroup label="Carbon">
-	      <option value="CO">Carbon monoxide (CO)</option>
-	      <option value="CO2">Carbon dioxide (CO2)</option>
-	      <option value="CH4">Methane (CH4)</option>
-	      <option value="C2H6">Ethane (C2H6)</option>
-	      <option value="C3H8">Propane (C3H8)</option>
-	      <option value="C4H10">n-Butane (C4H10)</option>
-	      <option value="C5H12">n-Pentane (C5H12)</option>
-	      <option value="C6H14">n-Hexane (C6H14)</option>
-	      <option value="C7H16">n-Heptane (C7H16)</option>
-	      <option value="C8H18">n-Octane (C8H18)</option>
+	      <option value="C(s)">Carbon | C(s)</option>
+	      <option value="CO">Carbon monoxide | CO(g)</option>
+	      <option value="CO2">Carbon dioxide | CO2(g)</option>
+	      <option value="CH4">Methane | CH4(g)</option>
+	      <option value="C2H4">Ethene | C2H4(g)</option>
+	      <option value="C2H6">Ethane | C2H6(g)</option>
+	      <option value="C3H8">Propane | C3H8(g)</option>
+	      <option value="C4H10">n-Butane | C4H10(g)</option>
+	      <option value="C5H12">n-Pentane | C5H12(g)</option>
+	      <option value="C6H14">n-Hexane | C6H14(g)</option>
+	      <option value="C7H16">n-Heptane | C7H16(g)</option>
+	      <option value="C8H18">n-Octane | C8H18(g)</option>
 	    </optgroup>
 	    <optgroup label="Hydrogen">
-	      <option value="H">Hydrogen element (H)</option>
-	      <option value="H2" selected="selected">Hydrogen gas (H2)</option>
+	      <option value="H">Hydrogen element | H(g)</option>
+	      <option value="H2" selected="selected">Hydrogen gas | H2(g)</option>
+	      <option value="H2O">Water (gas) | H2O(g)</option>
+	      <option value="H2O(l)">Water (liq.) | H2O(l)</option>
 	    </optgroup>
 	    <optgroup label="Nitrogen">
-	      <option value="N">Nitrogen element (N)</option>
-	      <option value="N2">Nitrogen gas (N2)</option>
-	      <option value="NO">Nitrogen oxide (NO)</option>
-	      <option value="NO2">Nitrogen dioxide (NO2)</option>
+	      <option value="N">Nitrogen element | N(g)</option>
+	      <option value="N2">Nitrogen gas | N2(g)</option>
+	      <option value="NO">Nitrogen oxide | NO(g)</option>
+	      <option value="NO2">Nitrogen dioxide | NO2(g)</option>
 	    </optgroup>
 	    <optgroup label="Oxygen">
-	      <option value="O">Oxygen element (O)</option>
-	      <option value="O2">Oxygen gas (O2)</option>
-	      <option value="OH">Hydroxide (OH)</option>
+	      <option value="O">Oxygen element | O(g)</option>
+	      <option value="O2">Oxygen gas | O2(g)</option>
+	      <option value="OH">Hydroxide | OH(g)</option>
 	    </optgroup>
 	  </select>
 	</p>
@@ -474,7 +478,7 @@
 	      <option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
 	    </optgroup>
 	    <optgroup label="Others">
-	      <option value="mw">Molecular mass (kg/mol)</option>
+	      <option value="MW">Molecular mass (kg/mol)</option>
 	    </optgroup>
 	  </select>
 	</p>
@@ -496,8 +500,8 @@
 	  <select class="lkProp">
 	    <option value="Prsat">Reduced saturation pressure</option>
 	    <option value="Z" selected="selected">Compressibility factor</option>
-	    <option value="Dh">Specific enthalpy departure : (h*-h)/R.Tc</option>
-	    <option value="Dst">Specific entropy departure : (s*-s)/R</option>  
+	    <option value="dh">Specific enthalpy departure : (h*-h)/R.Tc</option>
+	    <option value="dst">Specific entropy departure : (s*-s)/R</option>  
 	  </select>
 	</p>
 
@@ -612,7 +616,8 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
     <p>
       developed by Rafael Nogueira Nakashima |
       <a href="mailto:rafaelnnakashima@usp.br">Email</a> |
-      <a target="_blank" href="https://github.com/srnogueira/laine">Github</a>
+      <a target="_blank" href="https://github.com/srnogueira/laine">Github</a> |
+      <a target="_blank" href="https://forms.gle/zR1FoeqWNRiJg5jt8">Feedback</a>
     </p>
   </footer>
 </html>

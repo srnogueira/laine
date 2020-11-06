@@ -32,8 +32,8 @@ document.onkeydown=shortcut;
 
 function calcHeight(value) {
     let numberOfLineBreaks = (value.match(/\n/g) || []).length;
-    // min-height + lines x line-height + padding + border
-    let newHeight = 20 + numberOfLineBreaks * 24 + 4 +1;
+    // min-height + lines x line-height + padding + border + overflow
+    let newHeight = 20 + numberOfLineBreaks * 24 + 5 + 1 + 15;
     return newHeight;
 }
 
@@ -181,13 +181,13 @@ function writelk(){
 
     let text;
     if (propName=="Prsat"){
-	text = "property=LeeKesler"+propName+"("+temp.value+")";
+	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+")";
     }
     else if ((press.value == "f") || (propName == "g")){
-	text = "property=LeeKesler"+propName+"("+temp.value+",\""+press.value+"\")";
+	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+",\'"+press.value+"\')";
     }
     else{
-	text = "property=LeeKesler"+propName+"("+temp.value+","+press.value+")";
+	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+","+press.value+")";
     }
     textBox.value+="\n"+text;
     autosize();

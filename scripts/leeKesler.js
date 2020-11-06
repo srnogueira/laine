@@ -116,24 +116,6 @@ function Z_Pr(Tr,Pr){
 }
 
 /*
-  Wrapper
-*/
-
-function leeKesler_Z(Tr,inputX){
-    switch (inputX){
-    case 'f':
-	return Z_Pr(Tr,Pr_sat(Tr)+1E-5); // Force to treat as liquid
-	break;
-    case 'g':
-	return Z_Pr(Tr,Pr_sat(Tr));
-	break;
-    default:
-	return Z_Pr(Tr,inputX);
-	break;
-    }
-}
-
-/*
   Enthalpy departure
 */
 
@@ -157,24 +139,6 @@ function deltaH_Pr(Tr,Pr){
     let Z=Z_Pr(Tr,Pr);
     let Vr=Z*Tr/Pr;
     return deltaH_Vr(Tr,Vr);
-}
-
-/*
-  Wrapper
-*/
-
-function leeKesler_h(Tr,inputX){
-    switch (inputX){
-    case 'f':
-	return deltaH_Pr(Tr,Pr_sat(Tr)+1E-5); // Force to treat as liquid
-	break;
-    case 'g':
-	return deltaH_Pr(Tr,Pr_sat(Tr));
-	break;
-    default:
-	return deltaH_Pr(Tr,inputX);
-	break;
-    }
 }
 
 /*
@@ -208,6 +172,34 @@ function deltaSt_Pr(Tr,Pr){
   Wrapper
 */
 
+function leeKesler_Z(Tr,inputX){
+    switch (inputX){
+    case 'f':
+	return Z_Pr(Tr,Pr_sat(Tr)+1E-5); // Force to treat as liquid
+	break;
+    case 'g':
+	return Z_Pr(Tr,Pr_sat(Tr));
+	break;
+    default:
+	return Z_Pr(Tr,inputX);
+	break;
+    }
+}
+
+function leeKesler_h(Tr,inputX){
+    switch (inputX){
+    case 'f':
+	return deltaH_Pr(Tr,Pr_sat(Tr)+1E-5); // Force to treat as liquid
+	break;
+    case 'g':
+	return deltaH_Pr(Tr,Pr_sat(Tr));
+	break;
+    default:
+	return deltaH_Pr(Tr,inputX);
+	break;
+    }
+}
+
 function leeKesler_st(Tr,inputX){
     switch (inputX){
     case 'f':
@@ -219,5 +211,23 @@ function leeKesler_st(Tr,inputX){
     default:
 	return deltaSt_Pr(Tr,inputX);
 	break;
+    }
+}
+
+function lkFun(prop,Tr,inputX){
+    switch (prop){
+    case 'Z':
+	return leeKesler_Z(Tr,inputX);
+	break;
+    case 'dh':
+	return leeKesler_h(Tr,inputX);
+	break;
+    case 'dst':
+	return leeKesler_st(Tr,inputX);
+	break;
+    case 'Prsat':
+	return Pr_sat(Tr);
+    default:
+	return 0;
     }
 }
