@@ -264,4 +264,5 @@ function loadFileAsText()
     };
     fileReader.readAsText(fileToLoad, "UTF-8");
     toggleFile();
+    edit();
 }

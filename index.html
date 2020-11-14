@@ -460,22 +460,18 @@
 	<p>Property:
 	  <select class="nasaProp">
 	    <optgroup label="Mass basis">
-	      <option value="Cp">Specific heat at constant pressure (J/kg.K)</option>
-	      <option value="Cv">Specific heat at constant volume (J/kg.K)</option>
-	      <option value="U">Internal energy (J/kg)</option>
-	      <option value="H" selected="selected">Enthalpy (J/kg)</option>
-	      <option value="S">Entropy (J/kg.K)</option>
-	      <option value="G">Gibbs free energy (J/kg)</option>
-	      <option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
+	      <option value="Cp0">Specific heat for standard state (J/kg.K)</option>
+	      <option value="H0" selected="selected">Enthalpy for standard state (J/kg)</option>
+	      <option value="S0">Entropy for standard state (J/kg.K)</option>
+	      <option value="G0">Gibbs free energy for standard state (J/kg)</option>
+	      <option value="F0">Helmholtz free energy for standard state (J/kg)</option>
 	    </optgroup>
 	    <optgroup label="Molar basis">
-	      <option value="Cpmolar">Specific heat at constant pressure (J/mol.K)</option>
-	      <option value="Cvmolar">Specific heat at constant volume (J/mol.K)</option>
-	      <option value="Umolar">Internal energy (J/mol)</option>
-	      <option value="Hmolar">Enthalpy (J/mol)</option>
-	      <option value="Smolar">Entropy (J/mol.K)</option>
-	      <option value="Gmolar">Gibbs free energy (J/mol)</option>
-	      <option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
+	      <option value="Cp0molar">Specific heat for standard state (J/mol.K)</option>
+	      <option value="H0molar">Enthalpy for standard state (J/mol)</option>
+	      <option value="S0molar">Entropy for standard state (J/mol.K)</option>
+	      <option value="G0molar">Gibbs free energy for standard state (J/mol)</option>
+	      <option value="F0molar">Helmholtz free energy for standard state (J/mol)</option>
 	    </optgroup>
 	    <optgroup label="Others">
 	      <option value="MW">Molecular mass (kg/mol)</option>
@@ -486,9 +482,13 @@
 	<p>Temperature (K):
 	  <input class="nasaT" placeholder="value"></input>
 	</p>
-
-	<p>Pressure (Pa):
-	  <input class="nasaP" placeholder="value (if necessary)"></input>
+	
+	<p>Standard state
+	  <ul>
+	    <li>for gases (g): 100 kPa</li>
+	    <li>for condensed (l): 1 atm</li>
+	    <li>for solid (s): pure cristal</li>
+	  </ul>
 	</p>
 
 	<button class="butNasa">Paste in Equations</button>
@@ -513,7 +513,7 @@
 	  <input class="lkP" placeholder="value ('f' or 'g' for saturated states)"></input>
 	</p>
 
-	<p>Saturation points
+	<p>Saturation points:
 	  <ul>
 	    <li>'f' for saturated liquid</li>
 	    <li>'g' for saturated vapor</li>
@@ -560,12 +560,11 @@
 	  <th> <h2>Equations</h2> </th>
 	  <th> <h2> | </h2> </th>
 	  <th> <button class="solve"> Solve (F2)</button> </th>
-	  <th> <button class="report"> Report</button> </th>
-	  <th> <button class="edit"> Edit (F4)</button> </th>
+	  <th> <button class="report"> Report (F4)</button> </th>
 	</tr>
       </table>
     </div>
-
+    
     <main>
       <!-- Interface -->
       <table>
@@ -580,8 +579,7 @@ x^2+y^2=10
 x*y=3
 
 # and you can also use thermodynamic properties
-T_0=298.15
-P_0=1E5
+T_0=298.15 ; P_0=1E5 
 h_0=PropsSI('H','T',T_0,'P',P_0,'Air') # J/kg
 s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 
@@ -598,7 +596,6 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 	  </div>
 	</th>
       </table>
-
     </main>
     <!-- Third party javascript -->
     <script src="scripts/third-party/math.min.js"></script>
@@ -606,7 +603,7 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <!-- Laine javascript -->
-    <script src="scripts/idealGas.js"></script>
+    <script src="scripts/nasaGleen.js"></script>
     <script src="scripts/leeKesler.js"></script>
     <script src="scripts/solver.js"></script>
     <script src="scripts/ui.js"></script>
