@@ -137,8 +137,8 @@ function derivative(scope,compiled,name,f,x){
 
 // Find a suitable first guess for multivariable expressions
 function find_guess(compiled,names,scope,negative){    
-    // Guess list
-    let guess_list = negative ? [-0.05,-0.1,-0.5,-1,-3E3,-1E5] : [0.05,0.1,0.5,1,3E3,1E5];
+    // Guess list -- Can cause bugs the negative
+    let guess_list = negative ? [0.05,0.1,0.5,1,3E3,1E5] : [0.05,0.1,0.5,1,3E3,1E5];
     
     // Check a good guess (at least two times)
     let aux,index,lower,ans_list;
@@ -172,7 +172,8 @@ function find_guess(compiled,names,scope,negative){
 	    break;
 	}
     }
-    
+
+    console.log(guess_list[index]);
     return guess_list[index];
 }
 
@@ -428,9 +429,14 @@ function writeAns(solution,fast){
     let key = solution[0];
     let value = solution[1];
     let msg;
-    if (typeof(value)=="number"){
-	value = value.toPrecision(5);
+    switch (typeof(value)){
+    case "number":
+    	value = value.toPrecision(5);
+	break;
+    case "function":
+	return null;
     }
+    
     msg=key+" = "+value.toString();
     
     let para=document.createElement('p');
@@ -795,12 +801,14 @@ function laine_fun(fast) {
 	}
 	console.log("MultiNR tries:",count);
     }
+
     
     outDiv.innerHTML="";  // clear space
     solutions = Object.entries(parser.getAll());
     for (i=0;i<solutions.length;i++){
 	writeAns(solutions[i],fast);
     }
+    
 		
     if (fast) {
 	mathDiv.style.display="none";
