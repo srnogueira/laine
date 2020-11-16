@@ -183,9 +183,9 @@ function writelk(){
 
     let text;
     if (propName=="Prsat"){
-	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+")";
+	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+",'f')";
     }
-    else if ((press.value == "f") || (propName == "g")){
+    else if (press.value == "f" || press.value=='g'){
 	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+",\'"+press.value+"\')";
     }
     else{

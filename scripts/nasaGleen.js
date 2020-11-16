@@ -177,7 +177,7 @@ nasaGlenn.set("C8H18",[[-6.986647150E+05, 1.338501096E+04, -8.415165920E+01,
 			-2.651436499E-14, 1.500968785E+05, -4.169895650E+02]]);
 nasaMW.set("C8H18",114.2285200);
 
-// Other species 200-600 ; 600-2000
+// Other species 200-600 ; 600-2000 ; 2000-6000
 nasaGlenn.set("C(s)",[[1.132856760E+05,-1.980421677E+03, 1.365384188E+01,
 		      -4.636096440E-02, 1.021333011E-04,-1.082893179E-07,
 		      4.472258860E-11,8.943859760E+03,-7.295824740E+01],
@@ -201,30 +201,39 @@ nasaMW.set("H2O(l)",18.0152800);
 // Get correct glenn parameters
 function glennP(specie,T){
     if (specie=="C(s)"){
-	if (T<=600){
+	if (T<=600 && T>=200){
 	    return nasaGlenn.get(specie)[0];
 	}
-	else if (T<=2E3){
+	else if (T>600 && T<=2E3){
 	    return nasaGlenn.get(specie)[1];
 	}
-	else {
+	else if (T>2E3 && T<=6E3) {
 	    return nasaGlenn.get(specie)[2];
+	}
+	else{
+	    throw 'Out';
 	}
     }
     else if (specie=="H2O(l)"){
-	if (T<=373.15){
+	if (T>=200 && T<=373.15){
 	    return nasaGlenn.get(specie)[0];
 	}
-	else{
+	else if (T>373.15 && T<=600){
 	    return nasaGlenn.get(specie)[1];
+	}
+	else {
+	    throw 'Out';
 	}
     }
     else{
-	if (T<=1E3){
+	if (T>=200 && T<=1E3){
 	    return nasaGlenn.get(specie)[0];
 	}
-	else {
+	else if (T>1E3 && T<=6E3){
 	    return nasa=nasaGlenn.get(specie)[1];
+	}
+	else{
+	    throw 'Out';
 	}
     }
 }
@@ -235,8 +244,14 @@ function glennP(specie,T){
 function nasaFun(prop,T,specie){
     // Constants
     let R=8.314510;
-    let a=glennP(specie,T);
-    let ans;
+    let ans,a;
+    
+    try {
+	a=glennP(specie,T);
+    }
+    catch{
+	return NaN;
+    }
     
     // Properties
     switch (prop){

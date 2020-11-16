@@ -138,7 +138,7 @@ function derivative(scope,compiled,name,f,x){
 // Find a suitable first guess for multivariable expressions
 function find_guess(compiled,names,scope,negative){    
     // Guess list -- Can cause bugs the negative
-    let guess_list = negative ? [0.05,0.1,0.5,1,3E3,1E5] : [0.05,0.1,0.5,1,3E3,1E5];
+    let guess_list = negative ? [-0.05,-0.1,-0.5,-1,-3E2,-1E3,-1E5] : [0.05,0.1,0.5,1,3E2,1E3,1E5];
     
     // Check a good guess (at least two times)
     let aux,index,lower,ans_list;
@@ -172,37 +172,44 @@ function find_guess(compiled,names,scope,negative){
 	    break;
 	}
     }
-
-    console.log(guess_list[index]);
     return guess_list[index];
 }
 
 // Simple binary search
 function binary_search(compiled,name,scope){
     // Define variables
-    let tripoints = [-1E8,1E-5,1E8];
-    let ans = [1,1,1];
-    let limits,mid;
+   let points = [1E8,1E6,1E5,6E4,273.15,200,10,4,0.3,0.01,1E-6,-1E-6,-1,-1E4,-1E8];
+   let limits,mid;
     
-    // First evaluation    
-    for (i=0;i<tripoints.length;i++){
-	scope[name]=tripoints[i];
-	ans[i]=compiled.evaluate(scope);
-    }
-
-    // Brackets
-    if (Math.sign(ans[1]) != Math.sign(ans[2])){
-	limits = [tripoints[1],tripoints[2]];
-	ans = [ans[1],ans[2],0];
-    }
-    else{
-	if (Math.sign(ans[1])!= Math.sign(ans[0])){
-	    limits = [tripoints[0], tripoints[1]];
-	    ans = [ans[0],ans[1],0];
+    // First evaluation
+    let sign;
+    let index;
+    let lower=Infinity;
+    let ans = [];
+    for (i=0;i<points.length;i++){
+	scope[name]=points[i];
+	ans.push(compiled.evaluate(scope));
+	// If out of range
+	if (ans[i]==NaN || typeof(ans[i])!='number'){
+	    sign=undefined;
+	    continue;
+	}
+	
+	if (sign != undefined && sign != Math.sign(ans[i])){
+	    limits = [points[i-1],points[i]];
+	    break;
 	}
 	else{
-	    return Math.abs(ans[1])<Math.abs(ans[2]) ? tripoints[1] : tripoints[2];
+	    sign = Math.sign(ans[i]);
 	}
+	if(Math.abs(ans[i])<lower){
+	    lower=Math.abs(ans[i]);
+	    index=i;
+	}
+    }
+    
+    if (limits==undefined){
+	return points[index];
     }
     
     // Binary search
@@ -344,7 +351,7 @@ function MultiNR(compiled,scope,parser,names,negative){
 }
 
 // One dimension Newton Raphson + Line search
-function OneNR(line,name,parser,flag){
+function OneNR(line,name,parser,flag,negative){
     // Compile line
     let compiled = math.compile(line);
     let scope= parser.getAll();
@@ -357,7 +364,7 @@ function OneNR(line,name,parser,flag){
 	guess = [first_guess,1];
     }
     else {
-	first_guess=find_guess([compiled],name,scope,false);
+	first_guess=find_guess([compiled],name,scope,negative);
 	guess=[first_guess*(1+Math.random()),1];
     }
     
@@ -371,17 +378,14 @@ function OneNR(line,name,parser,flag){
     while (true){
 	// Determine derivative
 	der=derivative(scope,compiled,name,ans[0],guess[0]);
-	
 	// Second loop - Line search
 	count2=0;
 	factor=1;
 	while (true){
-	    
 	    // Test new guess
 	    guess[1]=guess[0]-ans[0]/der*factor;
 	    scope[name]=guess[1];
 	    ans[1]=compiled.evaluate(scope);
-
 	    // Better guess condition
 	    if (Math.abs(ans[1])>Math.abs(ans[0])){
 		factor/=2; // Try again with smaller step
@@ -412,7 +416,6 @@ function OneNR(line,name,parser,flag){
 	else{
 	    count++;
 	}
-
 	// Break long iterations
 	if (count>30){
 	    throw new laineError('[Max. iterations]','Sorry, laine could not find a solution for '+name);
@@ -659,15 +662,20 @@ function laine_fun(fast) {
 			parser.evaluate(equation[0].text);
 		    }
 		    catch{
-			parser=OneNR(equations[0].text,name,parser,false);  // Newton-Raphson
+			parser=OneNR(equations[0].text,name,parser,false,false);  // Newton-Raphson
 		    }
 		}
 		else{
-		    parser=OneNR(equations[0].text,name,parser,false);  // Newton-Raphson
+		    parser=OneNR(equations[0].text,name,parser,false,false);  // Newton-Raphson
 		}
 	    }
 	    catch{
-		parser=OneNR(equations[0].text,name,parser,true);  // Bisecant 
+		try{
+		    parser=OneNR(equations[0].text,name,parser,true,false);  // NR-negative
+		}
+		catch{
+		    parser=OneNR(equations[0].text,name,parser,false,true);  // NR-negative
+		}
 	    }    
 	    // Clear
 	    equations.shift();  // clear solved line
@@ -787,11 +795,8 @@ function laine_fun(fast) {
 	    }
 	    catch{
 		solved=false
-		if (count==1){
+		if (count==20){
 		    negative=negative ? false: true; // flip - maybe is negative, try once
-		}
-		else{
-		    negative=false;
 		}
 	    }
 	    if (count>30){

@@ -215,6 +215,22 @@ function leeKesler_st(Tr,inputX){
 }
 
 function lkFun(prop,Tr,inputX){
+    // Limits
+    if (Tr < 0.3 || Tr > 4){
+	return NaN;
+    }
+    
+    if (typeof(inputX) == 'number'){
+	if (inputX <0.01 || inputX>10){
+	    return NaN;
+	}
+    }
+    else{
+	if (inputX != 'f' && inputX!= 'g'){
+	    return NaN;
+	}
+    }
+
     switch (prop){
     case 'Z':
 	return leeKesler_Z(Tr,inputX);
