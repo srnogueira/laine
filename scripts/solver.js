@@ -480,10 +480,10 @@ function formatMathJax(line){
     return "$$"+math.parse(line).toTex({parenthesis: 'auto'})+"$$";
 }
 
-
+const mathDiv = document.querySelector(".mathDiv");
+    
 // Write equations
 function writeEqs(lines){
-    let mathDiv = document.querySelector(".mathDiv");
     // Clear and start
     mathDiv.innerHTML="";
     let title=document.createElement('h2');
@@ -617,14 +617,47 @@ function cleanLines(lines,parser){
     return equations;
 }
 
+/* 
+   Editor
+*/
+
+CodeMirror.defineSimpleMode("laine", {
+  // The start state contains the rules that are intially used
+  start: [
+      // The regex matches the token, the token property contains the type
+      {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
+      {regex: /'(?:[^\\]|\\.)*?(?:'|$)/, token: "string"},
+      {regex: /#.*/, token: "comment"},
+      // Rules are matched in the order in which they appear, so there is
+      // no ambiguity between this one and the one above
+      {regex: /(?:PropsSI|NasaSI|HAPropsSI|LeeKesler|sin|cos|tan|exp|log|log10|abs)\b/,
+       token: "keyword"},
+      {regex: /((\d+(\.|E|e))+(\+|\-)?\d+|\d+)/,
+       token: "number"},
+      // indent and dedent properties guide autoindentation
+      {regex: /[a-zA-Z$][\w$]*/, token: "variable"},
+  ],
+});
+
+const textBox = document.querySelector(".box");
+const outDiv = document.querySelector(".out");
+const solBox = document.querySelector(".solBox");
+
+let editor = CodeMirror.fromTextArea(textBox, {
+    scrollbarStyle: "null",
+    viewportMargin: Infinity,
+    lineNumbers: true,
+    lineWrapping: true,
+    mode: "laine"});
+let editorDiv = document.querySelector(".CodeMirror")
+editor.on("change",function(){textBox.value=editor.getValue()});
+editor.on("change",function(){solBox.style.display=""});
+
 /*
   laine core function
 */
 
-const textBox = document.querySelector(".box");
-const outDiv = document.querySelector(".out"); 
-var parser=math.parser();  // create parser object
-
+let parser=math.parser();  // create parser object
 // Solve non-linear system
 function laine_fun(fast) {
     let t1 = performance.now();
@@ -633,7 +666,7 @@ function laine_fun(fast) {
     parser.clear();
     
     // Start solver
-    let lines=(textBox.value).split("\n");  // break text into lines
+    let lines=(editor.getValue()).split("\n");  // break text into lines
     
     // MathJax equations
     if (!fast){
@@ -643,7 +676,6 @@ function laine_fun(fast) {
     // Get expression lines and 'substitution book'
     let equations =cleanLines(lines,parser);  // clean text
     equations.sort(moreVar);  // sorting
-       
     let name;
     let solutions;  // solution dictionary
     let again = false;  // loop flag
@@ -681,8 +713,8 @@ function laine_fun(fast) {
 	    equations.shift();  // clear solved line
 	}
 	else {
-	    // This part is slow on the first time, don't know why.
 	    again=false;  // flag
+	    // This part is slow on the first time, don't know why.
 	    solutions=parser.getAll();
 	    // Reduce the number of variables (if possible)
 	    for (let i=0; i<equations.length; i++){
@@ -699,7 +731,7 @@ function laine_fun(fast) {
 			})
 			// Revert line(node) to text
 			equations[i].text=trans.toString();
-
+			
 			//Book
 			node = math.parse(equations[i].rhs);
 			trans = node.transform(function (node,path,parent) {
@@ -711,20 +743,8 @@ function laine_fun(fast) {
 			})
 			equations[i].rhs=trans.toString();
 			again=true; // flag
-
-			/*
-			// Using mathjs, update symbol node to numerical answer
-			let node = math.simplify(equations[i].text,solutions);
-			equations[i].text=node.toString();
-			if (equations[i].simple){
-			    let rhs = math.simplify(equations[i].rhs,solutions);
-			    equations[i].rhs=rhs.toString();
-			}
-			again = true;
-			break;
-			*/
 		    }
-		}
+		}   
 	    }
 	    // If there is no modifications flag is false
 	    if (!again){
@@ -807,25 +827,22 @@ function laine_fun(fast) {
 	console.log("MultiNR tries:",count);
     }
 
-    
     outDiv.innerHTML="";  // clear space
     solutions = Object.entries(parser.getAll());
     for (i=0;i<solutions.length;i++){
 	writeAns(solutions[i],fast);
     }
-    
-		
+    		
     if (fast) {
 	mathDiv.style.display="none";
-	textBox.style.display="block";
+	editorDiv.style.display="block";
     }
     else {
-	MathJax.typeset();  // render MathJax (slow)
 	mathDiv.style.display="inline";
-	textBox.style.display="none";
+	editorDiv.style.display="none";
+	MathJax.typeset();  // render MathJax (slow)
     }    
-    box.style.display="block";
-    
+    solBox.style.display="block";
     let t2 =performance.now();
     console.log("evaluation time:",t2-t1,"ms");
 }

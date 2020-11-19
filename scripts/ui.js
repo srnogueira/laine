@@ -14,17 +14,17 @@ function report() {
     }
     else{
 	mathDiv.style.display="none";
-	box.style.display="none";
-	textarea.style.display="block";
+	solBox.style.display="none";
+	editorDiv.style.display="block";
 	reportButton.innerText="Report (F4)";
     }
 }
 reportButton.onclick = report;
 
-
 function shortcut(key){
     if (key.code === "F2"){
 	laine(true);
+	reportButton.innerText="Report (F4)";
     }
     else if (key.code === "F4"){
 	report();
@@ -33,83 +33,33 @@ function shortcut(key){
 document.onkeydown=shortcut;
 
 /*
-  Resize textbox
+  toggle menus
 */
 
-function calcHeight(value) {
-    let numberOfLineBreaks = (value.match(/\n/g) || []).length;
-    // min-height + lines x line-height + padding + border + overflow
-    let newHeight = 20 + numberOfLineBreaks * 24 + 5 + 1 + 15;
-    return newHeight;
-}
-
-let textarea = document.querySelector(".box");
-let box = document.querySelector(".solBox");
-let mathDiv = document.querySelector(".mathDiv");
-
-function autosize(){
-    textarea.style.height = calcHeight(textarea.value) + "px";
-}
-autosize();
-textarea.addEventListener("keyup", autosize);
-
-function hide(extra){
-    let special = ["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Control","Shift","Alt"];
-    let decision = true ;
-    for (i=0;i<special.length;i++){
-	if (extra.key == special[i]){
-	    decision = false;
-	}
-    }
-    if (decision){
-    	box.style.display="";
-	//mathDiv.style.display="none";
-    }
-}
-textarea.addEventListener("keydown", hide);
-
-/*
-  Help menu
-*/
-
-// Toggle
-function toggleHelp(){
-    let x = document.querySelector(".helpText");
+function toggle(button,nameClass,text){
+    let x = document.querySelector(nameClass);
     if (x.style.display===""){
 	x.style.display="flex";
-	helpButton.innerText="Help (-)";
+	button.innerText=text+" (-)";
     }
     else{
 	x.style.display="";
-	helpButton.innerText="Help (+)";
+	button.innerText=text+" (+)";
     }
 }
+
 const helpButton = document.querySelector(".help");
-helpButton.onclick = toggleHelp;
-
-/* 
-   Function menu
-*/
-
-// Toggle
-function toggleFunctions(){
-    let x = document.querySelector(".functionBox");
-    if (x.style.display===""){
-	x.style.display="flex";
-	functionButton.innerText="Functions (-)";
-    }
-    else{
-	x.style.display="";
-	functionButton.innerText="Functions (+)";
-    }
-}
+helpButton.onclick = function(){toggle(helpButton,".helpText","Help")};
 
 const functionButton = document.querySelector(".function");
-functionButton.onclick = toggleFunctions;
+functionButton.onclick = function(){toggle(functionButton,".functionBox","Functions")};
+
+const fileButton = document.querySelector(".file");
+fileButton.onclick = function(){toggle(fileButton,".fileBox","File")};
+
 
 // PropsSI
 function writePropsSI(){
-    const textBox = document.querySelector(".box");
     let fluid = document.querySelector(".FluidName");
     let property = document.querySelector(".Property");
     let input1 = document.querySelector(".Input1");
@@ -124,15 +74,15 @@ function writePropsSI(){
 
     let text = "property=PropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+fluidName+"')";
     textBox.value+="\n"+text;
-    autosize();
-    toggleFunctions();
+    editor.getDoc().setValue(textBox.value);
+    functionButton.click();
 }
+
 const PropsSIButton = document.querySelector(".butPropsSI");
 PropsSIButton.onclick = writePropsSI;
 
 // HAPropsSI
 function writeHAPropsSI(){
-    const textBox = document.querySelector(".box");
     let property = document.querySelector(".HAProperty");
     let input1 = document.querySelector(".HAInput1");
     let input2 = document.querySelector(".HAInput2");
@@ -148,8 +98,8 @@ function writeHAPropsSI(){
 
     let text = "property=HAPropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+input3Name+"',"+value3.value+")";
     textBox.value+="\n"+text;
-    autosize();
-    toggleFunctions();
+    editor.getDoc().setValue(textBox.value);
+    functionButton.click();
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
@@ -166,8 +116,8 @@ function writeNasa(){
 
     let text="property=NasaSI('"+propName+"',"+temp.value+",'"+specie.value+"')";
     textBox.value+="\n"+text;
-    autosize();
-    toggleFunctions();
+    editor.getDoc().setValue(textBox.value);
+    functionButton.click();
 }
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
@@ -192,8 +142,9 @@ function writelk(){
 	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+","+press.value+")";
     }
     textBox.value+="\n"+text;
-    autosize();
-    toggleFunctions();
+
+    editor.getDoc().setValue(textBox.value);
+    functionButton.click();
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
@@ -201,21 +152,6 @@ leeKeslerButton.onclick = writelk;
 /*
   File menu
 */
-
-// Toggle
-function toggleFile(){
-    let x = document.querySelector(".fileBox");
-    if (x.style.display===""){
-	x.style.display="flex";
-	fileButton.innerText="File (-)";
-    }
-    else{
-	x.style.display="";
-	fileButton.innerText="File (+)";
-    }
-}
-const fileButton = document.querySelector(".file");
-fileButton.onclick = toggleFile;
 
 // Save a file
 
@@ -245,10 +181,11 @@ function saveFile()
     document.body.appendChild(downloadLink);
     
     downloadLink.click();
-    toggleFile();
+    fileButton.click();
 }
 
 // Load a file
+    
 function loadFileAsText()
 {
     let downloadLink = document.createElement("a");
@@ -259,9 +196,8 @@ function loadFileAsText()
     fileReader.onload = function(fileLoadedEvent) 
     {
 	let textFromFileLoaded = fileLoadedEvent.target.result;
-	document.getElementById("box").value = textFromFileLoaded;
-	autosize();
+	editor.getDoc().setValue(textFromFileLoaded);
     };
     fileReader.readAsText(fileToLoad, "UTF-8");
-    toggleFile();
+    fileButton.click();
 }
