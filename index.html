@@ -9,13 +9,10 @@
     <link rel="shortcut icon" href="img/laine.ico" />
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet"> 
     <link href="styles/style.css" rel="stylesheet">
-
-    <!-- Third party-->
+    <!-- codemirror javascript -->
     <script src="scripts/third-party/codemirror.js"></script>
     <link rel="stylesheet" href="scripts/third-party/codemirror.css">
-    <script src="scripts/third-party/julia.js"></script>
     <script src="scripts/third-party/simple.js"></script>
-
   </head>
   <body>
 
@@ -559,9 +556,9 @@
 	<p>Lee-Kesler equation of state: <a target="_blank" href="https://aiche.onlinelibrary.wiley.com/doi/10.1002/aic.690210313">Original publication</a></p>
       </div>
     </div>
-    
+
+    <!-- Equation Menu -->
     <div class="eqMenu">
-      <!-- Equation Menu -->
       <table>
 	<tr>
 	  <th> <h2>Equations</h2> </th>
@@ -571,7 +568,7 @@
 	</tr>
       </table>
     </div>
-    
+
     <main>
       <!-- Interface -->
       <table>
@@ -604,14 +601,18 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 	</th>
       </table>
     </main>
-    <!-- Third party javascript -->
-    <script defer src="scripts/third-party/math.min.js"></script>
-    <script defer src="scripts/third-party/coolprop.js"></script>
+    <!-- codemirror javascript -->
+    <script src="scripts/editor.js"></script> <!-- creates editor -->
+    <!-- parser javascript -->
+    <script src="scripts/third-party/math.min.js"></script>
+    <!-- thermodynamic functions javascript -->
+    <script src="scripts/third-party/coolprop.js"></script>
+    <!-- math render javascript -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <!-- For promise -->
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <!-- Laine javascript -->
-    <script defer src="scripts/nasaGleen.js"></script>
-    <script defer src="scripts/leeKesler.js"></script>
+    <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- laine javascript -->
+    <script src="scripts/nasaGleen.js"></script>
+    <script src="scripts/leeKesler.js"></script>
     <script defer src="scripts/solver.js"></script>
     <script defer src="scripts/ui.js"></script>
   </body>

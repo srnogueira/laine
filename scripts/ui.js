@@ -9,7 +9,7 @@ const reportButton = document.querySelector(".report");
 
 function report() {
     if (reportButton.innerText=="Report (F4)"){
-	laine(false);
+	laine();
 	reportButton.innerText="Edit (F4)";
     }
     else{
@@ -127,10 +127,9 @@ function writelk(){
     const textBox = document.querySelector(".box");
     let property = document.querySelector(".lkProp");
     let temp = document.querySelector(".lkT");
-    let press = document.querySelector(".lkP");
-    
+    let press = document.querySelector(".lkP");    
     let propName=property.options[property.selectedIndex].value;
-
+    
     let text;
     if (propName=="Prsat"){
 	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+",'f')";
