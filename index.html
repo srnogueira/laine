@@ -27,15 +27,17 @@
     <header>
       <table>
 	<tr>
-	  <th> <img width="50px" src="img/laine.png"> </th> 
+	  <th> <img  width="50px" src="img/laine.png"> </th> 
 	  <th> <h1>laine</h1> </th>
 	  <th> <h1>|</h1> </th>
+	  <th> 
+	    <table class="mainMenu">
+	      <th><button class="file">File (+)</button></th>
+	      <th><button class="function">Functions (+)</button></th>
+	      <th><button class="help">Help (+)</button></th>
+	    </table>
+	  </th>
 	</tr>
-      </table>
-      <table class="mainMenu">
-	<th> <button class="file">File (+)</button> </th>
-	<th> <button class="function">Functions (+)</button> </th>
-	<th> <button class="help">Help (+)</button> </th>
       </table>
     </header>
     
@@ -577,8 +579,12 @@ v	      <option value="Dichloroethane">Dichloroethane</option>
     </div>
     
     <main>
-      <!-- Equations Box -->
-      <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
+
+      <!-- Interface -->
+      <table>
+	<th>
+	  <!-- Equations Box -->
+	  <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
 # Here is an example, press 'Solve (F2)' to see the results (fast) or 'Report (F4)' to make a pretty solution (may be slow)
 
 # Laine can solve non-linear system of equations, such as:
@@ -591,8 +597,7 @@ h_0=PropsSI('H','T',T_0,'P',P_0,'Air') # J/kg
 s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 
 # Have 'fun' with laine :)</textarea>
-      <!-- Interface -->
-      <table>
+	</th>
 	<th>
 	  <div class="mathDiv"> </div>
 	</th>
