@@ -4,18 +4,19 @@
 
 // Simple mode for text highlight
 CodeMirror.defineSimpleMode("laine", {
-  start: [
-      {regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
-      {regex: /'(?:[^\\]|\\.)*?(?:'|$)/, token: "string"},
-      {regex: /#.*/, token: "comment"},
-      {regex: /(?:PropsSI|NasaSI|HAPropsSI|LeeKesler|sin|cos|tan|exp|log|log10|abs)\b/, token: "keyword"},
-      {regex: /((\d+(\.|E|e))+(\+|\-)?\d+|\d+)/, token: "number"},
-      {regex: /[a-zA-Z$][\w$]*/, token: "variable"},
-  ],
+    start: [
+	{regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
+	{regex: /'(?:[^\\]|\\.)*?(?:'|$)/, token: "string"},
+	{regex: /#.*/, token: "comment"},
+	{regex: /(?:PropsSI|NasaSI|HAPropsSI|LeeKesler|sin|cos|tan|exp|log|log10|abs)\b/, token: "keyword"},
+	{regex: /((\d+(\.|E|e))+(\+|\-)?\d+|\d+)/, token: "number"},
+	{regex: /[a-zA-Z$][\w$]*/, token: "variable"},
+    ],
 });
 
 // Creating the editor
 const textBox = document.querySelector(".box");
+
 let editor = CodeMirror.fromTextArea(textBox, {
     scrollbarStyle: "null",
     viewportMargin: Infinity,

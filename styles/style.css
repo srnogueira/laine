@@ -83,8 +83,8 @@ head, input{
 }
 
 main {
-    display:block;
-    max-width:100%;
+    display:flex;
+    flex-wrap:wrap-reverse;
 }
 
 main th {

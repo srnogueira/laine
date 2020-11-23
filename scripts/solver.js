@@ -685,6 +685,7 @@ function writeEqs(lines){
 
 const outDiv = document.querySelector(".out");
 let parser=math.parser();  // create parser object
+
 function laine_fun(fast) {
     let t1 = performance.now();
     

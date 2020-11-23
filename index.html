@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- descriptions -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <meta name="description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
     <meta name="author" content="Rafael Nogueira Nakashima">
+    <!-- facebook head -->
+    <meta property="og:image" content="img/laine.png">
+    <meta property="og:description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
+    <meta property="og:title" content="laine | equation solver">
+    <!-- head -->
     <title>laine | equation solver</title>
-    <link rel="shortcut icon" href="img/laine.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="img/laine.png"> 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet"> 
     <link href="styles/style.css" rel="stylesheet">
+    <!-- thermodynamic functions javascript -->
+    <script src="scripts/third-party/coolprop.js"></script>
     <!-- codemirror javascript -->
     <script src="scripts/third-party/codemirror.js"></script>
     <link rel="stylesheet" href="scripts/third-party/codemirror.css">
     <script src="scripts/third-party/simple.js"></script>
   </head>
-  <body>
-
-    <!-- Main menu -->
+<body>
+  <!-- Main menu -->
     <header>
       <table>
 	<tr>
-	  <th> <img src="img/laine.png"> </th> 
+	  <th> <img width="50px" src="img/laine.png"> </th> 
 	  <th> <h1>laine</h1> </th>
 	  <th> <h1>|</h1> </th>
 	</tr>
@@ -82,7 +89,7 @@
 	      <option value="D5">D5</option>
 	      <option value="D6">D6</option>
 	      <option value="Deuterium">Deuterium</option>
-	      <option value="Dichloroethane">Dichloroethane</option>
+v	      <option value="Dichloroethane">Dichloroethane</option>
 	      <option value="DiethylEther">DiethylEther</option>
 	      <option value="DimethylCarbonate">DimethylCarbonate</option>
 	      <option value="DimethylEther">DimethylEther</option>
@@ -568,15 +575,11 @@
 	</tr>
       </table>
     </div>
-
+    
     <main>
-      <!-- Interface -->
-      <table>
-	<th>
-	  <!-- Equations Box -->
-	  <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
-# Here is an example, press "Solve (F2)" to see the results (fast)
-# or "Report" to make a pretty solution (slow)
+      <!-- Equations Box -->
+      <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
+# Here is an example, press 'Solve (F2)' to see the results (fast) or 'Report (F4)' to make a pretty solution (may be slow)
 
 # Laine can solve non-linear system of equations, such as:
 x^2+y^2=10
@@ -588,7 +591,8 @@ h_0=PropsSI('H','T',T_0,'P',P_0,'Air') # J/kg
 s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 
 # Have 'fun' with laine :)</textarea>
-	</th>
+      <!-- Interface -->
+      <table>
 	<th>
 	  <div class="mathDiv"> </div>
 	</th>
@@ -601,12 +605,11 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 	</th>
       </table>
     </main>
+
     <!-- codemirror javascript -->
     <script src="scripts/editor.js"></script> <!-- creates editor -->
     <!-- parser javascript -->
     <script src="scripts/third-party/math.min.js"></script>
-    <!-- thermodynamic functions javascript -->
-    <script src="scripts/third-party/coolprop.js"></script>
     <!-- math render javascript -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <!-- For promise -->
     <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
