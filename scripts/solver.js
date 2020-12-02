@@ -388,7 +388,6 @@ function find_guess(problem,negative,binary,parser=undefined){
 	}
     }
 
-    console.log(bestPair,problem.names);
     // Check a good guess (at least two times)
     let aux,index,lower,ans_list;
     let names = problem.names;
