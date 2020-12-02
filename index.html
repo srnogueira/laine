@@ -1,602 +1,624 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- descriptions -->
+    <!-- meta descriptions -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <meta name="description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
     <meta name="author" content="Rafael Nogueira Nakashima">
-    <!-- facebook head -->
-    <meta property="og:image" content="img/laine.png">
-    <meta property="og:description" content="Solve non-linear equation systems with thermodynamic properties in a easy way">
-    <meta property="og:title" content="laine | equation solver">
+    <meta name="description" content="laine can solve equations using thermodynamic properties in a easy way">
+
     <!-- head -->
     <title>laine | equation solver</title>
     <link rel="shortcut icon" type="image/x-icon" href="img/laine.png"> 
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet"> 
     <link href="styles/style.css" rel="stylesheet">
-    <!-- thermodynamic functions javascript -->
-    <script src="scripts/third-party/coolprop.js"></script>
+    
     <!-- codemirror javascript -->
     <script src="scripts/third-party/codemirror.js"></script>
     <link rel="stylesheet" href="scripts/third-party/codemirror.css">
     <script src="scripts/third-party/simple.js"></script>
+
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1F6P2D472J"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-1F6P2D472J');
     </script>
+    
   </head>
-<body>
+  <body>
+    
   <!-- Main menu -->
-    <header>
+  <header>
+    <table class="laineHead">
+      <th> <img  width="50px" src="img/laine.png"> </th> 
+      <th> <h1>laine</h1> </th>
+      <th> <h1> | </h1> </th>
+      <th> <input id="inputFileNameToSaveAs" placeholder="Untitled problem"></input> </th> 
+    </table>
+  </header>
+  
+  <nav class="laineMenu">
+    <table>
+      <td> <button class="file">File (+)</button> </td>
+      <td> <button class="function">Functions (+)</button> </td>
+      <td> <button class="solve"> Solve (F2)</button> </td>
+      <td> <button class="report"> Report (F4)</button> </td>
+    </table>
+  </nav>
+
+  <nav class="subMenus">
+    <!-- File menu -->
+    <div class="fileBox">
+      <button onclick="saveFile()">Save</button>
+      <input type="file" id="fileToLoad" style="display:none"></input>
+      <button onclick="loadFileAsText()">Load</button>
+    </div>
+
+    <div class="functionBox">
+      <button class="props">Pure substance</button>
+      <button class="HAprops">Humid air</button>
+      <button class="nasa">Reactions</button>
+      <button class="lk">Lee-Kesler</button>
+    </div>
+
+    <div class="propsBox">
       <table>
+	<tr style="border-bottom: 1px solid #F04747">
+	  <td><h2>PropsSI</h2></td>
+	  <td>Properties for pure substances</td>
+	</tr>
 	<tr>
-	  <th> <img  width="50px" src="img/laine.png"> </th> 
-	  <th> <h1>laine</h1> </th>
-	  <th> <h1>|</h1> </th>
-	  <th> 
-	    <table class="mainMenu">
-	      <th><button class="file">File (+)</button></th>
-	      <th><button class="function">Functions (+)</button></th>
-	      <th><button class="help">Help (+)</button></th>
-	    </table>
-	  </th>
+	  <td> Fluid </td>
+	  <td>
+	    <select class="FluidName">
+	      <optgroup label="Common fluids">
+		<option value="Air" selected="selected">Air</option>
+		<option value="Ammonia">Ammonia</option>
+		<option value="CarbonDioxide">CarbonDioxide</option>
+		<option value="Methane">Methane</option>
+		<option value="Nitrogen">Nitrogen</option>
+		<option value="Oxygen">Oxygen</option>
+		<option value="R134a">R134a</option>
+		<option value="R22">R22</option>
+		<option value="R410A">R410A</option>
+		<option value="Water">Water</option>
+	      </optgroup>
+	      <optgroup label="Other fluids">
+		<option value="1-Butene">1-Butene</option>
+		<option value="Acetone">Acetone</option>
+		<option value="Argon">Argon</option>
+		<option value="Benzene">Benzene</option>
+		<option value="CarbonMonoxide">CarbonMonoxide</option>
+		<option value="CarbonylSulfide">CarbonylSulfide</option>
+		<option value="CycloHexane">CycloHexane</option>
+		<option value="CycloPropane">CycloPropane</option>
+		<option value="Cyclopentane">Cyclopentane</option>
+		<option value="D4">D4</option>
+		<option value="D5">D5</option>
+		<option value="D6">D6</option>
+		<option value="Deuterium">Deuterium</option>
+		<option value="Dichloroethane">Dichloroethane</option>
+		<option value="DiethylEther">DiethylEther</option>
+		<option value="DimethylCarbonate">DimethylCarbonate</option>
+		<option value="DimethylEther">DimethylEther</option>
+		<option value="Ethane">Ethane</option>
+		<option value="Ethanol">Ethanol</option>
+		<option value="EthylBenzene">EthylBenzene</option>
+		<option value="Ethylene">Ethylene</option>
+		<option value="EthyleneOxide">EthyleneOxide</option>
+		<option value="Fluorine">Fluorine</option>
+		<option value="HFE143m">HFE143m</option>
+		<option value="HeavyWater">HeavyWater</option>
+		<option value="Helium">Helium</option>
+		<option value="Hydrogen">Hydrogen</option>
+		<option value="HydrogenChloride">HydrogenChloride</option>
+		<option value="HydrogenSulfide">HydrogenSulfide</option>
+		<option value="IsoButane">IsoButane</option>
+		<option value="IsoButene">IsoButene</option>
+		<option value="Isohexane">Isohexane</option>
+		<option value="Isopentane">Isopentane</option>
+		<option value="Krypton">Krypton</option>
+		<option value="MD2M">MD2M</option>
+		<option value="MD3M">MD3M</option>
+		<option value="MD4M">MD4M</option>
+		<option value="MDM">MDM</option>
+		<option value="MM">MM</option>
+		<option value="Methanol">Methanol</option>
+		<option value="MethylLinoleate">MethylLinoleate</option>
+		<option value="MethylOleate">MethylOleate</option>
+		<option value="MethylPalmitate">MethylPalmitate</option>
+		<option value="MethylStearate">MethylStearate</option>
+		<option value="Neon">Neon</option>
+		<option value="Neopentane">Neopentane</option>
+		<option value="NitrousOxide">NitrousOxide</option>
+		<option value="Novec649">Novec649</option>
+		<option value="OrthoDeuterium">OrthoDeterium</option>
+		<option value="OrthoHydrogen">OrthoHydrogen</option>
+		<option value="ParaDeuterium">ParaDeuterium</option>
+		<option value="ParaHydrogen">ParaHydrogen</option>
+		<option value="Propylene">Propylene</option>
+		<option value="R11">R11</option>
+		<option value="R113">R113</option>
+		<option value="R114">R114</option>
+		<option value="R115">R115</option>
+		<option value="R116">R116</option>
+		<option value="R12">R12</option>
+		<option value="R123">R123</option>
+		<option value="R1233zd(E)">R1233zd(E)</option>
+		<option value="R1234yf">R1234yf</option>
+		<option value="R1234ze(E)">R1234ze(E)</option>
+		<option value="R1234ze(Z)">R1234ze(Z)</option>
+		<option value="R124">R124</option>
+		<option value="R1243zf">R1243zf</option>
+		<option value="R125">R125</option>
+		<option value="R13">R13</option>
+		<option value="R13I1">R13I1</option>
+		<option value="R14">R14</option>
+		<option value="R141b">R141b</option>
+		<option value="R142b">R142b</option>
+		<option value="R143a">R143a</option>
+		<option value="R152A">R152A</option>
+		<option value="R161">R161</option>
+		<option value="R21">R21</option>
+		<option value="R218">R218</option>
+		<option value="R227">R227</option>
+		<option value="R227EA">R227EA</option>
+		<option value="R23">R23</option>
+		<option value="R236EA">R236EA</option>
+		<option value="R236FA">R236FA</option>
+		<option value="R245ca">R245ca</option>
+		<option value="R245fa">R245fa</option>
+		<option value="R32">R32</option>
+		<option value="R365MFC">R365MFC</option>
+		<option value="R40">R40</option>
+		<option value="R404A">R404A</option>
+		<option value="R407C">R407C</option>
+		<option value="R41">R41</option>
+		<option value="R507A">R507A</option>
+		<option value="RC318">RC318</option>
+		<option value="SES36">SES36</option>
+		<option value="SulfurDioxide">SulfurDioxide</option>
+		<option value="SulfurHexafluoride">SulfurHexafluoride</option>
+		<option value="Toluene">Toluene</option>
+		<option value="Xenon">Xenon</option>
+		<option value="cis-2-Butene">cis-2-Butene</option>
+		<option value="m-Xylene">m-Xylene</option>
+		<option value="n-Butane">n-Butane</option>
+		<option value="n-Decane">n-Decane</option>
+		<option value="n-Dodecane">n-Dodecane</option>
+		<option value="n-Heptane">n-Heptane</option>
+		<option value="n-Hexane">n-Hexane</option>
+		<option value="n-Nonane">n-Nonane</option>
+		<option value="n-Octane">n-Octane</option>
+		<option value="n-Pentane">n-Pentane</option>
+		<option value="n-Propane">n-Propane</option>
+		<option value="n-Undecane">n-Undecane</option>
+		<option value="o-Xylene">o-Xylene</option>
+		<option value="p-Xylene">p-Xylene</option>
+		<option value="trans-2-Butene">trans-2-Butene</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td> Property </td>
+	  <td>
+	    <select class="Property">
+	      <optgroup label="Extensive">
+		<option value="P">Pressure (Pa)</option>
+		<option value="T">Temperature (K)</option>
+		<option value="Q">Mass vapor quality (mol/mol)</option>
+		<option value="acentric">Acentric factor (-)</option>
+		<option value="Z">Compressibility factor (-)</option>
+	      </optgroup>
+	      <optgroup label="Mass specific">
+		<option value="D">Density (kg/m^3)</option>
+		<option value="H" selected="selected">Enthalpy (J/kg)</option>
+		<option value="S">Entropy (J/kg/K)</option>
+		<option value="U">Internal energy (J/kg)</option>
+		<option value="C">Constant pressure specific heat (J/kg/K) </option>
+		<option value="Cvmass">Constant volume specific heat (J/kg/K) </option>
+		<option value="G">Gibbs free energy (J/kg)</option>
+		<option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
+	      </optgroup>
+	      <optgroup label="Molar specific">
+		<option value="Dmolar">Density (mol/m^3)</option>
+		<option value="Hmolar">Enthalpy (J/mol)</option>
+		<option value="Smolar">Entropy (J/mol/K)</option>
+		<option value="Umolar">Internal energy (J/mol)</option>
+		<option value="Cpmolar">Constant pressure specific heat (J/mol/K) </option>
+		<option value="Cvmolar">Constant volume specific heat (J/mol/K) </option>
+		<option value="Gmolar">Gibbs free energy (J/mol)</option>
+		<option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
+	      </optgroup>
+	      <optgroup label="Critical point">
+		<option value="TCRIT">Critical temperature (K)</option>
+		<option value="PCRIT">Critical pressure (Pa)</option>
+		<option value="RHOCRIT">Critical mass density (kg/m^3)</option>
+		<option value="RHOMOLAR_CRITICAL">Critical molar density (mol/m^3)</option>
+	      </optgroup>
+	      <optgroup label="Others">
+		<option value="M">Molar mass (kg/mol)</option>
+		<option value="L">Thermal conductivity (W/m/K)</option>
+		<option value="V">Viscosity (Pa.s)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Input (1)</td>
+	  <td>
+	    <input class="value1" placeholder="value"></input>
+
+	    <select class="Input1">
+	      <optgroup label="Extensive">
+		<option value="P">Pressure (Pa)</option>
+		<option value="T" selected="selected">Temperature (K)</option>
+		<option value="Q">Mass vapor quality (mol/mol)</option>
+	      </optgroup>
+	      <optgroup label="Mass specific">
+		<option value="D">Density (kg/m^3)</option>
+		<option value="H">Enthalpy (J/kg)</option>
+		<option value="S">Entropy (J/kg/K)</option>
+		<option value="U">Internal energy (J/kg)</option>
+		<option value="C">Constant pressure specific heat (J/kg.K) </option>
+		<option value="Cvmass">Constant pressure specific heat (J/kg/K) </option>
+		<option value="G">Gibbs free energy (J/kg)</option>
+		<option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
+	      </optgroup>
+	      <optgroup label="Molar specific">
+		<option value="Dmolar">Density (mol/m^3)</option>
+		<option value="Hmolar">Enthalpy (J/mol)</option>
+		<option value="Smolar">Entropy (J/mol/K)</option>
+		<option value="Umolar">Internal energy (J/mol)</option>
+		<option value="Cpmolar">Constant pressure specific heat (J/mol/K) </option>
+		<option value="Cvmolar">Constant volume specific heat (J/mol/K) </option>
+		<option value="Gmolar">Gibbs free energy (J/mol)</option>
+		<option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Input (2)</td>
+	  <td>
+	    <input class="value2" placeholder="value"></input>
+	    
+	    <select class="Input2">
+	      <optgroup label="Extensive">
+		<option value="P" selected="selected">Pressure (Pa)</option>
+		<option value="T">Temperature (K)</option>
+		<option value="Q">Mass vapor quality (mol/mol)</option>
+	      </optgroup>
+	      <optgroup label="Mass specific">
+		<option value="D">Density (kg/m^3)</option>
+		<option value="H">Enthalpy (J/kg)</option>
+		<option value="S">Entropy (J/kg/K)</option>
+		<option value="U">Internal energy (J/kg)</option>
+		<option value="C">Constant pressure specific heat (J/kg.K) </option>
+		<option value="Cvmass">Constant pressure specific heat (J/kg/K) </option>
+		<option value="G">Gibbs free energy (J/kg)</option>
+		<option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
+	      </optgroup>
+	      <optgroup label="Molar specific">
+		<option value="Dmolar">Density (mol/m^3)</option>
+		<option value="Hmolar">Enthalpy (J/mol)</option>
+		<option value="Smolar">Entropy (J/mol/K)</option>
+		<option value="Umolar">Internal energy (J/mol)</option>
+		<option value="Cpmolar">Constant pressure specific heat (J/mol/K) </option>
+		<option value="Cvmolar">Constant volume specific heat (J/mol/K) </option>
+		<option value="Gmolar">Gibbs free energy (J/mol)</option>
+		<option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
+	      </optgroup>
+	    </select>
+	  </td>
 	</tr>
       </table>
-    </header>
-    
-    <!-- File menu -->    
-    <div class="fileBox">
-      <div>
-	<h2>Save</h2>
-	<table>
-	  <th><input id="inputFileNameToSaveAs" placeholder="Input filename"></input></th>
-	  <th><button onclick="saveFile()">Save equations</button></th>
-	</table>
-      </div>
-      <div>
-	<h2>Load</h2>
-	<table>
-	  <th><input type="file" id="fileToLoad" style="width:100%;"></th>
-	  <th><button onclick="loadFileAsText()">Load equations</button></th>
-	</table>
-      </div>
+      
+      <button class="butPropsSI">Paste in Equations</button>
+      <button class="propsCancel">Cancel</button>
+    </div>
+
+    <div class="HApropsBox">
+      <table>
+	<tr style="border-bottom: 1px solid #F04747">
+	  <td> <h2>HAPropsSI</h2> </td>
+	  <td> Humid air properties </td>
+	</tr>
+	<tr>
+	  <td>Property</td>
+	  <td>
+	    <select class="HAProperty">
+	      <optgroup label="Temperatures">
+		<option value="T">Dry-Bulb Temperature (K)</option>
+		<option value="B" selected="selected">Wet-Bulb Temperature (K)</option>
+		<option value="D">Dew-Point Temperature (K)</option>
+	      </optgroup>
+	      <optgroup label="Water fraction">
+		<option value="Y">Water mole fraction (mol water/mol humid air)</option>
+		<option value="R">Relative humidity in [0,1]</option>
+		<option value="W">Humidity Ratio (kg water/kg dry air)</option>
+	      </optgroup>
+	      <optgroup label="Dry air specific">
+		<option value="C">Specific heat at constant pressure (J/kg dry air)</option>
+		<option value="CV">Specific heat at constant volume (J/kg dry air)</option>
+		<option value="H">Enthalpy (J/kg dry air)</option>
+		<option value="S">Entropy (J/K/kg dry air)</option>
+		<option value="V">Volume (m^3/kg dry air)</option>
+	      </optgroup>
+	      <optgroup label="Humid air specific">
+		<option value="Cha">Specific heat at constant pressure (J/kg humid air)</option>
+		<option value="CVha">Specific heat at constant volume (K/kg humid air)</option>
+		<option value="Hha">Enthalpy (J/kg humid air)</option>
+		<option value="Sha">Entropy (J/K/kg humid air)</option>
+		<option value="Vha">Volume (m^3/kg humid air)</option>
+	      </optgroup>
+	      <optgroup label="Others">
+		<option value="K">Thermal conductivity (W/m/K)</option>
+		<option value="M">Viscosity (Pa-s)</option>
+		<option value="Z">Compressibility factor</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Input (1)</td>
+	  <td>
+	    <input class="HAvalue1" placeholder="value"></input>
+	    
+	    <select class="HAInput1">
+	      <optgroup label="Temperatures">
+		<option value="B">Wet-Bulb Temperature (K)</option>
+		<option value="D">Dew-Point Temperature (K)</option>
+		<option value="T" selected="selected">Dry-Bulb Temperature (K)</option>
+	      </optgroup>
+	      <optgroup label="Pressures">
+		<option value="P">Pressure (Pa)</option>
+		<option value="P_w">Partial pressure of water vapor (Pa)</option>
+	      </optgroup>
+	      <optgroup label="Water fraction">
+		<option value="Y">Water mole fraction (mol water/mol humid air)</option>
+		<option value="R">Relative humidity in [0,1]</option>
+		<option value="W">Humidity Ratio (kg water/kg humid air)</option>
+	      </optgroup>
+	      <optgroup label="Dry air basis">
+		<option value="H">Enthalpy (J/kg dry air)</option>
+		<option value="S">Entropy (J/K/kg dry air)</option>
+		<option value="V">Volume (m^3/kg dry air)</option>
+	      </optgroup>
+	      <optgroup label="Humid air basis">
+		<option value="Hha">Enthalpy (J/kg humid air)</option>
+		<option value="Sha">Entropy (J/kg humid air/K)</option>
+		<option value="Vha">Volume (m^3/kg humid air)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Input (2)</td>
+	  <td>
+	    <input class="HAvalue2" placeholder="value"></input>
+	    
+	    <select class="HAInput2">
+	      <optgroup label="Temperatures">
+		<option value="B">Wet-Bulb Temperature (K)</option>
+		<option value="D">Dew-Point Temperature (K)</option>
+		<option value="T">Dry-Bulb Temperature (K)</option>
+	      </optgroup>
+	      <optgroup label="Pressures">
+		<option value="P" selected="selected">Pressure (Pa)</option>
+		<option value="P_w">Partial pressure of water vapor (Pa)</option>
+	      </optgroup>
+	      <optgroup label="Water fraction">
+		<option value="Y">Water mole fraction (mol water/mol humid air)</option>
+		<option value="R">Relative humidity in [0,1]</option>
+		<option value="W">Humidity Ratio (kg water/kg humid air)</option>
+	      </optgroup>
+	      <optgroup label="Dry air basis">
+		<option value="H">Enthalpy (J/kg dry air)</option>
+		<option value="S">Entropy (J/K/kg dry air)</option>
+		<option value="V">Volume (m^3/kg dry air)</option>
+	      </optgroup>
+	      <optgroup label="Humid air basis">
+		<option value="Hha">Enthalpy (J/kg humid air)</option>
+		<option value="Sha">Entropy (J/kg humid air/K)</option>
+		<option value="Vha">Volume (m^3/kg humid air)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	
+	<tr>
+	  <td>Input (3)</td>
+	  <td>
+	    <input class="HAvalue3" placeholder="value"></input>
+	    
+	    <select class="HAInput3">  
+	      <optgroup label="Temperatures">
+		<option value="B">Wet-Bulb Temperature (K)</option>
+		<option value="D">Dew-Point Temperature (K)</option>
+		<option value="T">Dry-Bulb Temperature (K)</option>
+	      </optgroup>
+	      <optgroup label="Pressures">
+		<option value="P">Pressure (Pa)</option>
+		<option value="P_w">Partial pressure of water vapor (Pa)</option>
+	      </optgroup>
+	      <optgroup label="Water fraction">
+		<option value="Y">Water mole fraction (mol water/mol humid air)</option>
+		<option value="R" selected="selected">Relative humidity in [0,1]</option>
+		<option value="W">Humidity Ratio (kg water/kg humid air)</option>
+	      </optgroup>
+	      <optgroup label="Dry air basis">
+		<option value="H">Enthalpy (J/kg dry air)</option>
+		<option value="S">Entropy (J/K/kg dry air)</option>
+		<option value="V">Volume (m^3/kg dry air)</option>
+	      </optgroup>
+	      <optgroup label="Humid air basis">
+		<option value="Hha">Enthalpy (J/kg humid air)</option>
+		<option value="Sha">Entropy (J/kg humid air/K)</option>
+		<option value="Vha">Volume (m^3/kg humid air)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+      </table>
+      
+      <button class="butHAPropsSI">Paste in Equations</button>
+      <button class="HApropsCancel">Cancel</button>
+      
+    </div>
+
+    <div class="nasaBox">
+      <table>
+	<tr style="border-bottom: 1px solid #F04747">
+	  <td> <h2>NASA Glenn</h2></td>
+	  <td> Properties for chemical reactions </td>
+	</tr>
+	<tr>
+	  <td> Fluid </td>
+	  <td>
+	    <select class="nasaSpecie">
+	      <optgroup label="Carbon">
+		<option value="C(s)">Carbon | C(s)</option>
+		<option value="CO">Carbon monoxide | CO(g)</option>
+		<option value="CO2">Carbon dioxide | CO2(g)</option>
+		<option value="CH4">Methane | CH4(g)</option>
+		<option value="C2H4">Ethene | C2H4(g)</option>
+		<option value="C2H6">Ethane | C2H6(g)</option>
+		<option value="C3H8">Propane | C3H8(g)</option>
+		<option value="C4H10">n-Butane | C4H10(g)</option>
+		<option value="C5H12">n-Pentane | C5H12(g)</option>
+		<option value="C6H14">n-Hexane | C6H14(g)</option>
+		<option value="C7H16">n-Heptane | C7H16(g)</option>
+		<option value="C8H18">n-Octane | C8H18(g)</option>
+	      </optgroup>
+	      <optgroup label="Hydrogen">
+		<option value="H">Hydrogen element | H(g)</option>
+		<option value="H2" selected="selected">Hydrogen gas | H2(g)</option>
+		<option value="H2O">Water (gas) | H2O(g)</option>
+		<option value="H2O(l)">Water (liq.) | H2O(l)</option>
+	      </optgroup>
+	      <optgroup label="Nitrogen">
+		<option value="N">Nitrogen element | N(g)</option>
+		<option value="N2">Nitrogen gas | N2(g)</option>
+		<option value="NO">Nitrogen oxide | NO(g)</option>
+		<option value="NO2">Nitrogen dioxide | NO2(g)</option>
+	      </optgroup>
+	      <optgroup label="Oxygen">
+		<option value="O">Oxygen element | O(g)</option>
+		<option value="O2">Oxygen gas | O2(g)</option>
+		<option value="OH">Hydroxide | OH(g)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td>Property </td>
+	  <td>
+	    <select class="nasaProp">
+	      <optgroup label="Mass basis">
+		<option value="Cp0">Specific heat for standard state (J/kg.K)</option>
+		<option value="H0" selected="selected">Enthalpy for standard state (J/kg)</option>
+		<option value="S0">Entropy for standard state (J/kg.K)</option>
+		<option value="G0">Gibbs free energy for standard state (J/kg)</option>
+		<option value="F0">Helmholtz free energy for standard state (J/kg)</option>
+	      </optgroup>
+	      <optgroup label="Molar basis">
+		<option value="Cp0molar">Specific heat for standard state (J/mol.K)</option>
+		<option value="H0molar">Enthalpy for standard state (J/mol)</option>
+		<option value="S0molar">Entropy for standard state (J/mol.K)</option>
+		<option value="G0molar">Gibbs free energy for standard state (J/mol)</option>
+		<option value="F0molar">Helmholtz free energy for standard state (J/mol)</option>
+	      </optgroup>
+	      <optgroup label="Others">
+		<option value="MW">Molecular mass (kg/mol)</option>
+	      </optgroup>
+	    </select>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+	    Temperature (K)
+	  </td>
+	  <td>
+	    <input class="nasaT" placeholder="value"></input>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td> Standard state </td>
+	  <td>
+	    <ul>
+	      <li>for gases (g): 100 kPa</li>
+	      <li>for condensed (l): 1 atm</li>
+	      <li>for solid (s): pure cristal</li>
+	    </ul>
+	  </td>
+	</tr>
+      </table>
+      <button class="butNasa">Paste in Equations</button>
+      <button class="nasaCancel">Cancel</button>
     </div>
     
     <!-- Function Menu -->
-    <div class="functionBox">
-      <div>
-	<h2>PropsSI | Pure fluids</h2>
-	<p>Fluid:
-	  <select class="FluidName">
-	    <optgroup label="Common fluids">
-	      <option value="Air" selected="selected">Air</option>
-	      <option value="Ammonia">Ammonia</option>
-	      <option value="CarbonDioxide">CarbonDioxide</option>
-	      <option value="Methane">Methane</option>
-	      <option value="Nitrogen">Nitrogen</option>
-	      <option value="Oxygen">Oxygen</option>
-	      <option value="R134a">R134a</option>
-	      <option value="R22">R22</option>
-	      <option value="R410A">R410A</option>
-	      <option value="Water">Water</option>
-	    </optgroup>
-	    <optgroup label="Other fluids">
-              <option value="1-Butene">1-Butene</option>
-              <option value="Acetone">Acetone</option>
-	      <option value="Argon">Argon</option>
-	      <option value="Benzene">Benzene</option>
-	      <option value="CarbonMonoxide">CarbonMonoxide</option>
-	      <option value="CarbonylSulfide">CarbonylSulfide</option>
-	      <option value="CycloHexane">CycloHexane</option>
-	      <option value="CycloPropane">CycloPropane</option>
-	      <option value="Cyclopentane">Cyclopentane</option>
-	      <option value="D4">D4</option>
-	      <option value="D5">D5</option>
-	      <option value="D6">D6</option>
-	      <option value="Deuterium">Deuterium</option>
-v	      <option value="Dichloroethane">Dichloroethane</option>
-	      <option value="DiethylEther">DiethylEther</option>
-	      <option value="DimethylCarbonate">DimethylCarbonate</option>
-	      <option value="DimethylEther">DimethylEther</option>
-	      <option value="Ethane">Ethane</option>
-	      <option value="Ethanol">Ethanol</option>
-	      <option value="EthylBenzene">EthylBenzene</option>
-	      <option value="Ethylene">Ethylene</option>
-	      <option value="EthyleneOxide">EthyleneOxide</option>
-	      <option value="Fluorine">Fluorine</option>
-	      <option value="HFE143m">HFE143m</option>
-	      <option value="HeavyWater">HeavyWater</option>
-	      <option value="Helium">Helium</option>
-	      <option value="Hydrogen">Hydrogen</option>
-	      <option value="HydrogenChloride">HydrogenChloride</option>
-	      <option value="HydrogenSulfide">HydrogenSulfide</option>
-	      <option value="IsoButane">IsoButane</option>
-	      <option value="IsoButene">IsoButene</option>
-	      <option value="Isohexane">Isohexane</option>
-	      <option value="Isopentane">Isopentane</option>
-	      <option value="Krypton">Krypton</option>
-	      <option value="MD2M">MD2M</option>
-	      <option value="MD3M">MD3M</option>
-	      <option value="MD4M">MD4M</option>
-	      <option value="MDM">MDM</option>
-	      <option value="MM">MM</option>
-	      <option value="Methanol">Methanol</option>
-	      <option value="MethylLinoleate">MethylLinoleate</option>
-	      <option value="MethylOleate">MethylOleate</option>
-	      <option value="MethylPalmitate">MethylPalmitate</option>
-	      <option value="MethylStearate">MethylStearate</option>
-	      <option value="Neon">Neon</option>
-	      <option value="Neopentane">Neopentane</option>
-	      <option value="NitrousOxide">NitrousOxide</option>
-	      <option value="Novec649">Novec649</option>
-	      <option value="OrthoDeuterium">OrthoDeterium</option>
-	      <option value="OrthoHydrogen">OrthoHydrogen</option>
-	      <option value="ParaDeuterium">ParaDeuterium</option>
-	      <option value="ParaHydrogen">ParaHydrogen</option>
-	      <option value="Propylene">Propylene</option>
-	      <option value="R11">R11</option>
-	      <option value="R113">R113</option>
-	      <option value="R114">R114</option>
-	      <option value="R115">R115</option>
-	      <option value="R116">R116</option>
-	      <option value="R12">R12</option>
-	      <option value="R123">R123</option>
-	      <option value="R1233zd(E)">R1233zd(E)</option>
-	      <option value="R1234yf">R1234yf</option>
-	      <option value="R1234ze(E)">R1234ze(E)</option>
-	      <option value="R1234ze(Z)">R1234ze(Z)</option>
-	      <option value="R124">R124</option>
-	      <option value="R1243zf">R1243zf</option>
-	      <option value="R125">R125</option>
-	      <option value="R13">R13</option>
-	      <option value="R13I1">R13I1</option>
-	      <option value="R14">R14</option>
-	      <option value="R141b">R141b</option>
-	      <option value="R142b">R142b</option>
-	      <option value="R143a">R143a</option>
-	      <option value="R152A">R152A</option>
-	      <option value="R161">R161</option>
-	      <option value="R21">R21</option>
-	      <option value="R218">R218</option>
-	      <option value="R227">R227</option>
-	      <option value="R227EA">R227EA</option>
-	      <option value="R23">R23</option>
-	      <option value="R236EA">R236EA</option>
-	      <option value="R236FA">R236FA</option>
-	      <option value="R245ca">R245ca</option>
-	      <option value="R245fa">R245fa</option>
-	      <option value="R32">R32</option>
-	      <option value="R365MFC">R365MFC</option>
-	      <option value="R40">R40</option>
-	      <option value="R404A">R404A</option>
-	      <option value="R407C">R407C</option>
-	      <option value="R41">R41</option>
-	      <option value="R507A">R507A</option>
-	      <option value="RC318">RC318</option>
-	      <option value="SES36">SES36</option>
-	      <option value="SulfurDioxide">SulfurDioxide</option>
-	      <option value="SulfurHexafluoride">SulfurHexafluoride</option>
-	      <option value="Toluene">Toluene</option>
-	      <option value="Xenon">Xenon</option>
-	      <option value="cis-2-Butene">cis-2-Butene</option>
-	      <option value="m-Xylene">m-Xylene</option>
-	      <option value="n-Butane">n-Butane</option>
-	      <option value="n-Decane">n-Decane</option>
-	      <option value="n-Dodecane">n-Dodecane</option>
-	      <option value="n-Heptane">n-Heptane</option>
-	      <option value="n-Hexane">n-Hexane</option>
-	      <option value="n-Nonane">n-Nonane</option>
-	      <option value="n-Octane">n-Octane</option>
-	      <option value="n-Pentane">n-Pentane</option>
-	      <option value="n-Propane">n-Propane</option>
-	      <option value="n-Undecane">n-Undecane</option>
-	      <option value="o-Xylene">o-Xylene</option>
-	      <option value="p-Xylene">p-Xylene</option>
-	      <option value="trans-2-Butene">trans-2-Butene</option>
-	    </optgroup>
-	  </select>
-	</p>
-	
-	<p>Property:
-	  <select class="Property">
-	    <optgroup label="Extensive">
-	      <option value="P">Pressure (Pa)</option>
-	      <option value="T">Temperature (K)</option>
-	      <option value="Q">Mass vapor quality (mol/mol)</option>
-	      <option value="acentric">Acentric factor (-)</option>
-	      <option value="Z">Compressibility factor (-)</option>
-	    </optgroup>
-	    <optgroup label="Mass specific">
-	      <option value="D">Density (kg/m^3)</option>
-              <option value="H" selected="selected">Enthalpy (J/kg)</option>
-	      <option value="S">Entropy (J/kg/K)</option>
-	      <option value="U">Internal energy (J/kg)</option>
-	      <option value="C">Constant pressure specific heat (J/kg/K) </option>
-	      <option value="Cvmass">Constant volume specific heat (J/kg/K) </option>
-	      <option value="G">Gibbs free energy (J/kg)</option>
-	      <option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
-	    </optgroup>
-	    <optgroup label="Molar specific">
-              <option value="Dmolar">Density (mol/m^3)</option>
-              <option value="Hmolar">Enthalpy (J/mol)</option>
-	      <option value="Smolar">Entropy (J/mol/K)</option>
-	      <option value="Umolar">Internal energy (J/mol)</option>
-	      <option value="Cpmolar">Constant pressure specific heat (J/mol/K) </option>
-	      <option value="Cvmolar">Constant volume specific heat (J/mol/K) </option>
-	      <option value="Gmolar">Gibbs free energy (J/mol)</option>
-	      <option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
-	    </optgroup>
-	    <optgroup label="Critical point">
-	      <option value="TCRIT">Critical temperature (K)</option>
-	      <option value="PCRIT">Critical pressure (Pa)</option>
-	      <option value="RHOCRIT">Critical mass density (kg/m^3)</option>
-	      <option value="RHOMOLAR_CRITICAL">Critical molar density (mol/m^3)</option>
-	    </optgroup>
-	    <optgroup label="Others">
-	      <option value="M">Molar mass (kg/mol)</option>
-	      <option value="L">Thermal conductivity (W/m/K)</option>
-	      <option value="V">Viscosity (Pa.s)</option>
-	    </optgroup>
-	  </select>	
-	</p>
-
-	<p>1<sup>st</sup> input:
-	  <select class="Input1">
-	    <optgroup label="Extensive">
-	      <option value="P">Pressure (Pa)</option>
-	      <option value="T" selected="selected">Temperature (K)</option>
-	      <option value="Q">Mass vapor quality (mol/mol)</option>
-	    </optgroup>
-	    <optgroup label="Mass specific">
-	      <option value="D">Density (kg/m^3)</option>
-	      <option value="H">Enthalpy (J/kg)</option>
-	      <option value="S">Entropy (J/kg/K)</option>
-	      <option value="U">Internal energy (J/kg)</option>
-	      <option value="C">Constant pressure specific heat (J/kg.K) </option>
-	      <option value="Cvmass">Constant pressure specific heat (J/kg/K) </option>
-	      <option value="G">Gibbs free energy (J/kg)</option>
-	      <option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
-	    </optgroup>
-	    <optgroup label="Molar specific">
-	      <option value="Dmolar">Density (mol/m^3)</option>
-              <option value="Hmolar">Enthalpy (J/mol)</option>
-	      <option value="Smolar">Entropy (J/mol/K)</option>
-	      <option value="Umolar">Internal energy (J/mol)</option>
-	      <option value="Cpmolar">Constant pressure specific heat (J/mol/K) </option>
-	      <option value="Cvmolar">Constant volume specific heat (J/mol/K) </option>
-	      <option value="Gmolar">Gibbs free energy (J/mol)</option>
-	      <option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
-	    </optgroup>
-	  </select>
-	  <input class="value1" placeholder="value"></input>
-	</p>
-	
-	<p>2<sup>nd</sup> input:
-	  <select class="Input2">
-	    <optgroup label="Extensive">
-	      <option value="P" selected="selected">Pressure (Pa)</option>
-	      <option value="T">Temperature (K)</option>
-	      <option value="Q">Mass vapor quality (mol/mol)</option>
-	    </optgroup>
-	    <optgroup label="Mass specific">
-	      <option value="D">Density (kg/m^3)</option>
-	      <option value="H">Enthalpy (J/kg)</option>
-	      <option value="S">Entropy (J/kg/K)</option>
-	      <option value="U">Internal energy (J/kg)</option>
-	      <option value="C">Constant pressure specific heat (J/kg.K) </option>
-	      <option value="Cvmass">Constant pressure specific heat (J/kg/K) </option>
-	      <option value="G">Gibbs free energy (J/kg)</option>
-	      <option value="HELMHOLTZMASS">Helmholtz free energy (J/kg)</option>
-	    </optgroup>
-	    <optgroup label="Molar specific">
-	      <option value="Dmolar">Density (mol/m^3)</option>
-              <option value="Hmolar">Enthalpy (J/mol)</option>
-	      <option value="Smolar">Entropy (J/mol/K)</option>
-	      <option value="Umolar">Internal energy (J/mol)</option>
-	      <option value="Cpmolar">Constant pressure specific heat (J/mol/K) </option>
-	      <option value="Cvmolar">Constant volume specific heat (J/mol/K) </option>
-	      <option value="Gmolar">Gibbs free energy (J/mol)</option>
-	      <option value="HELMHOLTZMOLAR">Helmholtz free energy (J/mol)</option>
-	    </optgroup>
-	  </select>
-	  <input class="value2" placeholder="value"></input>
-	</p>
-
-	<button class="butPropsSI">Paste in Equations</button>
-      </div>
-      
-      <div>
-	<h2>HAPropsSI | Humid air</h2>
-	<p>Property:
-	  <select class="HAProperty">
-	    <optgroup label="Temperatures">
-	      <option value="T">Dry-Bulb Temperature (K)</option>
-	      <option value="B" selected="selected">Wet-Bulb Temperature (K)</option>
-	      <option value="D">Dew-Point Temperature (K)</option>
-	    </optgroup>
-	    <optgroup label="Water fraction">
-	      <option value="Y">Water mole fraction (mol water/mol humid air)</option>
-	      <option value="R">Relative humidity in [0,1]</option>
-	      <option value="W">Humidity Ratio (kg water/kg dry air)</option>
-	    </optgroup>
-	    <optgroup label="Dry air specific">
-	      <option value="C">Specific heat at constant pressure (J/kg dry air)</option>
-	      <option value="CV">Specific heat at constant volume (J/kg dry air)</option>
-	      <option value="H">Enthalpy (J/kg dry air)</option>
-	      <option value="S">Entropy (J/K/kg dry air)</option>
-	      <option value="V">Volume (m^3/kg dry air)</option>
-	    </optgroup>
-	    <optgroup label="Humid air specific">
-	      <option value="Cha">Specific heat at constant pressure (J/kg humid air)</option>
-	      <option value="CVha">Specific heat at constant volume (K/kg humid air)</option>
-	      <option value="Hha">Enthalpy (J/kg humid air)</option>
-	      <option value="Sha">Entropy (J/K/kg humid air)</option>
-	      <option value="Vha">Volume (m^3/kg humid air)</option>
-	    </optgroup>
-	    <optgroup label="Others">
-	      <option value="K">Thermal conductivity (W/m/K)</option>
-	      <option value="M">Viscosity (Pa-s)</option>
-	      <option value="Z">Compressibility factor</option>
-	    </optgroup>
-	  </select>	
-	</p>
-
-	<p>1<sup>st</sup> input:
-	  <select class="HAInput1">
-	    <optgroup label="Temperatures">
-	      <option value="B">Wet-Bulb Temperature (K)</option>
-	      <option value="D">Dew-Point Temperature (K)</option>
-	      <option value="T" selected="selected">Dry-Bulb Temperature (K)</option>
-	    </optgroup>
-	    <optgroup label="Pressures">
-	      <option value="P">Pressure (Pa)</option>
-	      <option value="P_w">Partial pressure of water vapor (Pa)</option>
-	    </optgroup>
-	    <optgroup label="Water fraction">
-	      <option value="Y">Water mole fraction (mol water/mol humid air)</option>
-	      <option value="R">Relative humidity in [0,1]</option>
-	      <option value="W">Humidity Ratio (kg water/kg humid air)</option>
-	    </optgroup>
-	    <optgroup label="Dry air basis">
-	      <option value="H">Enthalpy (J/kg dry air)</option>
-	      <option value="S">Entropy (J/K/kg dry air)</option>
-	      <option value="V">Volume (m^3/kg dry air)</option>
-	    </optgroup>
-	    <optgroup label="Humid air basis">
-	      <option value="Hha">Enthalpy (J/kg humid air)</option>
-	      <option value="Sha">Entropy (J/kg humid air/K)</option>
-	      <option value="Vha">Volume (m^3/kg humid air)</option>
-	    </optgroup>
-	    <input class="HAvalue1" placeholder="value"></input>
-	  </select>
-	</p>
-
-	<p>2<sup>nd</sup> input:
-	  <select class="HAInput2">
-	    <optgroup label="Temperatures">
-	      <option value="B">Wet-Bulb Temperature (K)</option>
-	      <option value="D">Dew-Point Temperature (K)</option>
-	      <option value="T">Dry-Bulb Temperature (K)</option>
-	    </optgroup>
-	    <optgroup label="Pressures">
-	      <option value="P" selected="selected">Pressure (Pa)</option>
-	      <option value="P_w">Partial pressure of water vapor (Pa)</option>
-	    </optgroup>
-	    <optgroup label="Water fraction">
-	      <option value="Y">Water mole fraction (mol water/mol humid air)</option>
-	      <option value="R">Relative humidity in [0,1]</option>
-	      <option value="W">Humidity Ratio (kg water/kg humid air)</option>
-	    </optgroup>
-	    <optgroup label="Dry air basis">
-	      <option value="H">Enthalpy (J/kg dry air)</option>
-	      <option value="S">Entropy (J/K/kg dry air)</option>
-	      <option value="V">Volume (m^3/kg dry air)</option>
-	    </optgroup>
-	    <optgroup label="Humid air basis">
-	      <option value="Hha">Enthalpy (J/kg humid air)</option>
-	      <option value="Sha">Entropy (J/kg humid air/K)</option>
-	      <option value="Vha">Volume (m^3/kg humid air)</option>
-	    </optgroup>
-	    <input class="HAvalue2" placeholder="value"></input>
-	  </select>
-	</p>
-
-	<p>3<sup>rd</sup> input:
-	  <select class="HAInput3">  
-	    <optgroup label="Temperatures">
-	      <option value="B">Wet-Bulb Temperature (K)</option>
-	      <option value="D">Dew-Point Temperature (K)</option>
-	      <option value="T">Dry-Bulb Temperature (K)</option>
-	    </optgroup>
-	    <optgroup label="Pressures">
-	      <option value="P">Pressure (Pa)</option>
-	      <option value="P_w">Partial pressure of water vapor (Pa)</option>
-	    </optgroup>
-	    <optgroup label="Water fraction">
-	      <option value="Y">Water mole fraction (mol water/mol humid air)</option>
-	      <option value="R" selected="selected">Relative humidity in [0,1]</option>
-	      <option value="W">Humidity Ratio (kg water/kg humid air)</option>
-	    </optgroup>
-	    <optgroup label="Dry air basis">
-	      <option value="H">Enthalpy (J/kg dry air)</option>
-	      <option value="S">Entropy (J/K/kg dry air)</option>
-	      <option value="V">Volume (m^3/kg dry air)</option>
-	    </optgroup>
-	    <optgroup label="Humid air basis">
-	      <option value="Hha">Enthalpy (J/kg humid air)</option>
-	      <option value="Sha">Entropy (J/kg humid air/K)</option>
-	      <option value="Vha">Volume (m^3/kg humid air)</option>
-	    </optgroup>
-	    <br>
-	    <input class="HAvalue3" placeholder="value"></input>
-	  </select>
-	</p>
-
-	<button class="butHAPropsSI">Paste in Equations</button>
-      </div>
-
-      <div>
-	<h2>NASA Glenn | Reactions</h2>	
-	<p>Fluid:
-	  <select class="nasaSpecie">
-	    <optgroup label="Carbon">
-	      <option value="C(s)">Carbon | C(s)</option>
-	      <option value="CO">Carbon monoxide | CO(g)</option>
-	      <option value="CO2">Carbon dioxide | CO2(g)</option>
-	      <option value="CH4">Methane | CH4(g)</option>
-	      <option value="C2H4">Ethene | C2H4(g)</option>
-	      <option value="C2H6">Ethane | C2H6(g)</option>
-	      <option value="C3H8">Propane | C3H8(g)</option>
-	      <option value="C4H10">n-Butane | C4H10(g)</option>
-	      <option value="C5H12">n-Pentane | C5H12(g)</option>
-	      <option value="C6H14">n-Hexane | C6H14(g)</option>
-	      <option value="C7H16">n-Heptane | C7H16(g)</option>
-	      <option value="C8H18">n-Octane | C8H18(g)</option>
-	    </optgroup>
-	    <optgroup label="Hydrogen">
-	      <option value="H">Hydrogen element | H(g)</option>
-	      <option value="H2" selected="selected">Hydrogen gas | H2(g)</option>
-	      <option value="H2O">Water (gas) | H2O(g)</option>
-	      <option value="H2O(l)">Water (liq.) | H2O(l)</option>
-	    </optgroup>
-	    <optgroup label="Nitrogen">
-	      <option value="N">Nitrogen element | N(g)</option>
-	      <option value="N2">Nitrogen gas | N2(g)</option>
-	      <option value="NO">Nitrogen oxide | NO(g)</option>
-	      <option value="NO2">Nitrogen dioxide | NO2(g)</option>
-	    </optgroup>
-	    <optgroup label="Oxygen">
-	      <option value="O">Oxygen element | O(g)</option>
-	      <option value="O2">Oxygen gas | O2(g)</option>
-	      <option value="OH">Hydroxide | OH(g)</option>
-	    </optgroup>
-	  </select>
-	</p>
-
-	<p>Property:
-	  <select class="nasaProp">
-	    <optgroup label="Mass basis">
-	      <option value="Cp0">Specific heat for standard state (J/kg.K)</option>
-	      <option value="H0" selected="selected">Enthalpy for standard state (J/kg)</option>
-	      <option value="S0">Entropy for standard state (J/kg.K)</option>
-	      <option value="G0">Gibbs free energy for standard state (J/kg)</option>
-	      <option value="F0">Helmholtz free energy for standard state (J/kg)</option>
-	    </optgroup>
-	    <optgroup label="Molar basis">
-	      <option value="Cp0molar">Specific heat for standard state (J/mol.K)</option>
-	      <option value="H0molar">Enthalpy for standard state (J/mol)</option>
-	      <option value="S0molar">Entropy for standard state (J/mol.K)</option>
-	      <option value="G0molar">Gibbs free energy for standard state (J/mol)</option>
-	      <option value="F0molar">Helmholtz free energy for standard state (J/mol)</option>
-	    </optgroup>
-	    <optgroup label="Others">
-	      <option value="MW">Molecular mass (kg/mol)</option>
-	    </optgroup>
-	  </select>
-	</p>
-
-	<p>Temperature (K):
-	  <input class="nasaT" placeholder="value"></input>
-	</p>
-	
-	<p>Standard state
-	  <ul>
-	    <li>for gases (g): 100 kPa</li>
-	    <li>for condensed (l): 1 atm</li>
-	    <li>for solid (s): pure cristal</li>
-	  </ul>
-	</p>
-
-	<button class="butNasa">Paste in Equations</button>
-      </div>      
-
-      <div>
-	<h2>Lee Kesler | simple fluids</h2>
-	<p>Property:
-	  <select class="lkProp">
-	    <option value="Prsat">Reduced saturation pressure</option>
-	    <option value="Z" selected="selected">Compressibility factor</option>
-	    <option value="dh">Specific enthalpy departure : (h*-h)/R.Tc</option>
-	    <option value="dst">Specific entropy departure : (s*-s)/R</option>  
-	  </select>
-	</p>
-
-	<p>Reduced temperature - Tr:
-	  <input class="lkT" placeholder="value"></input>
-	</p>
-
-	<p>Reduced pressure - Pr:
-	  <input class="lkP" placeholder="value ('f' or 'g' for saturated states)"></input>
-	</p>
-
-	<p>Saturation points:
-	  <ul>
-	    <li>'f' for saturated liquid</li>
-	    <li>'g' for saturated vapor</li>
-	  </ul>
-	</p>
-
-	<button class="butlk">Paste in Equations</button>
-      </div>
-    </div>
-
-    <!-- Help Menu -->
-    <div class="helpText">
-      <div>
-	<h2>How to use?</h2>
-	<p>Write equations in the box below and click in <strong>Solve</strong> or press <strong>F2</strong>.</p>
-	<p>The <strong>equations</strong> have to follow the structure <em>left = right</em>.</p>
-	<p>The of <strong>equations</strong> number has to be equal to the number of <strong>variables</strong>.</p>
-	<p> You can also include a <strong>comment</strong> by using a 	hashtag (#) in the beginning of the sentece.</p>
-      </div>
-
-      <div>
-	<h2>How to handle errors?</h2>
-	<p>Check if the equations are typed correctly.</p>
-	<p>Check if the problem is feasible.</p>
-	<p>Simplify equations and avoid inversions (e.g. x=1/y).</p>
-	<p>Please <a href="mailto:rafaelnnakashima@usp.com">contact
-	    me</a> if you could not solve your problem.</p>
-      </div>
-
-      <div>
-	<h2>References</h2>
-	<p>Parser and math functions: <a target="_blank" href="https://mathjs.org">math.js</a></p>
-	<p>LaTeX rendering: <a target="_blank" href="https://www.mathjax.org/">MathJax</a></p>
-	<p>Pure fluids and humid air properties: <a target="_blank" href="http://www.coolprop.org">CoolProp</a></p>
-	<p>Ideal gas properties: <a target="_blank" href="https://www.grc.nasa.gov/WWW/CEAWeb/TP-2002-21556.htm">Nasa Glenn</a></p>
-	<p>Lee-Kesler equation of state: <a target="_blank" href="https://aiche.onlinelibrary.wiley.com/doi/10.1002/aic.690210313">Original publication</a></p>
-      </div>
-    </div>
-
-    <!-- Equation Menu -->
-    <div class="eqMenu">
+    <div class="lkBox">
       <table>
+	<tr style="border-bottom: 1px solid #F04747">
+	  <td><h2>Lee Kesler</h2></td>
+	  <td>Equation of state for simple fluids</td>
+	</tr>
+
 	<tr>
-	  <th> <h2>Equations</h2> </th>
-	  <th> <h2> | </h2> </th>
-	  <th> <button class="solve"> Solve (F2)</button> </th>
-	  <th> <button class="report"> Report (F4)</button> </th>
+	  <td>Property </td>
+	  <td>
+	    <select class="lkProp">
+	      <option value="Prsat">Reduced saturation pressure</option>
+	      <option value="Z" selected="selected">Compressibility factor</option>
+	      <option value="dh">Specific enthalpy departure : (h*-h)/R.Tc</option>
+	      <option value="dst">Specific entropy departure : (s*-s)/R</option>  
+	    </select>
+	  </td>
+	</tr>
+
+	<tr>
+	  <td>Reduced temperature</td>
+	  <td>  <input class="lkT" placeholder="value"></input> </td>
+	</tr>
+	<tr>
+	  <td>Reduced pressure</td>
+	  <td> <input class="lkP" placeholder="value"></input> </td>
+	</tr>
+	<tr>
+	  <td>Saturation points </td>
+	  <td>
+	    Instead of the reduced pressure, use:
+	    <ul>
+	      <li>'f' for saturated liquid</li>
+	      <li>'g' for saturated vapor</li>
+	    </ul>
+	  </td>
 	</tr>
       </table>
+      
+      <button class="butlk">Paste in Equations</button>
+      <button class="lkCancel">Cancel</button>
+      
     </div>
-    
-    <main>
+  </nav>
+  
+  <main>
 
-      <!-- Interface -->
-      <table>
-	<th>
-	  <!-- Equations Box -->
-	  <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
-# Here is an example, press 'Solve (F2)' to see the results (fast) or 'Report (F4)' to make a pretty solution (may be slow)
+    <!-- Interface -->
+    <table>
+      <th>
+	<!-- Equations Box -->
+	<textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
+# Press 'Solve (F2)' to see the results (fast) or 'Report (F4)' to make a pretty solution (may be slow)
 
-# Laine can solve non-linear system of equations, such as:
+# laine can solve non-linear system of equations, such as:
 x^2+y^2=10
 x*y=3
 
@@ -606,37 +628,37 @@ h_0=PropsSI('H','T',T_0,'P',P_0,'Air') # J/kg
 s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 
 # Have 'fun' with laine :)</textarea>
-	</th>
-	<th>
-	  <div class="mathDiv"> </div>
-	</th>
-	<th>
-	  <div class="solBox">
-	    <h2>Solution</h2>
-	    <table class="out">
-	    </table>
-	  </div>
-	</th>
-      </table>
-    </main>
-
-    <!-- codemirror javascript -->
-    <script src="scripts/editor.js"></script> <!-- creates editor -->
-    <!-- parser javascript -->
-    <script src="scripts/third-party/math.min.js"></script>
-    <!-- math render javascript -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <!-- For promise -->
-    <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <!-- laine javascript -->
-    <script src="scripts/nasaGleen.js"></script>
-    <script src="scripts/leeKesler.js"></script>
-    <script defer src="scripts/solver.js"></script>
-    <script defer src="scripts/ui.js"></script>
+      </th>
+      <th class="mathDiv">
+      </th>
+      <th>
+	<div class="solBox">
+	  <h2>Solution</h2>
+	  <table class="out">
+	  </table>
+	</div>
+      </th>
+    </table>
+  </main>
+  <!-- thermodynamic functions javascript -->
+  <script src="scripts/third-party/coolprop.js"></script>
+  <!-- codemirror javascript -->
+  <script src="scripts/editor.js"></script> <!-- creates editor -->
+  <!-- parser javascript -->
+  <script src="scripts/third-party/math.min.js"></script>
+  <!-- math render javascript -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <!-- For promise -->
+  <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- laine javascript -->
+  <script src="scripts/nasaGleen.js"></script>
+  <script src="scripts/leeKesler.js"></script>
+  <script defer src="scripts/solver.js"></script>
+  <script defer src="scripts/ui.js"></script>
   </body>
 
   <footer>
     <p>
-      developed by Rafael Nogueira Nakashima |
+      developed by Rafael Nogueira Nakashima <br>
       <a href="mailto:rafaelnnakashima@usp.br">Email</a> |
       <a target="_blank" href="https://github.com/srnogueira/laine">Github</a> |
       <a target="_blank" href="https://forms.gle/zR1FoeqWNRiJg5jt8">Feedback</a>

@@ -110,8 +110,8 @@ function Equation(line,number,scope){
       Function: constructor for equation object
     */
     this.line = line.split('#')[0];
-    this.lhs = this.line.split('=')[0];
-    this.rhs = this.line.split('=')[1];
+    this.lhs = this.line.split('=')[0].trim();
+    this.rhs = this.line.split('=')[1].trim();
     this.text = this.lhs+"-("+this.rhs+")";
     this.simple = singleVar(this.lhs);
     this.vars = varsName(this.text,scope);
@@ -233,6 +233,7 @@ function Problem(equations,parser){
     }
     
     this.compiled = compiled;
+    this.equations = equations;
     this.names = names;
     this.scope = parser.getAll();
     this.numbers = numbers;
@@ -321,7 +322,7 @@ function binary_search(problem){
     return mid;
 }
 
-function find_guess(problem,negative,binary){
+function find_guess(problem,negative,binary,parser=undefined){
     /*
       Function: Find a suitable first guess for multivariable expressions
     */
@@ -333,13 +334,44 @@ function find_guess(problem,negative,binary){
 
     // Negative or positive guesses
     let guess_list = negative ? [-0.01,-0.05,-0.1,-0.5,-1,-3E2,-1E3,-1E5] : [0.01,0.05,0.1,0.5,1,3E2,1E3,1E5];
+
+    // Check if problem has two variables:
+    let values = [0,0]
+    /*if (problem.names.length == 2){
+	// Here I use a guess to find another.
+	let fixed = problem.names[0];
+	let notFixed = problem.names[1];
+	let line = problem.equations[0].lhs+"="+problem.equations[0].rhs;
+	parser.set(fixed,guess_list[0]);
+	parser.remove(notFixed); // Have to remove !
+	let scope = parser.getAll();
+	scope[fixed] = guess_list[0]; // Just to remove the extra name from the Equation object
+	let equation = new Equation(line,0,scope);
+	let copy = new Problem([equation],parser);
+	for (let i=0; i<guess_list.length; i++){
+	    copy.scope[fixed]=guess_list[i];
+	    try{
+		let result = solver(copy,undefined,negative,binary,returnValue=true);
+		values[1] = result[0];
+		values[0] = guess_list[i];
+		console.log(values);
+		return values;
+	    }
+	    catch(e){
+		if (i != guess_list.length - 1){
+		    continue;
+		}
+	    }
+	}
+    }*/
+    
     
     // Check a good guess (at least two times)
     let aux,index,lower,ans_list;
-    let avg=[0,0,0,0,0,0,0,0];
     let names = problem.names;
     let compiled = problem.compiled;
     let scope = problem.scope;
+    let avg=[0,0,0,0,0,0,0,0];
     let count = 0;
     while (true){
 	// Calculate for each guess
@@ -463,7 +495,7 @@ function update_jac(problem,guesses,answers,jac){
     return jac;
 }
 
-function solver(problem,parser,negative,binary){
+function solver(problem,parser,negative,binary,returnValue=false){
     /*
       Function: Multivariable Newton-Raphson + Line search
     */
@@ -475,10 +507,20 @@ function solver(problem,parser,negative,binary){
     let guesses=[];
     let Xguesses=[];
     let answers=[];
-    let first_guess=find_guess(problem,negative,binary);
-    for (let i=0;i<names.length;i++){
-	guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
+    
+    /*if (names.length == 2){
+	let first_guess=find_guess(problem,negative,binary,parser);
+	for (let i=0;i<names.length;i++){
+	    guesses.push(first_guess[i]*(1+Math.random())); // Initial guess + random number
+	}
     }
+    else{*/
+	let first_guess=find_guess(problem,negative,binary);
+	for (let i=0;i<names.length;i++){
+	    guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
+	}
+    //}
+    
     answers=calcFun(problem,guesses,answers);
     let diff=error(answers);
     
@@ -532,7 +574,6 @@ function solver(problem,parser,negative,binary){
                 break;
             }
         }
-
 	// Check convergence
 	if (diff<5E-6 && rerror<1E-2){
 	    break;
@@ -540,24 +581,28 @@ function solver(problem,parser,negative,binary){
 	else if(diff<5E-8){
 	    break;
 	}
-	else if(rerror<1E-5 && diff>5E-10){
+	else if((rerror<1E-5 && diff>5E-10) || !guesses[0]){
 	    throw new laineError('Bad start','laine could not find a good initial guess',problem.numbers);
 	}
 	else{
 	    count++;
 	}
-	
 	// Break long iterations
-	if (count>30){
+	if (count>50){
 	    throw new laineError('Max. iterations','laine exceeded the iteration limit',problem.numbers);
 	}
     }
 
     // Update on parser
-    for (let i=0;i<guesses.length;i++){
-	parser.set(names[i],guesses[i]);
+    if (returnValue){
+	return guesses;
     }
-    return parser;    
+    else{
+	for (let i=0;i<guesses.length;i++){
+	    parser.set(names[i],guesses[i]);
+	}
+	return parser;
+    }
 }
 
 /*
@@ -715,7 +760,11 @@ function laine_fun(fast) {
 	    
 	// Solve one var problems 
 	name=equations[0].vars;
-	if (name.length==1){
+
+	if (name.length == 0){
+	    equations.shift();
+	}
+	else if (name.length==1){
 	    
 	    // Check if solution has already been computed
 	    if (parser.get(name[0])!=undefined){
@@ -773,35 +822,90 @@ function laine_fun(fast) {
 	    }
 	    else {
 		// Apply text substitution using math.js (reduces the chances of failure)
-		let changeLine=false;
-		let maxTimes=0;		
-		for(let i=0;i<equations.length;i++){
-		    changeLine=false;
-		    name=equations[i].vars
-		    for (let k=0; k<name.length; k++){
-			for(let j=0;j<equations.length;j++){
-			    if (!equations[j].simple || j == i){
-				continue;
-			    }
-			    if (name[k]==equations[j].lhs){
-				updateEquation(equations[i],name[k],equations[j].rhs,parser.getAll());
-				changeLine=true;
+		let changeLine=true;
+		let maxTimes=0;
+		equations.sort(moreVar);
+		loop1 : 
+		while (changeLine){
+		    for(let i=0;i<equations.length;i++){
+			changeLine=false;
+			name=equations[i].vars
+			for (let k=0; k<name.length; k++){
+			    for(let j=0;j<equations.length;j++){
+				if (!equations[j].simple || j == i){
+				    continue;
+				}
+				if (name[k]==equations[j].lhs){
+				    updateEquation(equations[i],name[k],equations[j].rhs,parser.getAll());
+				    changeLine=true;
+				}
 			    }
 			}
-		    }
-		    // Check max number of substitutions
-		    if (changeLine){
-			maxTimes++
-		    }
-		    if (maxTimes==(equations.length-1)){
-			break;
+			// Check max number of substitutions
+			if (changeLine){
+			    maxTimes++
+			}
+			if (maxTimes==(equations.length-1)){
+			    break loop1;
+			}
 		    }
 		}
+		
 		// Check if has an 1D problem to loop or not
 		equations.sort(moreVar);
 		if (equations[0].vars.length != 1){
-		    break;
-		}	
+		    // Look 2D problems
+		    let changed = false;
+		    for (let i = 0; i<equations.length ; i++){
+			if (equations[i].vars.length == 2){
+			    for (let j = i+1; j<equations.length; j++){
+				if (equations[j].vars.length == 2){
+				    let varsA = equations[i].vars;
+				    let varsB = equations[j].vars;
+				    if ((varsA[0] == varsB[0] && varsA[1] == varsB[1]) || (varsA[1] == varsB[0] && varsA[0]==varsB[1])){
+					
+					// Try solving using Newton-Raphson with random guesses multiple times 
+					let count=0;
+					let negative=false;
+					let solved=false;
+					let problem = new Problem([equations[i],equations[j]],parser);
+					while (!solved){
+					    try {
+						count++;
+						solved=true;
+						parser=solver(problem,parser,negative=negative);
+					    }
+					    catch(e){
+						solved=false
+						if (count>10){
+						    negative=negative ? false: true; // flip - maybe is negative, try once
+						}
+					    }
+					    if (performance.now()-t1>3E3){
+						throw new laineError('Difficult (or unsolvable) problem',
+								     'laine tried multiple times and could not find a solution',
+								     problem.numbers);
+					    }
+					}
+					console.log("MultiNR tries:",count);
+
+					changed = true;
+					break;
+				    }
+				}
+				else{
+				    break;
+				}
+			    }
+			}			
+			else{
+			    break;
+			}
+		    }
+		    if (!changed){
+			break;
+		    }
+		}
 	    }
 	}
     }
@@ -820,7 +924,7 @@ function laine_fun(fast) {
 			       'The problem has '+problem.names.length+' variables and '+equations.length+' equations',
 			       problem.numbers);
 	}
-	
+
 	while (!solved){
 	    try {
 		count++;
@@ -833,7 +937,7 @@ function laine_fun(fast) {
 		    negative=negative ? false: true; // flip - maybe is negative, try once
 		}
 	    }
-	    if (performance.now()-t1>3E3){
+	    if (performance.now()-t1>1E3){
 		throw new laineError('Difficult (or unsolvable) problem',
 				     'laine tried multiple times and could not find a solution',
 				    problem.numbers);
@@ -853,7 +957,7 @@ function laine_fun(fast) {
 	editorDiv.style.display="block";
     }
     else {
-	mathDiv.style.display="inline";
+	mathDiv.style.display="block";
 	editorDiv.style.display="none";
 	MathJax.typeset();  // render MathJax (slow)
     }    

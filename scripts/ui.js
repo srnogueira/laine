@@ -11,12 +11,16 @@ function report() {
     if (reportButton.innerText=="Report (F4)"){
 	laine();
 	reportButton.innerText="Edit (F4)";
+	reportButton.style.backgroundColor = "#F04747";
+	reportButton.style.color="white";
     }
     else{
 	mathDiv.style.display="none";
 	solBox.style.display="none";
 	editorDiv.style.display="block";
 	reportButton.innerText="Report (F4)";
+	reportButton.style.backgroundColor = "white";
+	reportButton.style.color = "#F04747";
     }
 }
 reportButton.onclick = report;
@@ -36,27 +40,61 @@ document.onkeydown=shortcut;
   toggle menus
 */
 
-function toggle(button,nameClass,text){
-    let x = document.querySelector(nameClass);
+function toggle(className,button=undefined){
+    let x = document.querySelector(className);
+    let text,signal;
+    
     if (x.style.display===""){
-	x.style.display="flex";
-	button.innerText=text+" (-)";
+	x.style.display="block";
+	if (button!=undefined){
+	    text = button.innerText;
+	    text = text.slice(0,text.length-2)+'-)';
+	    button.innerText = text;
+	    button.style.backgroundColor = "#F04747";
+	    button.style.color = "white";
+	}
     }
     else{
 	x.style.display="";
-	button.innerText=text+" (+)";
+	if (button!=undefined){
+	    text = button.innerText;
+	    text = text.slice(0,text.length-2)+'+)';
+	    button.innerText = text;
+	    button.style.backgroundColor = "white";
+	    button.style.color = "#F04747";
+	}
     }
 }
 
-const helpButton = document.querySelector(".help");
-helpButton.onclick = function(){toggle(helpButton,".helpText","Help")};
-
 const functionButton = document.querySelector(".function");
-functionButton.onclick = function(){toggle(functionButton,".functionBox","Functions")};
+functionButton.onclick = function(){toggle(".functionBox",button=functionButton)};
 
 const fileButton = document.querySelector(".file");
-fileButton.onclick = function(){toggle(fileButton,".fileBox","File")};
+fileButton.onclick = function(){toggle(".fileBox",button=fileButton)};
+    
+const propsButton = document.querySelector(".props")
+propsButton.onclick = function(){ toggle(".propsBox"); functionButton.click(); };
 
+const propsCancelButton = document.querySelector(".propsCancel")
+propsCancelButton.onclick = function(){toggle(".propsBox");};
+
+const HApropsButton = document.querySelector(".HAprops")
+HApropsButton.onclick = function(){ toggle(".HApropsBox"); functionButton.click(); };
+
+const HApropsCancelButton = document.querySelector(".HApropsCancel")
+HApropsCancelButton.onclick = function(){toggle(".HApropsBox");};
+
+const nasaButton = document.querySelector(".nasa")
+nasaButton.onclick = function(){ toggle(".nasaBox"); functionButton.click(); };
+
+const nasaCancelButton = document.querySelector(".nasaCancel")
+nasaCancelButton.onclick = function(){toggle(".nasaBox");};
+
+const lkButton = document.querySelector(".lk")
+lkButton.onclick = function(){ toggle(".lkBox"); functionButton.click(); };
+
+const lkCancelButton = document.querySelector(".lkCancel")
+lkCancelButton.onclick = function(){toggle(".lkBox");};
 
 // PropsSI
 function writePropsSI(){
@@ -75,7 +113,7 @@ function writePropsSI(){
     let text = "property=PropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+fluidName+"')";
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    functionButton.click();
+    propsCancelButton.click();
 }
 
 const PropsSIButton = document.querySelector(".butPropsSI");
@@ -99,7 +137,7 @@ function writeHAPropsSI(){
     let text = "property=HAPropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+input3Name+"',"+value3.value+")";
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    functionButton.click();
+    HApropsCancelButton.click();
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
@@ -117,7 +155,7 @@ function writeNasa(){
     let text="property=NasaSI('"+propName+"',"+temp.value+",'"+specie.value+"')";
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    functionButton.click();
+    nasaCancelButton.click();
 }
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
@@ -143,7 +181,7 @@ function writelk(){
     textBox.value+="\n"+text;
 
     editor.getDoc().setValue(textBox.value);
-    functionButton.click();
+    lkCancelButton.click();
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
@@ -171,7 +209,7 @@ function saveFile()
 	downloadLink.download="laine_save.txt";
     }
     else{ 
-	downloadLink.download = filename;
+	downloadLink.download = filename+".txt";
     }
     downloadLink.innerHTML = "Download File";
     downloadLink.href = textToSaveAsURL;
@@ -183,14 +221,17 @@ function saveFile()
     fileButton.click();
 }
 
-// Load a file
-    
-function loadFileAsText()
+
+const fileInput = document.getElementById("fileToLoad");
+
+function loadFileAsText(){    
+    fileInput.click();
+}
+
+function changeText()
 {
     let downloadLink = document.createElement("a");
-    
     let fileToLoad = document.getElementById("fileToLoad").files[0];
-    
     let fileReader = new FileReader();
     fileReader.onload = function(fileLoadedEvent) 
     {
@@ -200,3 +241,5 @@ function loadFileAsText()
     fileReader.readAsText(fileToLoad, "UTF-8");
     fileButton.click();
 }
+
+fileInput.addEventListener("change", changeText, false);
