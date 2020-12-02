@@ -26,6 +26,10 @@ header input{
     font-family: 'Quicksand', sans-serif;
 }
 
+.subMenus button{
+    display: flex;
+}
+
 ul{
     margin:0;
 }
@@ -49,7 +53,6 @@ button:hover{
     background-color: #F04747;
 }
 
-
 .lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
     display:none;
     position:absolute;
@@ -58,6 +61,7 @@ button:hover{
     background-color: white;
     max-width: 90%;
 }
+
 
 .fileBox{
     left: 20px;
@@ -146,10 +150,6 @@ footer p{
 @media screen and (max-width: 700px) {
   header h1 {
       display: none;
-  }
-  
-  button {
-      display: flex;
   }
 
   .propsBox table td, .HApropsBox table td, .nasaBox table td, .lkBox table td{

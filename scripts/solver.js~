@@ -333,21 +333,18 @@ function find_guess(problem,negative,binary,parser=undefined){
     }
 
     // Negative or positive guesses
-    let guess_list = negative ? [-0.01,-0.1,-1,-1E3,-1E5] : [0.01,0.05,0.1,0.7,3E2,1E3,2E3,1E5];
+    let guess_list = negative ? [-0.01,-0.1,-1,-1E3,-1E5] : [0.01,0.05,0.1,0.5,3E2,1E3,2E3,1E5];
 
     // Check if problem has two variables (better guesses):
     let guesses = [];
     let bestPair = [];
     let lowerPair = Infinity;
-
+    
     if (problem.names.length == 2){
-	// Using negative flag to switch
-	let f = negative ? 0 : 1;
-	let nf = negative ? 1 : 0;
 	// Here I use a guess to find another.
-	let fixed = problem.names[f];
-	let notFixed = problem.names[nf];
-	let line = problem.equations[f].lhs+"="+problem.equations[f].rhs;
+	let fixed = problem.names[0];
+	let notFixed = problem.names[1];
+	let line = problem.equations[0].lhs+"="+problem.equations[0].rhs;
 	parser.set(fixed,guess_list[0]);
 	parser.remove(notFixed); // Have to remove !
 	let scope = parser.getAll();
@@ -355,7 +352,7 @@ function find_guess(problem,negative,binary,parser=undefined){
 	let copy = new Problem([equation],parser);
 
 	// Test function
-	let otherLine = problem.equations[nf].lhs+"="+problem.equations[nf].rhs;
+	let otherLine = problem.equations[1].lhs+"="+problem.equations[1].rhs;
 	let otherEquation = new Equation(otherLine,0,scope);
 	
 	// Iterate
@@ -366,12 +363,7 @@ function find_guess(problem,negative,binary,parser=undefined){
 		scope[fixed]=copy.scope[fixed];
 		scope[notFixed]=result[0];
 		let error = otherEquation.compiled.evaluate(scope);
-		if (negative){
-		    guesses.push([Math.abs(error),[scope[fixed],scope[notFixed]]]);
-		}
-		else{
-		    guesses.push([Math.abs(error),[scope[notFixed],scope[fixed]]]);
-		}
+		guesses.push([Math.abs(error),[scope[fixed],scope[notFixed]]]);
 	    }
 	    catch(e){
 		if (i != guess_list.length - 1){
@@ -388,7 +380,6 @@ function find_guess(problem,negative,binary,parser=undefined){
 	}
     }
 
-    console.log(bestPair,problem.names);
     // Check a good guess (at least two times)
     let aux,index,lower,ans_list;
     let names = problem.names;

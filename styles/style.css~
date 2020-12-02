@@ -176,3 +176,9 @@ footer p{
       margin-bottom:10px;
   }
 }
+
+@media print {
+    .laineMenu {
+	display:none;
+    }
+}
