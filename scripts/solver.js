@@ -163,7 +163,14 @@ function cleanLines(lines,parser){
 	    // Store equations
 	    for (let j=0;j<aux.length;j++){
 		try{
-		    parser.evaluate(aux[j]);
+		    let ans = parser.evaluate(aux[j]);
+		    if (typeof(ans)=="object"){
+			// Remove object from parser scope (avoid errors)
+			lhs = aux[j].split('=')[0].trim();
+			parser.remove(lhs);
+			// Throw a dummy error
+			throw Error("Not a real evaluation");
+		    }
 		}
 		catch{
 		    try{
@@ -326,7 +333,7 @@ function find_guess(problem,negative,binary,parser=undefined){
     /*
       Function: Find a suitable first guess for multivariable expressions
     */
-    
+
     // Binary search - for one variable
     if (binary){
 	return binary_search(problem);
@@ -408,7 +415,7 @@ function find_guess(problem,negative,binary,parser=undefined){
 		    aux=compiled[z].evaluate(scope);
 		    ans_list[i]+=Math.abs(aux);
 		}
-		catch{
+		catch(e){
 		    ans_list[i]=Infinity;
 		    continue equationLoop;
 		}
@@ -535,9 +542,10 @@ function solver(problem,parser,negative,binary,returnValue=false){
     let guesses=[];
     let Xguesses=[];
     let answers=[];
-
+    let first_guess;
+    
     if (names.length == 2){
-	let first_guess=find_guess(problem,negative,binary,parser);
+	first_guess=find_guess(problem,negative,binary,parser);
 	for (let i=0;i<names.length;i++){
 	    if (typeof(first_guess)=="number"){
 		guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
@@ -548,12 +556,16 @@ function solver(problem,parser,negative,binary,returnValue=false){
 	}
     }
     else{
-	let first_guess=find_guess(problem,negative,binary);
+	first_guess=find_guess(problem,negative,binary);
 	for (let i=0;i<names.length;i++){
 	    guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
 	}
     }
 
+    if (first_guess == undefined){
+	throw new laineError('Bad start','laine could not find a good initial guess',problem.numbers);
+    }
+    
     answers=calcFun(problem,guesses,answers);
     let diff=error(answers);
     
@@ -791,7 +803,6 @@ function laine_fun(fast) {
 				 'laine tried multiple times and could not find a solution',
 				 equations[0].number);
 	}
-	    
 	// Solve one var problems 
 	name=equations[0].vars;
 
@@ -804,7 +815,6 @@ function laine_fun(fast) {
 	    if (parser.get(name[0])!=undefined){
 	    	throw new laineError('Redefined variable','Variable '+name[0]+' has been redefined',equations[0].number);
 	    }
-	    
 	    // Try to solve the 1D problem
 	    let problem1D = new Problem([equations[0]],parser)
 	    let solved = false;
@@ -979,6 +989,7 @@ function laine_fun(fast) {
     
     outDiv.innerHTML="";  // clear space
     solutions = Object.entries(parser.getAll());
+
     for (i=0;i<solutions.length;i++){
 	writeAns(solutions[i],fast);
     }
