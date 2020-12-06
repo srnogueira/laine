@@ -36,7 +36,7 @@ function laineError(name,message,numb) {
   PARSING LINES INTO EQUATIONS
 */
 
-function checkLine(line,number=""){
+function checkLine(line,number){
     /* 
        Function: checks if the line is an equation
     */
@@ -169,7 +169,7 @@ function cleanLines(lines,parser){
 			lhs = aux[j].split('=')[0].trim();
 			parser.remove(lhs);
 			// Throw a dummy error
-			throw Error("Not a real evaluation");
+			throw new laineError("Parse error","Not a real evaluation",i+1);
 		    }
 		}
 		catch{
@@ -329,64 +329,68 @@ function binary_search(problem){
     return mid;
 }
 
-function find_guess(problem,negative,binary,parser=undefined){
+function find_guess(problem,parser,options){
     /*
       Function: Find a suitable first guess for multivariable expressions
     */
 
     // Binary search - for one variable
-    if (binary){
+    if (options.binary){
 	return binary_search(problem);
     }
 
     // Negative or positive guesses
-    let guess_list = negative ? [-0.01,-0.1,-1,-1E3,-1E5] : [0.01,0.05,0.1,0.7,3E2,1E3,2E3,1E5];
+    let guess_list = options.negative ? [-0.01,-0.1,-1,-1E3,-1E5] : [0.01,0.05,0.1,0.7,10,3E2,1E3,2E3,1E5];
 
     // Check if problem has two variables (better guesses):
     let guesses = [];
     let bestPair = [];
     let lowerPair = Infinity;
+    if (problem.names.length == 2 && options.pairSearch){
+	let first = true;
+	for (let x=0 ; x<2 ; x++){
+	    // Using negative flag to switch
+	    let f = first ? 0 : 1;
+	    let nf = first ? 1 : 0;
+	    // Here I use a guess to find another.
+	    let fixed = problem.names[f];
+	    let notFixed = problem.names[nf];
+	    let line = problem.equations[f].lhs+"="+problem.equations[f].rhs;
+	    parser.set(fixed,guess_list[0]);
+	    parser.remove(notFixed); // Have to remove !
+	    let scope = parser.getAll();
+	    let equation = new Equation(line,problem.equations[f].number,scope);
+	    let copy = new Problem([equation],parser);
 
-    if (problem.names.length == 2){
-	// Using negative flag to switch
-	let f = negative ? 0 : 1;
-	let nf = negative ? 1 : 0;
-	// Here I use a guess to find another.
-	let fixed = problem.names[f];
-	let notFixed = problem.names[nf];
-	let line = problem.equations[f].lhs+"="+problem.equations[f].rhs;
-	parser.set(fixed,guess_list[0]);
-	parser.remove(notFixed); // Have to remove !
-	let scope = parser.getAll();
-	let equation = new Equation(line,0,scope);
-	let copy = new Problem([equation],parser);
-
-	// Test function
-	let otherLine = problem.equations[nf].lhs+"="+problem.equations[nf].rhs;
-	let otherEquation = new Equation(otherLine,0,scope);
-	
-	// Iterate
-	for (let i=0; i<guess_list.length; i++){
-	    copy.scope[fixed]=guess_list[i]*(1+Math.random()/2);
-	    try{
-		let result = solver(copy,undefined,negative,false,returnValue=true);
-		scope[fixed]=copy.scope[fixed];
-		scope[notFixed]=result[0];
-		let error = otherEquation.compiled.evaluate(scope);
-		if (negative){
-		    guesses.push([Math.abs(error),[scope[fixed],scope[notFixed]]]);
+	    // Test function
+	    let otherLine = problem.equations[nf].lhs+"="+problem.equations[nf].rhs;
+	    let otherEquation = new Equation(otherLine,problem.equations[nf].number,scope);
+	    
+	    // Iterate
+	    for (let i=0; i<guess_list.length; i++){
+		copy.scope[fixed]=guess_list[i]*(1+Math.random()/2);
+		let options1D = {binary:false, negative:options.negative, returnValue:true, pairSearch:false};
+		try{
+		    let result = solver(copy,parser,options1D);
+		    scope[fixed]=copy.scope[fixed];
+		    scope[notFixed]=result[0];
+		    let error = otherEquation.compiled.evaluate(scope);
+		    if (first){
+			guesses.push([Math.abs(error),[scope[fixed],scope[notFixed]]]);
+		    }
+		    else{
+			guesses.push([Math.abs(error),[scope[notFixed],scope[fixed]]]);
+		    }
 		}
-		else{
-		    guesses.push([Math.abs(error),[scope[notFixed],scope[fixed]]]);
+		catch(e){
+		    if (i != guess_list.length - 1){
+			continue;
+		    }
 		}
 	    }
-	    catch(e){
-		if (i != guess_list.length - 1){
-		    continue;
-		}
-	    }
+	    first=false;
 	}
-	
+
 	for(let i=0;i<guesses.length;i++){
 	    if (guesses[i][0]!=NaN && guesses[i][0]<lowerPair){
 		bestPair=[guesses[i][1][0],guesses[i][1][1]];
@@ -400,11 +404,11 @@ function find_guess(problem,negative,binary,parser=undefined){
     let names = problem.names;
     let compiled = problem.compiled;
     let scope = problem.scope;
-    let avg=[0,0,0,0,0,0,0,0];
+    let avg=[0,0,0,0,0,0,0,0,0];
     let count = 0;
     while (true){
 	// Calculate for each guess
-	ans_list = [0,0,0,0,0,0,0,0];
+	ans_list = [0,0,0,0,0,0,0,0,0];
 	equationLoop:
 	for(let i=0;i<guess_list.length;i++){
 	    for (let j=0;j<names.length;j++){
@@ -530,7 +534,7 @@ function update_jac(problem,guesses,answers,jac){
     return jac;
 }
 
-function solver(problem,parser,negative,binary,returnValue=false){
+function solver(problem,parser,options){
     /*
       Function: Multivariable Newton-Raphson + Line search
     */
@@ -542,28 +546,19 @@ function solver(problem,parser,negative,binary,returnValue=false){
     let guesses=[];
     let Xguesses=[];
     let answers=[];
-    let first_guess;
-    
-    if (names.length == 2){
-	first_guess=find_guess(problem,negative,binary,parser);
-	for (let i=0;i<names.length;i++){
-	    if (typeof(first_guess)=="number"){
-		guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
-	    }
-	    else{
-		guesses.push(first_guess[i]); // Initial guess + random number
-	    }
-	}
-    }
-    else{
-	first_guess=find_guess(problem,negative,binary);
-	for (let i=0;i<names.length;i++){
-	    guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
-	}
-    }
+    let first_guess=find_guess(problem,parser,options);
 
     if (first_guess == undefined){
 	throw new laineError('Bad start','laine could not find a good initial guess',problem.numbers);
+    }
+
+    for (let i=0;i<names.length;i++){
+	if (typeof(first_guess)=="number"){
+	    guesses.push(first_guess*(1+Math.random())); // Initial guess + random number
+	}
+	else{
+	    guesses.push(first_guess[i]); // Initial guess + random number
+	}
     }
     
     answers=calcFun(problem,guesses,answers);
@@ -633,6 +628,7 @@ function solver(problem,parser,negative,binary,returnValue=false){
 	else{
 	    count++;
 	}
+
 	// Break long iterations
 	if (count>50){
 	    throw new laineError('Max. iterations','laine exceeded the iteration limit',problem.numbers);
@@ -640,7 +636,7 @@ function solver(problem,parser,negative,binary,returnValue=false){
     }
 
     // Update on parser
-    if (returnValue){
+    if (options.returnValue){
 	return guesses;
     }
     else{
@@ -729,7 +725,7 @@ function writeEqs(lines){
     let text;
     for (let i=0;i<lines.length;i++){
 	// Check if is an equation or comment
-	if (checkLine(lines[i].trim())){
+	if (checkLine(lines[i].trim(),i)){
 	    // Remove side comments
 	    lines[i]=(lines[i].split('#'))[0]
 	    // Check if is there is more than one equation
@@ -752,7 +748,7 @@ function writeEqs(lines){
 	    let para=document.createElement('p');
 	    text=lines[i].slice(1,lines[i].length);
 	    if (i<lines.length-1){
-		while (!checkLine(lines[i+1].trim())){
+		while (!checkLine(lines[i+1].trim(),i)){
 		    if (lines[i+1]==''){
 			break;
 		    }
@@ -818,13 +814,12 @@ function laine_fun(fast) {
 	    // Try to solve the 1D problem
 	    let problem1D = new Problem([equations[0]],parser)
 	    let solved = false;
-	    let negative = false;
-	    let binary = false;
+	    let options1D = {negative:false, binary:false, returnValue:false, pairSearch:false};
 	    let count = 0;
 	    while (!solved){
 		try {
 		    count++;
-		    parser = solver(problem1D,parser,binary,negative);
+		    parser = solver(problem1D,parser,options1D);
 		    solved=true;
 		}
 		catch(e){
@@ -832,8 +827,8 @@ function laine_fun(fast) {
 			throw new laineError("Unexpected error",e,equations[0].number);
 		    }
 		    else{
-			binary = count==1? true: false;
-			negative = count==2? true: false;
+			options1D.binary = count==1 ? true: false;
+			options1D.negative = count==2 ? true: false;
 			if (count>2){
 			    throw new laineError('Difficult (or unsolvable) problem',
 						 'laine tried multiple times and could not find a solution',
@@ -910,19 +905,21 @@ function laine_fun(fast) {
 					
 					// Try solving using Newton-Raphson with random guesses multiple times 
 					let count=0;
-					let negative=false;
+					let options2D = {binary:false, negative:false, returnValue:false, pairSearch:false} 
 					let solved=false;
 					let problem = new Problem([equations[i],equations[j]],parser);
 					while (!solved){
 					    try {
 						count++;
+						parser=solver(problem,parser,options2D);
 						solved=true;
-						parser=solver(problem,parser,negative=negative);
 					    }
 					    catch(e){
-						solved=false
+						if (count>5){
+						    options2D.pairSearch = true;
+						}
 						if (count>10){
-						    negative=negative ? false: true; // flip - maybe is negative, try once
+						    options2D.negative = options2D.negative ? false: true; // flip - maybe is negative, try once
 						}
 					    }
 					    if (performance.now()-t1>3E3){
@@ -956,7 +953,7 @@ function laine_fun(fast) {
     if (equations.length>0){	
 	// Try solving using Newton-Raphson with random guesses multiple times 
 	let count=0;
-	let negative=false;
+	let options = {negative:false, binary:false, pairSearch:false, returnValue:false};
 	let solved=false;
 	let problem = new Problem(equations,parser);
 	
@@ -970,13 +967,12 @@ function laine_fun(fast) {
 	while (!solved){
 	    try {
 		count++;
+		parser=solver(problem,parser,options);
 		solved=true;
-		parser=solver(problem,parser,negative=negative);
 	    }
 	    catch{
-		solved=false
 		if (count>10){
-		    negative=negative ? false: true; // flip - maybe is negative, try once
+		    options.negative= options.negative ? false: true; // flip - maybe is negative, try once
 		}
 	    }
 	    if (performance.now()-t1>1E3){
