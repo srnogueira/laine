@@ -164,9 +164,11 @@ function cleanLines(lines,parser){
 	    for (let j=0;j<aux.length;j++){
 		try{
 		    let ans = parser.evaluate(aux[j]);
+		    console.log(ans);
 		    if (ans.type=="Unit"){
 			// Remove object from parser scope (avoid errors)
 			lhs = aux[j].split('=')[0].trim();
+			console.log(ans);
 			parser.remove(lhs);
 			// Throw a dummy error
 			throw new laineError("Parse error","Not a real evaluation",i+1);
@@ -663,33 +665,16 @@ function writeAns(solution,fast){
 	return null;
     }
 
-    let text;
-    if (typeof(value)=="object"){
-	value = Object.entries(value);
-	text="";
-	for (let i=0;i<value.length;i++){
-	    if (typeof(value[i][1])=="number"){
-		value[i][1] = value[i][1].toPrecision(5);
-	    }
-	    text+=value[i][0]+" : "+value[i][1];
-	    if (i<(value.length-1)){
-		text+=" ; ";
-	    }
-	}
-    }
-    else{
-	text = value.toString();
-    }
-    
     if(fast){
 	let para = outDiv.insertRow(-1);
 	let varCell = para.insertCell(0);
 	varCell.textContent = key;
 	let valueCell = para.insertCell(1);
-	valueCell.textContent = text;
+	valueCell.textContent = value.toString();
     }
     else{
-	msg=key+" = "+text;
+	
+	msg=key+" = "+value.toString();
 	let para=document.createElement('p');
 	para.textContent=formatMathJax(msg);
 	outDiv.appendChild(para);

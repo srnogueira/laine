@@ -28,8 +28,4 @@ let editor = CodeMirror.fromTextArea(textBox, {
 let editorDiv = document.querySelector(".CodeMirror")
 editor.on("change",function(){textBox.value=editor.getValue()});
 const solBox = document.querySelector(".solBox");
-const errorBox = document.querySelector(".errorBox");
-editor.on("change",function(){
-    solBox.style.display="";
-    errorBox.style.display="";
-});
+editor.on("change",function(){solBox.style.display=""});

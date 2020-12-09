@@ -3,6 +3,8 @@
 */
 
 const solveButton = document.querySelector(".solve");
+solveButton.onclick = laine;
+
 const reportButton = document.querySelector(".report");
 
 function report() {
@@ -23,19 +25,13 @@ function report() {
 }
 reportButton.onclick = report;
 
-solveButton.onclick = function(){
-    laine(true);
-    if (reportButton.innerText == "Edit (F4)"){
-	report();
-    }
-}
-
 function shortcut(key){
     if (key.code === "F2"){
-	solveButton.click();
+	laine(true);
+	reportButton.innerText="Report (F4)";
     }
     else if (key.code === "F4"){
-	reportButton.click();
+	report();
     }
 }
 document.onkeydown=shortcut;
@@ -225,6 +221,7 @@ function saveFile()
     fileButton.click();
 }
 
+
 const fileInput = document.getElementById("fileToLoad");
 
 function loadFileAsText(){    
@@ -236,15 +233,11 @@ function changeText()
     let downloadLink = document.createElement("a");
     let fileToLoad = document.getElementById("fileToLoad").files[0];
     let fileReader = new FileReader();
-
     fileReader.onload = function(fileLoadedEvent) 
     {
 	let textFromFileLoaded = fileLoadedEvent.target.result;
 	editor.getDoc().setValue(textFromFileLoaded);
-	
     };
-
-    document.getElementById("inputFileNameToSaveAs").value = fileToLoad.name.slice(0,-4);
     fileReader.readAsText(fileToLoad, "UTF-8");
     fileButton.click();
 }
