@@ -1026,6 +1026,7 @@ function laine_fun(fast) {
 function laine(fast){
     try{
 	laine_fun(fast);
+	editor.refresh(); // avoid problems with resize
     }
     catch(e){
 	errorBox.innerText = "";
