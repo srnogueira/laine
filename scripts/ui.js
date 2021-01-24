@@ -100,6 +100,31 @@ lkButton.onclick = function(){ toggle(".lkBox"); functionButton.click(); };
 const lkCancelButton = document.querySelector(".lkCancel")
 lkCancelButton.onclick = function(){toggle(".lkBox");};
 
+const plotMenuButton = document.querySelector(".plot")
+plotMenuButton.onclick = function(){
+    if (document.querySelector(".plotBox").style.display===""){
+	let check = laine_plot(true);
+	if (check != "error"){
+	    toggle(".plotBox");
+	}
+    }
+    else{
+	toggle(".plotBox");
+    }
+};
+
+const plotCancelButton = document.querySelector(".plotCancel")
+plotCancelButton.onclick = function(){toggle(".plotBox")};
+
+const plotButton  = document.querySelector(".plotDraw");
+plotButton.onclick = function(){laine_plot(false);toggle(".plotBox");};
+
+const closePlotButton  = document.querySelector(".closePlot");
+closePlotButton.onclick = function(){
+    let draw = document.querySelector(".plotDrawBox");
+    draw.style.display = "";
+}
+
 // PropsSI
 function writePropsSI(){
     let fluid = document.querySelector(".FluidName");
@@ -210,7 +235,7 @@ function saveFile()
     let downloadLink = document.createElement("a");
     let filename = document.getElementById("inputFileNameToSaveAs").value;
     if (filename===""){
-	downloadLink.download="laine_save.txt";
+	downloadLink.download="laineSave.txt";
     }
     else{ 
 	downloadLink.download = filename+".txt";
@@ -223,6 +248,24 @@ function saveFile()
     
     downloadLink.click();
     fileButton.click();
+}
+
+function exportDataFile()
+{
+    let textToSave = exportData;
+    let textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+    let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+    
+    let downloadLink = document.createElement("a");
+    let filename = document.getElementById("inputFileNameToSaveAs").value;
+    downloadLink.download="laineData.txt";
+    downloadLink.innerHTML = "Download File";
+    downloadLink.href = textToSaveAsURL;
+    downloadLink.onclick = destroyClickedElement;
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    
+    downloadLink.click();
 }
 
 const fileInput = document.getElementById("fileToLoad");

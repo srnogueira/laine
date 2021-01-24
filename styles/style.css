@@ -53,7 +53,7 @@ button:hover{
     background-color: #F04747;
 }
 
-.lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
+.plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
     display:none;
     position:absolute;
     z-index:5;
@@ -115,7 +115,7 @@ h2{
     display: none;
 }
 
-.solBox, .errorBox{
+.plotDrawBox,.solBox, .errorBox{
     display:none;
     border-radius: 5px;
     padding: 10px;
@@ -146,10 +146,6 @@ footer p{
 }
 
 @media screen and (max-width: 700px) {
-  header h1 {
-      display: none;
-  }
-
   .propsBox table td, .HApropsBox table td, .nasaBox table td, .lkBox table td{
       display: block;
       padding: 0;
@@ -173,6 +169,11 @@ footer p{
   .propsBox table, .HApropsBox table, .nasaBox table, .lkBox table{
       margin-bottom:10px;
   }
+
+  main table th{
+      display:flex;
+  }
+
 }
 
 @media print {

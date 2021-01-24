@@ -10,7 +10,9 @@
     <!-- head -->
     <title>laine | equation solver</title>
     <link rel="shortcut icon" type="image/x-icon" href="img/laine.png"> 
+    <!-- font -->
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet"> 
+    
     <link href="styles/style.css" rel="stylesheet">
     
     <!-- codemirror javascript -->
@@ -26,6 +28,7 @@
       gtag('js', new Date());
       gtag('config', 'G-1F6P2D472J');
     </script>
+    
   </head>
   <body>
     
@@ -44,6 +47,7 @@
       <td> <button class="file">File (+)</button> </td>
       <td> <button class="function">Functions (+)</button> </td>
       <td> <button class="solve"> Solve (F2)</button> </td>
+      <td> <button class="plot"> Plot </button> </td>
       <td> <button class="report"> Report (F4)</button> </td>
     </table>
   </nav>
@@ -318,7 +322,7 @@
       </table>
 
       <table>
-	<td><button class="butPropsSI">Paste in Equations</button></td>
+	<td><button class="butPropsSI">Paste!</button></td>
 	<td><button class="propsCancel">Cancel</button></td>
       </table>
     </div>
@@ -468,7 +472,7 @@
       </table>
 
       <table>
-	<td><button class="butHAPropsSI">Paste in Equations</button></td>
+	<td><button class="butHAPropsSI">Paste!</button></td>
 	<td><button class="HApropsCancel">Cancel</button></td>
       </table>
       
@@ -564,7 +568,7 @@
       </table>
 
       <table>
-	<td><button class="butNasa">Paste in Equations</button></td>
+	<td><button class="butNasa">Paste!</button></td>
 	<td><button class="nasaCancel">Cancel</button></td>
       </table>
     </div>
@@ -610,8 +614,48 @@
       </table>
 
       <table>
-	<td><button class="butlk">Paste in Equations</button></td>
+	<td><button class="butlk">Paste!</button></td>
 	<td><button class="lkCancel">Cancel</button></td>
+      </table>
+      
+    </div>
+
+    <!-- Plot box -->
+    <div class="plotBox">
+      <table>
+	<tr style="border-bottom: 1px solid #F04747">
+	  <td><h2>Plot y vs. x</h2></td>
+	  <td>Plot y results for different x values</td>
+	</tr>
+	
+	<tr>
+	  <td>Choose 'x' variable:</td>
+	  <td><select class="plotX"></select></td>
+	</tr>
+	
+	<tr>
+	  <td>Define 'x' range:</td>
+	  <td>from <input class="plotXfrom"></input></td>
+	</tr>
+	<tr>
+	  <td></td>
+	  <td>to <input class="plotXto"></input></td>
+	</tr>
+
+	<tr>
+	  <td>Number of evaluations:</td>
+	  <td><input class="plotNpoints" type="number" value="5" min="2" max="100"></input></td>
+	</tr>
+	
+	<tr>
+	  <td>Choose 'y' variable:</td>
+	  <td><select class="plotY"></select></td>
+	</tr>
+      </table>
+
+      <table>
+	<td><button class="plotDraw">Plot!</button></td>
+	<td><button class="plotCancel">Cancel</button></td>
       </table>
       
     </div>
@@ -630,9 +674,13 @@ x^2+y^2=10
 x*y=3
 
 # and you can also use thermodynamic properties
-T_0=298.15 ; P_0=1E5 
-h_0=PropsSI('H','T',T_0,'P',P_0,'Air') # J/kg
+T_0=298.15 # K
+P_0=1E5    # Pa
+h_0=PropsSI('H','T',T_0,'P',P_0,'Air')  # J/kg
 s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
+
+# plot is available for problems with 1 degree of freedom. Ex:
+# c_p = PropsSI('C','T',T,'P',P_0,'H2')  # c_p vs. T
 
 # Have 'fun' with laine :)</textarea>
       </th>
@@ -650,8 +698,20 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 	<!-- ErrorBox -->
 	<div class="errorBox">
 	</div>
+
+	<!-- PlotBox -->
+	<div class="plotDrawBox">
+	  <table>
+	    <td><h2>Plot | </h2></td>
+	    <td><button onclick="exportDataFile()">Export</button></td>
+	    <td><button class="closePlot">Close</button></td>
+	  </table>	  
+	  <canvas id="myChart" height="400"></canvas>
+	</div>
+	    
       </th>
     </table>
+  
   </main>
   <!-- thermodynamic functions javascript -->
   <script src="scripts/third-party/coolprop.js"></script>
@@ -662,6 +722,8 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
   <!-- math render javascript -->
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <!-- For promise -->
   <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
   <!-- laine javascript -->
   <script src="scripts/nasaGleen.js"></script>
   <script src="scripts/leeKesler.js"></script>
@@ -674,7 +736,7 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
       developed by Rafael Nogueira Nakashima <br>
       <a href="mailto:rafaelnnakashima@usp.br">Email</a> |
       <a target="_blank" href="https://github.com/srnogueira/laine">Github</a> |
-      <a target="_blank" href="https://forms.gle/zR1FoeqWNRiJg5jt8">Feedback</a>
+      <a target="_blank" href="https://forms.gle/zR1FoeqWNRiJg5jt8">Report a bug</a>
     </p>
   </footer>
 </html>

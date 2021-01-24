@@ -790,26 +790,34 @@ function writeEqs(lines){
 const outDiv = document.querySelector(".out");
 let parser=math.parser();  // create parser object
 
-function laine_fun(fast) {
+// Create another version of the solver which uses a Problem as input
+function laine_fun(fast,plot=false) {
     
     let t1 = performance.now();
+    let equations;
     
-    // Clear parser and errors
-    errorBox.style.display = "";
-    parser.clear();
-    
-    // Start solver
-    let lines=(editor.getValue()).split("\n");  // break text into lines
-    
-    // MathJax equations
-    if (!fast){
-	writeEqs(lines);
+    if (typeof(fast)=="object"){
+	equations = JSON.parse(JSON.stringify(fast)) // deepClone (because the algorithm is dumb
+	// parser is a global variable, we just don't erase some variables (related with x)
     }
+    else{
+	// Clear parser and errors
+	errorBox.style.display = "";
+	parser.clear();
     
-    // Get expression lines and 'substitution book'
-    let equations =cleanLines(lines,parser);  // clean text	    
+	// Start solver
+	let lines=(editor.getValue()).split("\n");  // break text into lines
+    
+	// MathJax equations
+	if (!fast){
+	    writeEqs(lines);
+	}
+    
+	// Get expression lines and 'substitution book'
+	equations =cleanLines(lines,parser);  // clean text	    
+    }
     equations.sort(moreVar);  // sorting
-
+    
     let name,solutions;    
     while (equations.length>0){
 	// Avoid long loops
@@ -978,6 +986,10 @@ function laine_fun(fast) {
 	
 	// Check the problem is correct
 	if (equations.length != problem.names.length){
+	    if (plot == true){
+		// Return problem to create plot menu
+		return problem;
+	    }
 	    throw new laineError('Degrees of freedom',
 			       'The problem has '+problem.names.length+' variables and '+equations.length+' equations',
 			       problem.numbers);
@@ -1001,6 +1013,11 @@ function laine_fun(fast) {
 	    }
 	}
     }
+
+    // If its a plot run, just terminate
+    if (typeof(fast)=="object"){
+	return false;
+    }
     
     outDiv.innerHTML="";  // clear space
     solutions = Object.entries(parser.getAll());
@@ -1023,19 +1040,153 @@ function laine_fun(fast) {
     console.log("evaluation time:",t2-t1,"ms");
 }
 
+function displayError(messageText){
+    errorBox.innerText = "";
+    let header = document.createElement("h2");
+    header.innerText= "Error";
+    let message = document.createElement("span");
+    message.innerText= messageText;
+    errorBox.appendChild(header);
+    errorBox.appendChild(message);
+    errorBox.style.display = "inline-block";
+    editor.refresh();
+}
+
 function laine(fast){
     try{
 	laine_fun(fast);
 	editor.refresh(); // avoid problems with resize
     }
     catch(e){
-	errorBox.innerText = "";
-	let header = document.createElement("h2");
-	header.innerText= "Error";
-	let message = document.createElement("span");
-	message.innerText= e.alert ? e.alert : e;
-	errorBox.appendChild(header);
-	errorBox.appendChild(message);
-	errorBox.style.display = "inline-block";
+	let errorText = e.alert ? e.alert : e;
+	displayError(errorText);
     }
+}
+
+// Data for download
+var exportData;
+
+function laine_plot(firstRun){
+    let t1 = performance.now();
+    
+    let problem = laine_fun(true,plot=true);
+    if (problem == undefined){
+	let errorText= "Type: No degree of freedom \nDescription: Try to remove an equation";
+	displayError(errorText);
+	return "error";
+    }
+
+    let degrees = problem.names.length-problem.equations.length;
+
+    if (degrees>1){
+	let errorText= "Type: 2 or + degrees of freedom \nDescription: Try to include more equations";
+	displayError(errorText);
+	return "error";
+    }
+
+    if (firstRun==true){
+	let xSelect = document.querySelector(".plotX");
+	let ySelect = document.querySelector(".plotY");
+
+	xSelect.options.length = 0;
+	ySelect.options.length = 0;
+
+	for (let i=0; i<problem.names.length; i++){
+	    let optX = document.createElement("option");
+	    let optY = document.createElement("option");
+	    optX.value = problem.names[i];
+	    optX.text = problem.names[i];
+	    optY.value = problem.names[i];
+	    optY.text = problem.names[i];
+	    xSelect.add(optX);
+	    ySelect.add(optY);
+	}
+
+	return false;
+    }
+
+    let xName = document.querySelector(".plotX").value;
+    let yName = document.querySelector(".plotY").value;
+    
+    let from = parseFloat(document.querySelector(".plotXfrom").value);
+    let to = parseFloat(document.querySelector(".plotXto").value);
+    let Npoints = document.querySelector(".plotNpoints").value;
+
+    delta = (to-from)/(Npoints-1)
+    let data = [];
+    exportData="y\tx\n";
+
+    console.log(parser);
+    console.log(problem);
+
+    delete problem.names[xName];
+    
+    for (let i=0;i<Npoints;i++){
+	parser.scope[xName] = from + delta*i;
+
+	try{
+	    laine_fun(problem.equations);
+	}
+	catch(e){
+	    let errorText = e.alert ? e.alert : e;
+	    displayError(errorText);
+	    return false;
+	}
+	    
+	let point = {x: parser.scope[xName], y:parser.scope[yName]};
+	data.push(point);
+	exportData+=""+point.x+"\t"+point.y+"\n";
+	
+	for (let j=0;j<problem.names.length;j++){
+	    delete parser.scope[problem.names[j]];
+	}
+    }
+
+    let ctx = document.getElementById("myChart").getContext("2d");
+    let myLineChart = new Chart(ctx, {
+	type: 'line',
+	data: { datasets:[{
+	    fill: false,
+	    backgroundColor: 'rgba(0, 0, 0, 1)',
+	    borderColor: 'rgba(0, 0, 0, 1)',
+	    data: data}]
+	      },
+	options:{
+	    responsive: false,
+	    title:{
+		display: true,
+		text: yName+" vs. "+xName,
+	    },
+	    maintainAspectRatio:false,
+	    legend: {
+		display:false,
+	    },
+	    scales: {
+		xAxes: [{
+		    display: true,
+		    type:"linear",
+		    scaleLabel: {
+			display: true,
+			labelString: xName
+		    }
+		}],
+		yAxes: [{
+		    display: true,
+		    type: "linear",
+		    scaleLabel: {
+			display: true,
+			labelString: yName
+		    }
+		}]
+	    }
+	}
+    });
+
+    let plotDrawBox = document.querySelector(".plotDrawBox");
+    plotDrawBox.style.display="block";
+
+    
+    let t2 = performance.now();
+    console.log("Plot time:",t2-t1,"ms")
+    return false;
 }
