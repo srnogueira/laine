@@ -62,6 +62,9 @@ button:hover{
     max-width: 90%;
 }
 
+.fileAll{
+    display:inline-block;
+}
 
 .fileBox{
     left: 20px;
@@ -97,6 +100,8 @@ main th {
 .mathDiv{
     display:none;
     margin-right: 20px;
+    padding-top: 10px;
+    padding-left: 15px;
 }
 
 
@@ -172,6 +177,7 @@ footer p{
 
   main table th{
       display:flex;
+      align-items:center;
   }
 
 }

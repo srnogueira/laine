@@ -17,7 +17,7 @@ CodeMirror.defineSimpleMode("laine", {
 // Creating the editor
 const textBox = document.querySelector(".box");
 
-let editor = CodeMirror.fromTextArea(textBox, {
+const editor = CodeMirror.fromTextArea(textBox, {
     scrollbarStyle: "null",
     viewportMargin: Infinity,
     lineNumbers: true,
@@ -26,10 +26,10 @@ let editor = CodeMirror.fromTextArea(textBox, {
 
 // Adding effects with changes
 let editorDiv = document.querySelector(".CodeMirror")
-editor.on("change",function(){textBox.value=editor.getValue()});
 const solBox = document.querySelector(".solBox");
 const errorBox = document.querySelector(".errorBox");
 editor.on("change",function(){
+    textBox.value=editor.getValue();
     solBox.style.display="";
     errorBox.style.display="";
 });

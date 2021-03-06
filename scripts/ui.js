@@ -1,48 +1,9 @@
 /*
-  Solver interface
-*/
-
-const solveButton = document.querySelector(".solve");
-const reportButton = document.querySelector(".report");
-
-function report() {
-    if (reportButton.innerText=="Report (F4)"){
-	laine();
-	reportButton.innerText="Edit (F4)";
-	reportButton.style.backgroundColor = "#F04747";
-	reportButton.style.color="white";
-    }
-    else{
-	mathDiv.style.display="none";
-	solBox.style.display="none";
-	editorDiv.style.display="block";
-	reportButton.innerText="Report (F4)";
-	reportButton.style.backgroundColor = "white";
-	reportButton.style.color = "#F04747";
-    }
-}
-reportButton.onclick = report;
-
-solveButton.onclick = function(){
-    laine(true);
-    if (reportButton.innerText == "Edit (F4)"){
-	report();
-    }
-}
-
-function shortcut(key){
-    if (key.code === "F2"){
-	solveButton.click();
-    }
-    else if (key.code === "F4"){
-	reportButton.click();
-    }
-}
-document.onkeydown=shortcut;
-
-/*
   toggle menus
 */
+
+const functionButton = document.querySelector(".function");
+const fileButton = document.querySelector(".file");
 
 function toggle(className,button=undefined){
     let x = document.querySelector(className);
@@ -70,38 +31,80 @@ function toggle(className,button=undefined){
     }
 }
 
-const functionButton = document.querySelector(".function");
-functionButton.onclick = function(){toggle(".functionBox",button=functionButton)};
+function clear(className,button){
+    let x = document.querySelector(className);
+    x.style.display="";
+    if (button!=undefined){
+	text = button.innerText;
+	text = text.slice(0,text.length-2)+'+)';
+	button.innerText = text;
+	button.style.backgroundColor = "white";
+	button.style.color = "#F04747";
+    }
+}
 
-const fileButton = document.querySelector(".file");
-fileButton.onclick = function(){toggle(".fileBox",button=fileButton)};
-    
+const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox"];
+const buttons = [fileButton,functionButton,undefined,undefined,undefined,undefined,undefined];
+
+function clearAll(exception){
+    for (let i=0;i<classes.length;i++){
+	if (classes[i] != exception){
+	    clear(classes[i],buttons[i]);
+	}
+    }
+}
+
+// editor is defined on editor.js
+editor.on("focus",function(){
+    clearAll();
+});
+
+fileButton.onclick = function(){
+    clearAll(".fileBox");
+    toggle(".fileBox",button=fileButton);
+};
+
+functionButton.onclick = function(){
+    clearAll(".functionBox");
+    toggle(".functionBox",button=functionButton);
+};
+
 const propsButton = document.querySelector(".props")
-propsButton.onclick = function(){ toggle(".propsBox"); functionButton.click(); };
+propsButton.onclick = function(){
+    clearAll();
+    toggle(".propsBox"); };
+
 
 const propsCancelButton = document.querySelector(".propsCancel")
 propsCancelButton.onclick = function(){toggle(".propsBox");};
 
 const HApropsButton = document.querySelector(".HAprops")
-HApropsButton.onclick = function(){ toggle(".HApropsBox"); functionButton.click(); };
+HApropsButton.onclick = function(){
+    clearAll();
+    toggle(".HApropsBox");};
 
 const HApropsCancelButton = document.querySelector(".HApropsCancel")
 HApropsCancelButton.onclick = function(){toggle(".HApropsBox");};
 
 const nasaButton = document.querySelector(".nasa")
-nasaButton.onclick = function(){ toggle(".nasaBox"); functionButton.click(); };
+nasaButton.onclick = function(){
+    clearAll();
+    toggle(".nasaBox"); };
 
 const nasaCancelButton = document.querySelector(".nasaCancel")
 nasaCancelButton.onclick = function(){toggle(".nasaBox");};
 
 const lkButton = document.querySelector(".lk")
-lkButton.onclick = function(){ toggle(".lkBox"); functionButton.click(); };
+lkButton.onclick = function(){
+    clearAll();
+    toggle(".lkBox"); };
 
 const lkCancelButton = document.querySelector(".lkCancel")
 lkCancelButton.onclick = function(){toggle(".lkBox");};
 
 const plotMenuButton = document.querySelector(".plot")
 plotMenuButton.onclick = function(){
+    clearAll();
     if (document.querySelector(".plotBox").style.display===""){
 	let check = laine_plot(true);
 	if (check != "error"){
@@ -124,6 +127,52 @@ closePlotButton.onclick = function(){
     let draw = document.querySelector(".plotDrawBox");
     draw.style.display = "";
 }
+
+/*
+  Solver interface
+*/
+    
+const solveButton = document.querySelector(".solve");
+const reportButton = document.querySelector(".report");
+
+function report() {
+    clearAll();
+    if (reportButton.innerText=="Report (F4)"){
+	laine();
+	reportButton.innerText="Edit (F4)";
+	reportButton.style.backgroundColor = "#F04747";
+	reportButton.style.color="white";
+    }
+    else{
+	mathDiv.style.display="none";
+	solBox.style.display="none";
+	editorDiv.style.display="block";
+	reportButton.innerText="Report (F4)";
+	reportButton.style.backgroundColor = "white";
+	reportButton.style.color = "#F04747";
+    }
+    editor.refresh(); // avoid problems with resize
+}
+reportButton.onclick = report;
+
+solveButton.onclick = function(){
+    clearAll();
+    laine(true);
+    if (reportButton.innerText == "Edit (F4)"){
+	report();
+    }
+}
+
+function shortcut(key){
+    if (key.code === "F2"){
+	solveButton.click();
+    }
+    else if (key.code === "F4"){
+	reportButton.click();
+    }
+}
+document.onkeydown=shortcut;
+
 
 // PropsSI
 function writePropsSI(){
@@ -270,7 +319,8 @@ function exportDataFile()
 
 const fileInput = document.getElementById("fileToLoad");
 
-function loadFileAsText(){    
+function loadFileAsText(){
+    clearAll();    
     fileInput.click();
 }
 
@@ -289,7 +339,6 @@ function changeText()
 
     document.getElementById("inputFileNameToSaveAs").value = fileToLoad.name.slice(0,-4);
     fileReader.readAsText(fileToLoad, "UTF-8");
-    fileButton.click();
 }
 
 fileInput.addEventListener("change", changeText, false);

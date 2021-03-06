@@ -666,16 +666,17 @@ function writeAns(solution,fast){
     let text;
     if (typeof(value)=="object"){
 	value = Object.entries(value);
-	text="";
+	text="{";
 	for (let i=0;i<value.length;i++){
 	    if (typeof(value[i][1])=="number"){
 		value[i][1] = value[i][1].toPrecision(5);
 	    }
 	    text+=value[i][0]+" : "+value[i][1];
 	    if (i<(value.length-1)){
-		text+=" ; ";
+		text+=" ,";
 	    }
 	}
+	text+='}';
     }
     else{
 	text = value.toString();
@@ -715,7 +716,12 @@ function formatMathJax(line){
 		    break;
 		}
 		else if (j==(piece.length-1)){
-		    line+=piece+"]";
+		    last = piece.length
+		    if (piece.slice(last-1,last)=='}'){
+			line+=piece.slice(0,last-1)+"]"+piece.slice(last-1,piece.length);
+		    }else{
+			line+=piece+"]";
+		    }
 		}
 	    }
 	}
@@ -725,6 +731,17 @@ function formatMathJax(line){
 	}
     }
 
+    let greek = ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa','lambda','mu','nu','xi','omicron','pi','rho','sigma','tau','upsilon','phi','chi','psi','omega','Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu','Nu','Xi','Omicron','Pi','Rho','Sigma','Tau','Upsilon','Phi','Chi','Psi','Omega'];
+
+    for(let i =0; i<greek.length ; i++){
+	if (line.includes(greek[i])){
+	    let pieces=line.split(greek[i]);
+	    line = pieces[0];
+	    for (let j =1; j<pieces.length; j++){
+		line+=greek[i]+' '+pieces[j];
+	    }
+	}
+    }
     // Return parse to Tex
     return "$$"+math.parse(line).toTex({parenthesis: 'auto'})+"$$";
 }
@@ -761,9 +778,10 @@ function writeEqs(lines){
 	    }
 	}
 	else{
-	    // para juntar multiplas linhas
 	    let para=document.createElement('p');
 	    text=lines[i].slice(1,lines[i].length);
+	    // para juntar multiplas linhas
+	    /*
 	    if (i<lines.length-1){
 		while (!checkLine(lines[i+1].trim(),i)){
 		    if (lines[i+1]==''){
@@ -776,6 +794,7 @@ function writeEqs(lines){
 		    }
 		}
 	    }
+	    */
 	    para.textContent=text;
 	    mathDiv.appendChild(para);
 	}   
@@ -1116,9 +1135,6 @@ function laine_plot(firstRun){
     let data = [];
     exportData="y\tx\n";
 
-    console.log(parser);
-    console.log(problem);
-
     delete problem.names[xName];
     
     for (let i=0;i<Npoints;i++){
@@ -1142,7 +1158,12 @@ function laine_plot(firstRun){
 	}
     }
 
-    let ctx = document.getElementById("myChart").getContext("2d");
+    let div = document.getElementById("canvasDiv");
+    div.innerText = "";
+    let canvas = document.createElement("canvas");
+    canvas.height="400";
+    div.appendChild(canvas);
+    let ctx = canvas.getContext("2d");
     let myLineChart = new Chart(ctx, {
 	type: 'line',
 	data: { datasets:[{
@@ -1181,10 +1202,10 @@ function laine_plot(firstRun){
 	    }
 	}
     });
-
+    myLineChart.update();
+    
     let plotDrawBox = document.querySelector(".plotDrawBox");
     plotDrawBox.style.display="block";
-
     
     let t2 = performance.now();
     console.log("Plot time:",t2-t1,"ms")

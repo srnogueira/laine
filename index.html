@@ -11,7 +11,9 @@
     <title>laine | equation solver</title>
     <link rel="shortcut icon" type="image/x-icon" href="img/laine.png"> 
     <!-- font -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet"> 
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
     
     <link href="styles/style.css" rel="stylesheet">
     
@@ -41,14 +43,15 @@
       <th> <input id="inputFileNameToSaveAs" placeholder="Untitled problem"></input> </th> 
     </table>
   </header>
+
   
   <nav class="laineMenu">
     <table>
       <td> <button class="file">File (+)</button> </td>
       <td> <button class="function">Functions (+)</button> </td>
       <td> <button class="solve"> Solve (F2)</button> </td>
-      <td> <button class="plot"> Plot </button> </td>
       <td> <button class="report"> Report (F4)</button> </td>
+      <td> <button class="plot"> Plot </button> </td>
     </table>
   </nav>
 
@@ -644,7 +647,7 @@
 
 	<tr>
 	  <td>Number of evaluations:</td>
-	  <td><input class="plotNpoints" type="number" value="5" min="2" max="100"></input></td>
+	  <td><input class="plotNpoints" type="number" value="20" min="2" max="100"></input></td>
 	</tr>
 	
 	<tr>
@@ -667,20 +670,30 @@
       <th>
 	<!-- Equations Box -->
 	<textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
-# Press 'Solve (F2)' to see the results (fast) or 'Report (F4)' to make a pretty solution (may be slow)
-
-# laine can solve non-linear system of equations, such as:
+# Write and solve nonlinear system of equations:
 x^2+y^2=10
 x*y=3
 
-# and you can also use thermodynamic properties
-T_0=298.15 # K
-P_0=1E5    # Pa
-h_0=PropsSI('H','T',T_0,'P',P_0,'Air')  # J/kg
-s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
+# Press 'Solve (F2)' to find a solution (fast)
+# or 'Report (F4)' to render equations (may be slow)
 
-# plot is available for problems with 1 degree of freedom. Ex:
-# c_p = PropsSI('C','T',T,'P',P_0,'H2')  # c_p vs. T
+# Use thermodynamic functions:
+h_0=PropsSI('H','T',298.15,'P',1E5,'Air')  # J/kg
+
+# or math functions and constants:
+omega = sin(pi/2)
+
+# Create plots and parametric analysis
+# w = 1/z
+# e.g. uncomment previously line and use "Plot"
+
+# Create user-defined functions
+kelvin(celsius) = celsius+273.15 
+T_kelvin = kelvin(50) 
+
+# Create objects
+state = {T:T_kelvin, h:h_0}
+DeltaT=state.T-298.15
 
 # Have 'fun' with laine :)</textarea>
       </th>
@@ -706,7 +719,9 @@ s_0=PropsSI('S','T',T_0,'P',P_0,'Air')  # J/kg.K
 	    <td><button onclick="exportDataFile()">Export</button></td>
 	    <td><button class="closePlot">Close</button></td>
 	  </table>	  
-	  <canvas id="myChart" height="400"></canvas>
+	  <div id="canvasDiv">
+	    <canvas id="myChart" height="400"></canvas>
+	  </div>
 	</div>
 	    
       </th>

@@ -3,7 +3,7 @@
 .CodeMirror {
     /* Set height, width, borders, and global font properties here */
     font-size: 12pt;
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Fira Code', monospace;
     margin:10px;
     padding:5px;
     line-height: 1.5;
