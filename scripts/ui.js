@@ -15,8 +15,6 @@ function toggle(className,button=undefined){
 	    text = button.innerText;
 	    text = text.slice(0,text.length-2)+'-)';
 	    button.innerText = text;
-	    button.style.backgroundColor = "#F04747";
-	    button.style.color = "white";
 	}
     }
     else{
@@ -25,8 +23,6 @@ function toggle(className,button=undefined){
 	    text = button.innerText;
 	    text = text.slice(0,text.length-2)+'+)';
 	    button.innerText = text;
-	    button.style.backgroundColor = "white";
-	    button.style.color = "#F04747";
 	}
     }
 }
@@ -38,8 +34,6 @@ function clear(className,button){
 	text = button.innerText;
 	text = text.slice(0,text.length-2)+'+)';
 	button.innerText = text;
-	button.style.backgroundColor = "white";
-	button.style.color = "#F04747";
     }
 }
 
@@ -268,6 +262,23 @@ leeKeslerButton.onclick = writelk;
   File menu
 */
 
+// New file
+function newFile()
+{
+    // Textbox defined in editor.js
+    let confirmation = confirm("Are you sure?");
+    let fileName = document.getElementById("inputFileNameToSaveAs")
+    if (confirmation){
+	textBox.value = "";
+	editor.getDoc().setValue(textBox.value);
+	fileName.value="";
+    }
+    fileButton.click();
+}
+
+const newButton = document.querySelector(".new");
+newButton.onclick = newFile;
+
 // Save a file
 
 function destroyClickedElement(event)
@@ -317,7 +328,7 @@ function exportDataFile()
     downloadLink.click();
 }
 
-const fileInput = document.getElementById("fileToLoad");
+let fileInput = document.getElementById("fileToLoad");
 
 function loadFileAsText(){
     clearAll();    
@@ -327,18 +338,32 @@ function loadFileAsText(){
 function changeText()
 {
     let downloadLink = document.createElement("a");
-    let fileToLoad = document.getElementById("fileToLoad").files[0];
+    let fileToLoad = fileInput.files[0];
     let fileReader = new FileReader();
 
     fileReader.onload = function(fileLoadedEvent) 
     {
 	let textFromFileLoaded = fileLoadedEvent.target.result;
-	editor.getDoc().setValue(textFromFileLoaded);
-	
+	editor.getDoc().setValue(textFromFileLoaded);	
     };
 
     document.getElementById("inputFileNameToSaveAs").value = fileToLoad.name.slice(0,-4);
     fileReader.readAsText(fileToLoad, "UTF-8");
 }
 
-fileInput.addEventListener("change", changeText, false);
+fileInput.addEventListener("change", function(){
+    changeText();
+    fileInput.value="";}, false);
+
+// Warning
+window.onbeforeunload = function(e) {
+    e = e || window.event;
+
+    // For IE and Firefox prior to version 4
+    if (e) {
+        e.returnValue = 'Sure?';
+    }
+
+    // For Safari
+    return 'Sure?';
+};

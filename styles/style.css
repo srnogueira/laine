@@ -70,8 +70,16 @@ button:hover{
     left: 20px;
 }
 
+.fileBox button{
+    width:60px;
+}
+
 .functionBox{
     left: 92px;
+}
+
+.functionBox button{
+    width:140px;
 }
 
 table{
@@ -98,22 +106,44 @@ main th {
 }
 
 .mathDiv{
+    font-family: 'Noto Serif JP', serif;
     display:none;
     margin-right: 20px;
     padding-top: 10px;
     padding-left: 15px;
 }
 
-
-a {
-    color:#F04747;
-    font-weight:bold;
+.mathDiv h1{
+    font-size:14pt;
 }
 
 h2{
     font-size:14pt;
     color: #F04747;
     margin:0;
+}
+
+.mathDiv h2{
+    font-size:14pt;
+    font-style:italic;
+    font-weight:normal;
+    color:black;
+}    
+
+.mathDiv h3{
+    font-size:12pt;
+}
+
+.mathDiv h4{
+    font-size:12pt;
+    font-style:italic;
+    font-weight:normal;
+    color:black;
+}    
+
+a {
+    color:#F04747;
+    font-weight:bold;
 }
     
 .box {

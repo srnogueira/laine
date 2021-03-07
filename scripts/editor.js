@@ -15,7 +15,7 @@ CodeMirror.defineSimpleMode("laine", {
 });
 
 // Creating the editor
-const textBox = document.querySelector(".box");
+let textBox = document.querySelector(".box");
 
 const editor = CodeMirror.fromTextArea(textBox, {
     scrollbarStyle: "null",

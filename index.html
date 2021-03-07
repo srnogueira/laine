@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
     
     <link href="styles/style.css" rel="stylesheet">
     
@@ -44,7 +45,6 @@
     </table>
   </header>
 
-  
   <nav class="laineMenu">
     <table>
       <td> <button class="file">File (+)</button> </td>
@@ -58,6 +58,7 @@
   <nav class="subMenus">
     <!-- File menu -->
     <div class="fileBox">
+      <button class="new">New</button>
       <button onclick="saveFile()">Save</button>
       <input type="file" id="fileToLoad" style="display:none"></input>
       <button onclick="loadFileAsText()">Load</button>
@@ -670,32 +671,38 @@
       <th>
 	<!-- Equations Box -->
 	<textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
-# Write and solve nonlinear system of equations:
+## Tutorial
+### Basic problems
+#1. Write and solve nonlinear system of equations:
 x^2+y^2=10
 x*y=3
 
-# Press 'Solve (F2)' to find a solution (fast)
-# or 'Report (F4)' to render equations (may be slow)
+#2. Press 'Solve (F2)' to find a solution
+#3. or use 'Report (F4)' to render equations (may be slow)
+#*OBS: comments are render as markdown*
 
+### Functions
 # Use thermodynamic functions:
 h_0=PropsSI('H','T',298.15,'P',1E5,'Air')  # J/kg
 
 # or math functions and constants:
 omega = sin(pi/2)
 
-# Create plots and parametric analysis
-# w = 1/z
-# e.g. uncomment previously line and use "Plot"
+### Plots
+# 1. Define a problem with 1 degree of freedom
+# w = 1/z 
+# 2. Use 'Plots' to define variables
+#*OBS: 'Plots' ploblems can't be used with 'Solve (F2)' and vice-versa*
 
-# Create user-defined functions
+### Advanced options
+#1. Create user-defined functions
 kelvin(celsius) = celsius+273.15 
 T_kelvin = kelvin(50) 
 
-# Create objects
+#2. Create objects
 state = {T:T_kelvin, h:h_0}
 DeltaT=state.T-298.15
-
-# Have 'fun' with laine :)</textarea>
+</textarea>
       </th>
       
       <th class="mathDiv">
@@ -739,6 +746,8 @@ DeltaT=state.T-298.15
   <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <!-- charts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <!-- showdown -->
+  <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
   <!-- laine javascript -->
   <script src="scripts/nasaGleen.js"></script>
   <script src="scripts/leeKesler.js"></script>

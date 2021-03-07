@@ -753,8 +753,8 @@ function writeEqs(lines){
     // Clear and start
     mathDiv.innerHTML="";
     let title=document.createElement('h2');
-    title.textContent="Report";
-    mathDiv.appendChild(title);
+    //title.textContent="Report";
+    //mathDiv.appendChild(title);
 
     let text;
     for (let i=0;i<lines.length;i++){
@@ -778,8 +778,10 @@ function writeEqs(lines){
 	    }
 	}
 	else{
-	    let para=document.createElement('p');
+	    let converter = new showdown.Converter();
+	    //let para=document.createElement('p');
 	    text=lines[i].slice(1,lines[i].length);
+	    let para = converter.makeHtml(text);
 	    // para juntar multiplas linhas
 	    /*
 	    if (i<lines.length-1){
@@ -795,8 +797,8 @@ function writeEqs(lines){
 		}
 	    }
 	    */
-	    para.textContent=text;
-	    mathDiv.appendChild(para);
+	    //para.textContent=text;
+	    mathDiv.innerHTML+=para;
 	}   
     }
     
