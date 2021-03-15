@@ -8,7 +8,7 @@ CodeMirror.defineSimpleMode("laine", {
 	{regex: /"(?:[^\\]|\\.)*?(?:"|$)/, token: "string"},
 	{regex: /'(?:[^\\]|\\.)*?(?:'|$)/, token: "string"},
 	{regex: /#.*/, token: "comment"},
-	{regex: /(?:PropsSI|NasaSI|HAPropsSI|LeeKesler|sin|cos|tan|exp|log|log10|abs)\b/, token: "keyword"},
+	{regex: /\w+(?=\()/, token: "keyword"},
 	{regex: /((\d+(\.|E|e))+(\+|\-)?\d+|\d+)/, token: "number"},
 	{regex: /[a-zA-Z$][\w$]*/, token: "variable"},
     ],
@@ -16,12 +16,12 @@ CodeMirror.defineSimpleMode("laine", {
 
 // Creating the editor
 let textBox = document.querySelector(".box");
-
 const editor = CodeMirror.fromTextArea(textBox, {
     scrollbarStyle: "null",
     viewportMargin: Infinity,
     lineNumbers: true,
     lineWrapping: true,
+    inputStyle: "textarea",
     mode: "laine"});
 
 // Adding effects with changes

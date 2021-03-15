@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width">
     <meta name="author" content="Rafael Nogueira Nakashima">
     <meta name="description" content="laine can solve equations using thermodynamic properties in a easy way">
-
     <!-- head -->
     <title>laine | equation solver</title>
     <link rel="shortcut icon" type="image/x-icon" href="img/laine.png"> 
@@ -14,15 +13,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap" rel="stylesheet">
+    <!-- css -->
     <link href="styles/style.css" rel="stylesheet">
-    
     <!-- codemirror javascript -->
     <script src="scripts/third-party/codemirror.js"></script>
-    <link rel="stylesheet" href="scripts/third-party/codemirror.css">
+    <link rel="stylesheet" href="styles/codemirror.css">
     <script src="scripts/third-party/simple.js"></script>
-
     <!-- Global site tag (gtag.js) - Google Analytics     -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-1F6P2D472J"></script>
     <script>
@@ -31,7 +28,6 @@
       gtag('js', new Date());
       gtag('config', 'G-1F6P2D472J');
     </script>
-    
   </head>
   <body>
     
@@ -648,7 +644,7 @@
 
 	<tr>
 	  <td>Number of evaluations:</td>
-	  <td><input class="plotNpoints" type="number" value="20" min="2" max="100"></input></td>
+	  <td><input class="plotNpoints" type="number" value="10" min="2" max="100"></input></td>
 	</tr>
 	
 	<tr>
@@ -673,52 +669,50 @@
 	<textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
 ## Tutorial
 ### Basic problems
-#1. Write and solve nonlinear system of equations:
+#1. Write and solve nonlinear system of equations;
 x^2+y^2=10
 x*y=3
 
-#2. Press 'Solve (F2)' to find a solution
-#3. or use 'Report (F4)' to render equations (may be slow)
-#*OBS: comments are render as markdown*
+#2. Press *Solve* to find a solution;
+#3. Use *Report* to render equations (may be slow).
+
+#**OBS**: comments are render as **markdown**.
 
 ### Functions
-# Use thermodynamic functions:
-h_0=PropsSI('H','T',298.15,'P',1E5,'Air')  # J/kg
-
-# or math functions and constants:
+# Use math functions and constants:
 omega = sin(pi/2)
+
+# As well as thermodynamic functions:
+h_0=PropsSI('H','T',298.15,'P',1E5,'Air')  # J/kg
 
 ### Plots
 # 1. Define a problem with 1 degree of freedom
 # w = 1/z 
-# 2. Use 'Plots' to define variables
-#*OBS: 'Plots' ploblems can't be used with 'Solve (F2)' and vice-versa*
+# 2. Use *Plots* to define variables
+# 3. Save data using *Export*
+#**OBS**: *Plots* problems **can't** be used with *Solve* and vice-versa
 
-### Advanced options
-#1. Create user-defined functions
+### User-defined functions
+# Create convenient functions
 kelvin(celsius) = celsius+273.15 
-T_kelvin = kelvin(50) 
-
-#2. Create objects
-state = {T:T_kelvin, h:h_0}
-DeltaT=state.T-298.15
-</textarea>
+T_kelvin = kelvin(50)</textarea>
       </th>
       
       <th class="mathDiv">
       </th>
 
       <th>
+	<!-- ErrorBox -->
+	<div class="errorBox">
+	</div>
+
+	<!-- Results -->
 	<div class="solBox">
 	  <h2>Solution</h2>
 	  <table class="out">
 	  </table>
 	</div>
 	
-	<!-- ErrorBox -->
-	<div class="errorBox">
-	</div>
-
 	<!-- PlotBox -->
 	<div class="plotDrawBox">
 	  <table>

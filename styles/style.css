@@ -106,15 +106,12 @@ main th {
 }
 
 .mathDiv{
-    font-family: 'Noto Serif JP', serif;
+    font-family: 'Shippori Mincho', serif;
     display:none;
     margin-right: 20px;
     padding-top: 10px;
     padding-left: 15px;
-}
-
-.mathDiv h1{
-    font-size:14pt;
+    text-align: justify;
 }
 
 h2{
@@ -123,8 +120,13 @@ h2{
     margin:0;
 }
 
+.mathDiv h1{
+    font-size:12pt;
+    font-weight:bold;
+}
+
 .mathDiv h2{
-    font-size:14pt;
+    font-size:12pt;
     font-style:italic;
     font-weight:normal;
     color:black;
@@ -132,6 +134,9 @@ h2{
 
 .mathDiv h3{
     font-size:12pt;
+    font-style:italic;
+    font-weight:normal;
+    color:black;
 }
 
 .mathDiv h4{
@@ -139,7 +144,7 @@ h2{
     font-style:italic;
     font-weight:normal;
     color:black;
-}    
+}
 
 a {
     color:#F04747;

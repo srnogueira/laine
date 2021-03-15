@@ -101,7 +101,7 @@ plotMenuButton.onclick = function(){
     clearAll();
     if (document.querySelector(".plotBox").style.display===""){
 	let check = laine_plot(true);
-	if (check != "error"){
+	if (check != false){
 	    toggle(".plotBox");
 	}
     }
@@ -114,12 +114,17 @@ const plotCancelButton = document.querySelector(".plotCancel")
 plotCancelButton.onclick = function(){toggle(".plotBox")};
 
 const plotButton  = document.querySelector(".plotDraw");
-plotButton.onclick = function(){laine_plot(false);toggle(".plotBox");};
+plotButton.onclick = function(){
+    laine_plot(false);
+    editor.refresh(); // avoid problems with resize
+    toggle(".plotBox");
+};
 
 const closePlotButton  = document.querySelector(".closePlot");
 closePlotButton.onclick = function(){
     let draw = document.querySelector(".plotDrawBox");
     draw.style.display = "";
+    editor.refresh(); // avoid problems with resize
 }
 
 /*
@@ -132,7 +137,7 @@ const reportButton = document.querySelector(".report");
 function report() {
     clearAll();
     if (reportButton.innerText=="Report (F4)"){
-	laine();
+	laine(false);
 	reportButton.innerText="Edit (F4)";
 	reportButton.style.backgroundColor = "#F04747";
 	reportButton.style.color="white";
@@ -333,6 +338,9 @@ let fileInput = document.getElementById("fileToLoad");
 function loadFileAsText(){
     clearAll();    
     fileInput.click();
+    if (reportButton.innerText=="Edit (F4)"){
+	reportButton.click();
+    }
 }
 
 function changeText()
