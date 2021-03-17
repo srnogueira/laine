@@ -139,16 +139,12 @@ function report() {
     if (reportButton.innerText=="Report (F4)"){
 	laine(false);
 	reportButton.innerText="Edit (F4)";
-	reportButton.style.backgroundColor = "#F04747";
-	reportButton.style.color="white";
     }
     else{
 	mathDiv.style.display="none";
 	solBox.style.display="none";
 	editorDiv.style.display="block";
 	reportButton.innerText="Report (F4)";
-	reportButton.style.backgroundColor = "white";
-	reportButton.style.color = "#F04747";
     }
     editor.refresh(); // avoid problems with resize
 }

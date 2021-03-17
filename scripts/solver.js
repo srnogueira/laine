@@ -725,7 +725,7 @@ function writeAns(solution,fast){
     else{
 	msg=key+" = "+text;
 	let para=document.createElement('p');
-	para.textContent=formatMathJax(msg);
+	para.textContent="$$"+formatMathJax(msg)+"$$";
 	outDiv.appendChild(para);
     }
 }
@@ -768,20 +768,20 @@ function formatMathJax(line){
 	}
     }
 
-    // Change greek variables names into symbols
-    let greek = ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa','lambda','mu','nu','xi','omicron','pi','rho','sigma','tau','upsilon','phi','chi','psi','omega','Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu','Nu','Xi','Omicron','Pi','Rho','Sigma','Tau','Upsilon','Phi','Chi','Psi','Omega'];
+    // Change greek variables names into symbols (not optimized)
+    let greek = ['$alpha','$beta','$gamma','$delta','$epsilon','$zeta','$eta','$theta','$iota','$kappa','$lambda','$mu','$nu','$xi','$omicron','$pi','$rho','$sigma','$tau','$upsilon','$phi','$chi','$psi','$omega','$Alpha','$Beta','$Gamma','$Delta','$Epsilon','$Zeta','$Eta','$Theta','$Iota','$Kappa','$Lambda','$Mu','$Nu','$Xi','$Omicron','$Pi','$Rho','$Sigma','$Tau','$Upsilon','$Phi','$Chi','$Psi','$Omega'];
     for(let i =0; i<greek.length ; i++){
 	if (line.includes(greek[i])){
 	    let pieces=line.split(greek[i]);
 	    line = pieces[0];
 	    for (let j =1; j<pieces.length; j++){
-		line+=greek[i]+' '+pieces[j];
+		line+=greek[i].slice(1)+' '+pieces[j];
 	    }
 	}
     }
     
     // Return parse to Tex
-    return "$$"+math.parse(line).toTex({parenthesis: 'auto'})+"$$";
+    return math.parse(line).toTex({parenthesis: 'auto'});
 }
 
     
@@ -800,20 +800,18 @@ function writeEqs(lines){
     for (let i=0;i<lines.length;i++){
 	// Check if is an equation or comment
 	if (checkLine(lines[i].trim(),i)){
-	    // Remove side comments
-	    lines[i]=(lines[i].split('#'))[0]
 	    // Check if is there is more than one equation
-	    if (lines[i].includes(';')){
-		let aux = lines[i].split(';');
-		for (let j=0;j<aux.length;j++){
-		    let para=document.createElement('p');
-		    para.textContent=formatMathJax(aux[j]);
-		    mathDiv.appendChild(para);
+	    let aux = lines[i].split(';');
+	    for (let j=0;j<aux.length;j++){
+		// Separate side comments
+		let sep = aux[j].split('#');
+		// Join comments
+		let comment=' \\text{';
+		for(let i=1;i<sep.length;i++){
+		    comment+=sep[i];
 		}
-	    }
-	    else{
 		let para=document.createElement('p');
-		para.textContent=formatMathJax(lines[i]);
+		para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
 		mathDiv.appendChild(para);
 	    }
 	}
