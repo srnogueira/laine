@@ -68,7 +68,6 @@ propsButton.onclick = function(){
     clearAll();
     toggle(".propsBox"); };
 
-
 const propsCancelButton = document.querySelector(".propsCancel")
 propsCancelButton.onclick = function(){toggle(".propsBox");};
 
@@ -100,8 +99,9 @@ const plotMenuButton = document.querySelector(".plot")
 plotMenuButton.onclick = function(){
     clearAll();
     if (document.querySelector(".plotBox").style.display===""){
-	let check = laine_plot(true);
-	if (check != false){
+	// Global var laineProblem
+	laineProblem = plot_check();
+	if (laineProblem != false){
 	    toggle(".plotBox");
 	}
     }
@@ -115,7 +115,8 @@ plotCancelButton.onclick = function(){toggle(".plotBox")};
 
 const plotButton  = document.querySelector(".plotDraw");
 plotButton.onclick = function(){
-    laine_plot(false);
+    //laine_plot(false);
+    laine_plot();
     editor.refresh(); // avoid problems with resize
     toggle(".plotBox");
 };

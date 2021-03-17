@@ -834,7 +834,7 @@ const outDiv = document.querySelector(".out"); // Solution element
 let parser=math.parser();  // create parser object
 
 // Create another version of the solver which uses a Problem as input
-function laine_fun(list,fast,plot,guesslist) {
+function laine_fun(list,fast,plot,guesslist,yVar) {
     /*
       Function : Parse + Solve
       Fast : determines how the solution is presented
@@ -875,6 +875,13 @@ function laine_fun(list,fast,plot,guesslist) {
 				 'Could not find a solution',
 				 equations[0].number);
 	}
+	//[plots] Break loop if y is already computed
+	if (yVar != undefined){
+	    if (parser.get(yVar)!=undefined){
+		return false;
+	    }
+	}
+
 	// Solve one var problems 
 	name=equations[0].vars;
 
@@ -882,7 +889,6 @@ function laine_fun(list,fast,plot,guesslist) {
 	    equations.shift();
 	}
 	else if (name.length==1){
-	    
 	    // Check if solution has already been computed
 	    if (parser.get(name[0])!=undefined){
 	    	throw new laineError('Redefined variable','Variable '+name[0]+' has been redefined',equations[0].number);
@@ -1132,7 +1138,7 @@ function laine(isfast){
       Function: calls solver for buttons and create a error message if necessary
     */
     try{
-	laine_fun(undefined,isfast,false,undefined);
+	laine_fun(undefined,isfast,false,undefined,undefined);
 	editor.refresh(); // avoid problems with resize
     }
     catch(e){
@@ -1143,15 +1149,15 @@ function laine(isfast){
 
 // Data for download
 var exportData;
+var laineProblem;
 
-function laine_plot(firstRun){
+function plot_check(){
     /*
-      Function: Create a plot
+      Function: Create a plot menu and save problem for latter 
     */
-    let t1 = performance.now();
-
+    
     // Check if the problem has 1 degree of freedom
-    let problem = laine_fun(undefined,true,true,undefined);
+    let problem = laine_fun(undefined,true,true,undefined,undefined);
     if (problem == undefined){
 	let errorText= "Type: No degree of freedom \nDescription: Try to remove an equation";
 	displayError(errorText);
@@ -1167,26 +1173,34 @@ function laine_plot(firstRun){
     }
 
     // If is the first run, just create a menu
-    if (firstRun==true){
-	let xSelect = document.querySelector(".plotX");
-	let ySelect = document.querySelector(".plotY");
+    let xSelect = document.querySelector(".plotX");
+    let ySelect = document.querySelector(".plotY");
 
-	xSelect.options.length = 0;
-	ySelect.options.length = 0;
+    xSelect.options.length = 0;
+    ySelect.options.length = 0;
 
-	for (let i=0; i<problem.names.length; i++){
-	    let optX = document.createElement("option");
-	    let optY = document.createElement("option");
-	    optX.value = problem.names[i];
-	    optX.text = problem.names[i];
-	    optY.value = problem.names[i];
-	    optY.text = problem.names[i];
-	    xSelect.add(optX);
-	    ySelect.add(optY);
-	}
-	return true;
+    for (let i=0; i<problem.names.length; i++){
+	let optX = document.createElement("option");
+	let optY = document.createElement("option");
+	optX.value = problem.names[i];
+	optX.text = problem.names[i];
+	optY.value = problem.names[i];
+	optY.text = problem.names[i];
+	xSelect.add(optX);
+	ySelect.add(optY);
     }
+    return problem;
+}
 
+
+function laine_plot(){
+    /*
+      Function: Create a plot
+    */
+    let t1 = performance.now();
+
+    let problem = laineProblem;
+    
     // Second run: solve the problem for multiple values
     let xName = document.querySelector(".plotX").value;
     let yName = document.querySelector(".plotY").value;
@@ -1200,17 +1214,17 @@ function laine_plot(firstRun){
     exportData="y\tx\n";
 
     // Store guesses
-    let storeSolution = new Object();
+    let storeSolution = new Object(); 
     
     for (let i=0;i<Npoints;i++){
 	// Try to solve
 	parser.scope[xName] = from + delta*i;
 	try{
 	    if (i==0){
-		laine_fun(problem.equations,true,false,undefined);
+		laine_fun(problem.equations,true,false,undefined,yName);
 	    }
 	    else{
-		laine_fun(problem.equations,true,false,storeSolution);
+		laine_fun(problem.equations,true,false,storeSolution,yName);
 	    }
 	}
 	catch(e){
