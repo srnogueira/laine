@@ -47,7 +47,8 @@
       <td> <button class="function">Functions (+)</button> </td>
       <td> <button class="solve"> Solve (F2)</button> </td>
       <td> <button class="report"> Report (F4)</button> </td>
-      <td> <button class="plot"> Plot </button> </td>
+      <td> <button class="propPlot"> Property Plot </button> </td>
+      <td> <button class="plot"> Parametric Analysis </button> </td>
     </table>
   </nav>
 
@@ -616,11 +617,10 @@
       <table>
 	<td><button class="butlk">Paste!</button></td>
 	<td><button class="lkCancel">Cancel</button></td>
-      </table>
-      
+      </table>  
     </div>
-
-    <!-- Plot box -->
+    
+    <!-- Analysis box -->
     <div class="plotBox">
       <table>
 	<tr style="border-bottom: 1px solid #F04747">
@@ -657,40 +657,80 @@
 	<td><button class="plotDraw">Plot!</button></td>
 	<td><button class="plotCancel">Cancel</button></td>
       </table>
-      
     </div>
+
+    <!-- Property plot box -->
+    <div class="propPlotBox">
+      <table>
+	<tr style="border-bottom: 1px solid #F04747">
+	  <td><h2>Property plot</h2></td>
+	  <td>Plot states in property diagrams</td>
+	</tr>
+	
+	<tr>
+	  <td>Choose fluid:</td>
+	  <td><select class="propPlotFluid"></select></td>
+	</tr>
+	
+	<tr>
+	  <td>Choose type of plot:</td>
+	  <td>
+	    <select class="propPlotType">
+	      <option value="Ts"> T-s </option>
+	      <option value="Ph"> P-h </option>
+	      <option value="Pv"> P-v </option>
+	      <option value="Tv"> T-v </option>
+	    </select>
+	  </td>
+	</tr>
+      </table>
+
+      <table class="stateTable"></table>
+
+      <button class="plotAddState"> Add state </button>
+      
+      <table>
+	<td><button class="propPlotDraw">Plot!</button></td>
+	<td><button class="propPlotCancel">Cancel</button></td>
+      </table>
+    </div>
+
   </nav>
   
   <main>
     <!-- Interface -->
-    <table>
+    <table class="interface">
       <th>
 	<!-- Equations Box -->
 	<textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
 ## Tutorial
 ### Basic problems
-#1. Write and solve nonlinear system of equations;
+#1. Write and solve nonlinear system of equations
 x^2+y^2=10
 x*y=3
-
-#2. Press *Solve* to find a solution;
+#2. Press *Solve* to find a solution
 #3. Use *Report* to render equations (may be slow).
 
 #**OBS**: comments are render as **markdown**.
 
 ### Functions
-# Use math functions and constants:
+# 1. Math functions and constants:
 omega = sin(pi/2)
+# 2. Thermodynamic property functions:
+h_1=PropsSI('H','T',298.15,'P',1E5,'Water')  # J/kg
 
-# As well as thermodynamic functions:
-h_0=PropsSI('H','T',298.15,'P',1E5,'Air')  # J/kg
+### Property plots
+# 1. Define states by calling the PropsSI function
+h_2=PropsSI('H','T',473.15,'P',1E5,'Water')  # J/kg
+# 2. Choose the fluid, plot type and states
+# 3. Plot! the results
 
-### Plots
+### Parametric analysis
 # 1. Define a problem with 1 degree of freedom
 # w = 1/z 
-# 2. Use *Plots* to define variables
+# 2. Use *Parametric analysis* to define variables
 # 3. Save data using *Export*
-#**OBS**: *Plots* problems **can't** be used with *Solve* and vice-versa
+#**OBS**: *Parametric analysis* **can't** be used with *Solve* and vice-versa
 
 ### User-defined functions
 # Create convenient functions
@@ -705,7 +745,7 @@ T_kelvin = kelvin(50)</textarea>
 	<!-- ErrorBox -->
 	<div class="errorBox">
 	</div>
-
+	
 	<!-- Results -->
 	<div class="solBox">
 	  <h2>Solution</h2>
@@ -724,7 +764,7 @@ T_kelvin = kelvin(50)</textarea>
 	    <canvas id="myChart" height="400"></canvas>
 	  </div>
 	</div>
-	    
+	
       </th>
     </table>
   
@@ -746,6 +786,7 @@ T_kelvin = kelvin(50)</textarea>
   <script src="scripts/nasaGleen.js"></script>
   <script src="scripts/leeKesler.js"></script>
   <script src="scripts/solver.js"></script>
+  <script src="scripts/plots.js"></script>
   <script src="scripts/ui.js"></script>
   </body>
 

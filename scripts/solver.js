@@ -1112,7 +1112,7 @@ function laine_fun(list,fast,plot,guesslist,yVar) {
 	editorDiv.style.display="none";
 	MathJax.typeset();  // render MathJax (slow)
     }    
-    solBox.style.display="block";
+    solBox.style.display="inline-block";
     let t2 =performance.now();
     console.log("evaluation time:",t2-t1,"ms");
 }
@@ -1140,164 +1140,11 @@ function laine(isfast){
     try{
 	laine_fun(undefined,isfast,false,undefined,undefined);
 	editor.refresh(); // avoid problems with resize
+	return true;
     }
     catch(e){
 	let errorText = e.alert ? e.alert : e;
 	displayError(errorText);
-    }
-}
-
-// Data for download
-var exportData;
-var laineProblem;
-
-function plot_check(){
-    /*
-      Function: Create a plot menu and save problem for latter 
-    */
-    
-    // Check if the problem has 1 degree of freedom
-    let problem = laine_fun(undefined,true,true,undefined,undefined);
-    if (problem == undefined){
-	let errorText= "Type: No degree of freedom \nDescription: Try to remove an equation";
-	displayError(errorText);
 	return false;
     }
-
-    let degrees = problem.names.length-problem.equations.length;
-
-    if (degrees>1){
-	let errorText= "Type: 2 or + degrees of freedom \nDescription: Try to include more equations";
-	displayError(errorText);
-	return false;
-    }
-
-    // If is the first run, just create a menu
-    let xSelect = document.querySelector(".plotX");
-    let ySelect = document.querySelector(".plotY");
-
-    xSelect.options.length = 0;
-    ySelect.options.length = 0;
-
-    for (let i=0; i<problem.names.length; i++){
-	let optX = document.createElement("option");
-	let optY = document.createElement("option");
-	optX.value = problem.names[i];
-	optX.text = problem.names[i];
-	optY.value = problem.names[i];
-	optY.text = problem.names[i];
-	xSelect.add(optX);
-	ySelect.add(optY);
-    }
-    return problem;
-}
-
-
-function laine_plot(){
-    /*
-      Function: Create a plot
-    */
-    let t1 = performance.now();
-
-    let problem = laineProblem;
-    
-    // Second run: solve the problem for multiple values
-    let xName = document.querySelector(".plotX").value;
-    let yName = document.querySelector(".plotY").value;
-    
-    let from = parseFloat(document.querySelector(".plotXfrom").value);
-    let to = parseFloat(document.querySelector(".plotXto").value);
-    let Npoints = document.querySelector(".plotNpoints").value;
-
-    delta = (to-from)/(Npoints-1)
-    let data = [];
-    exportData="y\tx\n";
-
-    // Store guesses
-    let storeSolution = new Object(); 
-    
-    for (let i=0;i<Npoints;i++){
-	// Try to solve
-	parser.scope[xName] = from + delta*i;
-	try{
-	    if (i==0){
-		laine_fun(problem.equations,true,false,undefined,yName);
-	    }
-	    else{
-		laine_fun(problem.equations,true,false,storeSolution,yName);
-	    }
-	}
-	catch(e){
-	    let errorText = e.alert ? e.alert : e;
-	    displayError(errorText);
-	    return false;
-	}
-	
-	// Store data
-	let point = {x: parser.scope[xName], y:parser.scope[yName].toPrecision(5)};
-	data.push(point);
-	exportData+=""+point.x+"\t"+point.y+"\n";
-
-	// Delete solution
-	for (let j=0;j<problem.names.length;j++){
-	    if (problem.names[j]!=xName){
-		storeSolution[problem.names[j]] = parser.scope[problem.names[j]];
-	    }
-	    delete parser.scope[problem.names[j]];
-	}
-    }
-
-    // Draw plot
-    let div = document.getElementById("canvasDiv");
-    div.innerText = "";
-    let canvas = document.createElement("canvas");
-    canvas.height="400";
-    div.appendChild(canvas);
-    let ctx = canvas.getContext("2d");
-    let myLineChart = new Chart(ctx, {
-	type: 'line',
-	data: { datasets:[{
-	    fill: false,
-	    backgroundColor: 'rgba(0, 0, 0, 1)',
-	    borderColor: 'rgba(0, 0, 0, 1)',
-	    data: data}]
-	      },
-	options:{
-	    responsive: false,
-	    title:{
-		display: true,
-		text: yName+" vs. "+xName,
-	    },
-	    maintainAspectRatio:false,
-	    legend: {
-		display:false,
-	    },
-	    scales: {
-		xAxes: [{
-		    display: true,
-		    type:"linear",
-		    scaleLabel: {
-			display: true,
-			labelString: xName
-		    }
-		}],
-		yAxes: [{
-		    display: true,
-		    type: "linear",
-		    scaleLabel: {
-			display: true,
-			labelString: yName
-		    }
-		}]
-	    }
-	}
-    });
-    myLineChart.update();
-    
-    let plotDrawBox = document.querySelector(".plotDrawBox");
-    plotDrawBox.style.display="block";
-    
-    let t2 = performance.now();
-    console.log("Plot time:",t2-t1,"ms")
-    return false;
 }

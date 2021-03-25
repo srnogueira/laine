@@ -53,7 +53,7 @@ button:hover{
     background-color: #F04747;
 }
 
-.plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
+.propPlotBox, .plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
     display:none;
     position:absolute;
     z-index:5;
@@ -213,6 +213,7 @@ footer p{
   main table th{
       display:flex;
       align-items:center;
+      flex-direction:column-reverse;
   }
 
 }
@@ -220,5 +221,8 @@ footer p{
 @media print {
     .laineMenu {
 	display:none;
+    }
+    .interface {
+	display:flex;
     }
 }

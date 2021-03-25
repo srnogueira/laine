@@ -37,8 +37,8 @@ function clear(className,button){
     }
 }
 
-const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox"];
-const buttons = [fileButton,functionButton,undefined,undefined,undefined,undefined,undefined];
+const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox",".propPlotBox"];
+const buttons = [fileButton,functionButton,undefined,undefined,undefined,undefined,undefined,undefined];
 
 function clearAll(exception){
     for (let i=0;i<classes.length;i++){
@@ -97,12 +97,15 @@ lkCancelButton.onclick = function(){toggle(".lkBox");};
 
 const plotMenuButton = document.querySelector(".plot")
 plotMenuButton.onclick = function(){
-    clearAll();
     if (document.querySelector(".plotBox").style.display===""){
+	clearAll();
 	// Global var laineProblem
 	laineProblem = plot_check();
 	if (laineProblem != false){
 	    toggle(".plotBox");
+	}
+	else{
+	    solBox.style.display = "none";
 	}
     }
     else{
@@ -126,6 +129,29 @@ closePlotButton.onclick = function(){
     let draw = document.querySelector(".plotDrawBox");
     draw.style.display = "";
     editor.refresh(); // avoid problems with resize
+}
+
+const propPlotMenuButton = document.querySelector(".propPlot")
+propPlotMenuButton.onclick = function(){
+    if (document.querySelector(".propPlotBox").style.display===""){
+	clearAll();
+	let test = checkStates();
+	if (test){
+	    toggle(".propPlotBox");
+	}
+    }
+    else{
+	toggle(".propPlotBox");
+    }
+};
+
+const propPlotCancelButton = document.querySelector(".propPlotCancel")
+propPlotCancelButton.onclick = function(){toggle(".propPlotBox")};
+
+const propPlotButton = document.querySelector(".propPlotDraw")
+propPlotButton.onclick = function(){
+    clearAll();
+    plotStates();
 }
 
 /*
