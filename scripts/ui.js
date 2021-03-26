@@ -1,67 +1,127 @@
 /*
+  Button name : Mobile vs. Desktop
+*/
+const solveButton = document.querySelector(".solve");
+const reportButton = document.querySelector(".report");
+
+function changeTextButtons() {
+    if (window.innerWidth < 600 & solveButton.innerText === "Solve (F2)"){
+	solveButton.innerText = "Solve";
+	if (reportButton.innerText == "Report (F4)"){
+	    reportButton.innerText = "Report";
+	}
+	else{
+	    reportButton.innerText = "Edit";
+	}
+    }
+    else if (window.innerWidth >= 600 & solveButton.innerText === "Solve"){
+	solveButton.innerText = "Solve (F2)";
+	if (reportButton.innerText == "Report"){
+	    reportButton.innerText = "Report (F4)";
+	}
+	else{
+	    reportButton.innerText = "Edit (F4)";
+	}
+    }
+    return true;
+}
+window.onresize = changeTextButtons;    
+
+/*
   toggle menus
 */
-
-const functionButton = document.querySelector(".function");
-const fileButton = document.querySelector(".file");
-
-function toggle(className,button=undefined){
-    let x = document.querySelector(className);
-    let text,signal;
-    
+function toggle(className){
+    let x = document.querySelector(className);    
     if (x.style.display===""){
 	x.style.display="block";
-	if (button!=undefined){
-	    text = button.innerText;
-	    text = text.slice(0,text.length-2)+'-)';
-	    button.innerText = text;
-	}
     }
     else{
 	x.style.display="";
-	if (button!=undefined){
-	    text = button.innerText;
-	    text = text.slice(0,text.length-2)+'+)';
-	    button.innerText = text;
-	}
     }
 }
 
-function clear(className,button){
+function clear(className){
     let x = document.querySelector(className);
     x.style.display="";
-    if (button!=undefined){
-	text = button.innerText;
-	text = text.slice(0,text.length-2)+'+)';
-	button.innerText = text;
-    }
 }
 
-const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox",".propPlotBox"];
-const buttons = [fileButton,functionButton,undefined,undefined,undefined,undefined,undefined,undefined];
+const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox",".propPlotBox",".plotMenuBox"];
 
 function clearAll(exception){
     for (let i=0;i<classes.length;i++){
-	if (classes[i] != exception){
-	    clear(classes[i],buttons[i]);
+	if (classes[i] !== exception){
+	    clear(classes[i]);
 	}
+    }
+    if (reportButton.innerText === "Edit (F4)" & exception !== "report"){
+	reportButton.click();
     }
 }
 
+// Remove menus
 // editor is defined on editor.js
 editor.on("focus",function(){
     clearAll();
 });
+editor.on("click",function(){
+    clearAll();
+});
 
+// File button
+const fileButton = document.querySelector(".file");
+const fileBox = document.querySelector(".fileBox");
 fileButton.onclick = function(){
-    clearAll(".fileBox");
-    toggle(".fileBox",button=fileButton);
+    if (fileBox.style.display === "block"){
+	clearAll("");
+    }
+    else{
+	toggle(".fileBox");
+	document.activeElement.blur();
+    }
 };
+const fileDropdown = document.querySelector(".fileDropdown");
+fileButton.onmouseover = function(){
+    if (window.innerWidth >= 600){
+	fileBox.style.display="block";
+    }
+}
+fileDropdown.onmouseleave = function(){
+    fileBox.style.display="";
+}
 
+// Function button
+const functionButton = document.querySelector(".function");
 functionButton.onclick = function(){
     clearAll(".functionBox");
-    toggle(".functionBox",button=functionButton);
+    toggle(".functionBox");
 };
+const functionDropdown = document.querySelector(".functionDropdown");
+const functionBox = document.querySelector(".functionBox");
+functionButton.onmouseover = function(){
+    if (window.innerWidth >= 600){
+	functionBox.style.display="block";
+    }
+}
+functionDropdown.onmouseleave = function(){
+    functionBox.style.display="";
+}
+
+// Plots menu
+const plotMenuBoxButton = document.querySelector(".plotMenu")
+plotMenuBoxButton.onclick = function(){
+    clearAll(".plotMenuBox");
+    toggle(".plotMenuBox");
+};
+const plotDropdown = document.querySelector(".plotDropdown");
+const plotMenuBox = document.querySelector(".plotMenuBox");
+plotMenuBoxButton.onmouseover = function(){
+    if (window.innerWidth >= 600){
+	plotMenuBox.style.display="block";
+    }
+}
+plotDropdown.onmouseleave = function(){
+    plotMenuBox.style.display="";
+}
 
 const propsButton = document.querySelector(".props")
 propsButton.onclick = function(){
@@ -97,15 +157,15 @@ lkCancelButton.onclick = function(){toggle(".lkBox");};
 
 const plotMenuButton = document.querySelector(".plot")
 plotMenuButton.onclick = function(){
+    clearAll();
     if (document.querySelector(".plotBox").style.display===""){
-	clearAll();
 	// Global var laineProblem
 	laineProblem = plot_check();
 	if (laineProblem != false){
 	    toggle(".plotBox");
 	}
 	else{
-	    solBox.style.display = "none";
+	    solBox.style.display = "";
 	}
     }
     else{
@@ -118,7 +178,6 @@ plotCancelButton.onclick = function(){toggle(".plotBox")};
 
 const plotButton  = document.querySelector(".plotDraw");
 plotButton.onclick = function(){
-    //laine_plot(false);
     laine_plot();
     editor.refresh(); // avoid problems with resize
     toggle(".plotBox");
@@ -133,8 +192,8 @@ closePlotButton.onclick = function(){
 
 const propPlotMenuButton = document.querySelector(".propPlot")
 propPlotMenuButton.onclick = function(){
+    clearAll();
     if (document.querySelector(".propPlotBox").style.display===""){
-	clearAll();
 	let test = checkStates();
 	if (test){
 	    toggle(".propPlotBox");
@@ -154,24 +213,38 @@ propPlotButton.onclick = function(){
     plotStates();
 }
 
+const closeSolutionButton  = document.querySelector(".closeSolution");
+closeSolutionButton.onclick = function(){
+    solBox.style.display = "";
+    editor.refresh(); // avoid problems with resize
+};
+
+
+
 /*
   Solver interface
 */
-    
-const solveButton = document.querySelector(".solve");
-const reportButton = document.querySelector(".report");
-
 function report() {
-    clearAll();
-    if (reportButton.innerText=="Report (F4)"){
+    clearAll("report");
+    if (mathDiv.style.display==="" | mathDiv.style.display==="none"){
 	laine(false);
-	reportButton.innerText="Edit (F4)";
+	if (window.innerWidth < 600){
+	    reportButton.innerText="Edit";
+	}
+	else{
+	    reportButton.innerText="Edit (F4)";
+	}
     }
     else{
-	mathDiv.style.display="none";
-	solBox.style.display="none";
+	mathDiv.style.display="";
+	solBox.style.display="";
 	editorDiv.style.display="block";
-	reportButton.innerText="Report (F4)";
+	if (window.innerWidth < 600){
+	    reportButton.innerText="Report";
+	}
+	else{
+	    reportButton.innerText="Report (F4)";
+	}
     }
     editor.refresh(); // avoid problems with resize
 }
@@ -331,7 +404,7 @@ function saveFile()
     downloadLink.innerHTML = "Download File";
     downloadLink.href = textToSaveAsURL;
     downloadLink.onclick = destroyClickedElement;
-    downloadLink.style.display = "none";
+    downloadLink.style.display = "";
     document.body.appendChild(downloadLink);
     
     downloadLink.click();
@@ -350,7 +423,7 @@ function exportDataFile()
     downloadLink.innerHTML = "Download File";
     downloadLink.href = textToSaveAsURL;
     downloadLink.onclick = destroyClickedElement;
-    downloadLink.style.display = "none";
+    downloadLink.style.display = "";
     document.body.appendChild(downloadLink);
     
     downloadLink.click();

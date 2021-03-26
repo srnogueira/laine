@@ -1,7 +1,17 @@
+/* Default font and size */
 html {
     font-size:11pt;
     font-family: 'Quicksand', sans-serif;
     padding-left:10px;
+}
+
+/* Site header */
+.laineHead {   
+    display:grid;
+    grid-template-columns:auto auto 1fr;
+    grid-gap:10px;
+    padding-bottom:10px;
+    max-width:100%;
 }
 
 header h1{
@@ -12,17 +22,20 @@ header h1{
 
 header input{
     font-family: 'Quicksand', sans-serif;
-    font-size: 20pt;
-    border: 0px;
+    font-size: 12pt;
 }
 
+/* Menus */
 .laineMenu{
     border: 1px solid #F04747;
     box-shadow: -5px 0px 0px #F04747;
-    display: inline-block;
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto 1fr;
+    align-items:center;
 }
 
 .subMenus input, .subMenus select{
+    /* Required */
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -31,6 +44,7 @@ header input{
 }
 
 ul{
+    /* For Lee-Kesler */
     margin:0;
 }
 
@@ -53,33 +67,29 @@ button:hover{
     background-color: #F04747;
 }
 
-.propPlotBox, .plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
+/* Hidden menus */
+.plotMenuBox, .propPlotBox, .plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox,.functionBox,.fileBox{
     display:none;
     position:absolute;
-    z-index:5;
+    z-index:10;
     border: 1px solid #F04747;
     background-color: white;
-    max-width: 90%;
 }
 
-.fileAll{
+.propPlotBox, .plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox{
+    margin-top:10px;
+}
+
+.plotDropdown, .fileDropdown, .functionDropdown{
+    position:relative;
     display:inline-block;
 }
 
-.fileBox{
-    left: 20px;
-}
-
-.fileBox button{
-    width:60px;
-}
-
-.functionBox{
-    left: 92px;
-}
-
-.functionBox button{
-    width:140px;
+/* For submensu */
+h2{
+    font-size:14pt;
+    color: #F04747;
+    margin:0;
 }
 
 table{
@@ -98,13 +108,18 @@ table th, table td, table tr{
     margin-bottom: 10px;
 }
 
-main th {
-    text-align: left;
-    vertical-align: top;
-    font-weight:normal;
-    padding:0px;
+
+/* Code and results interface */
+.interface{
+    display:grid;
+    grid-template-columns: auto auto 1fr;
 }
 
+.problemBox{
+    max-width:100%;
+}
+
+/* For render */
 .mathDiv{
     font-family: 'Shippori Mincho', serif;
     display:none;
@@ -114,48 +129,28 @@ main th {
     text-align: justify;
 }
 
-h2{
-    font-size:14pt;
-    color: #F04747;
-    margin:0;
-}
-
 .mathDiv h1{
-    font-size:12pt;
+    font-size:16pt;
     font-weight:bold;
 }
 
 .mathDiv h2{
-    font-size:12pt;
-    font-style:italic;
-    font-weight:normal;
+    font-size:14pt;
+    font-weight:bold;
     color:black;
 }    
 
 .mathDiv h3{
     font-size:12pt;
-    font-style:italic;
-    font-weight:normal;
-    color:black;
-}
-
-.mathDiv h4{
-    font-size:12pt;
-    font-style:italic;
-    font-weight:normal;
-    color:black;
-}
-
-a {
-    color:#F04747;
     font-weight:bold;
+    color:black;
 }
     
 .box {
     display: none;
 }
 
-.plotDrawBox,.solBox, .errorBox{
+.plotDrawBox, .solBox, .errorBox{
     display:none;
     border-radius: 5px;
     padding: 10px;
@@ -163,8 +158,15 @@ a {
     margin-top: 20px;
     border: 1px solid #F04747;
     box-shadow: 0px -5px 0px #F04747;
+    max-width: 90%;
 }
 
+canvas {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* Results */
 .out {
     margin-top: 10px;
 }
@@ -175,6 +177,7 @@ a {
     padding: 4px;
 }
 
+/* Footer */
 footer{
     padding-left:20px;
     border-radius: 5px;
@@ -185,44 +188,66 @@ footer p{
     text-align: right;
 }
 
+.printFooter {
+    display:none;
+}
+
 @media screen and (max-width: 700px) {
-  .propsBox table td, .HApropsBox table td, .nasaBox table td, .lkBox table td{
-      display: block;
-      padding: 0;
-  }
-  
-  input{
-      display:flex;
-      max-width:80%;
-  }
+    .sideBar{
+	display:flex;
+	flex-wrap:wrap;
+	justify-content:center;
+    }
 
-  select{
-      max-width:80%;
-  }
-  
-  .propsBox table tr, .HApropsBox table tr, .nasaBox table tr, .lkBox table tr{
-      display: block;
-      padding-top: 10px;
-      padding-left: 10px;
-  }
+    .interface{
+	display:flex;
+	flex-wrap:wrap-reverse;
+	justify-content:center;
+    }
 
-  .propsBox table, .HApropsBox table, .nasaBox table, .lkBox table{
-      margin-bottom:10px;
-  }
+    /* Smaller menus */
+    .propsBox table td, .HApropsBox table td, .nasaBox table td, .lkBox table td{
+	display: block;
+	padding: 0;
+    }
+    .propsBox table tr, .HApropsBox table tr, .nasaBox table tr, .lkBox table tr{
+	display: block;
+	padding-top: 10px;
+	padding-left: 10px;
+    }
+    
+    .propsBox table, .HApropsBox table, .nasaBox table, .lkBox table{
+	margin-bottom:10px;
+    }
+    
+    /* Same size */
+    input{
+	width:78%;
+    }    
+    select{
+	width:80%;
+    }
 
-  main table th{
-      display:flex;
-      align-items:center;
-      flex-direction:column-reverse;
-  }
-
+    /* Remove hover effects */
+    button:hover{
+    color: #F04747;
+    background-color: white;
+    }
 }
 
 @media print {
     .laineMenu {
 	display:none;
     }
+    .printFooter {
+	display:block;
+    }
     .interface {
+	flex-wrap:wrap;
+	justify-content:center;
+    }
+    .sideBar{
 	display:flex;
+	flex-wrap:wrap;
     }
 }

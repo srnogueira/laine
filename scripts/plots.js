@@ -60,8 +60,11 @@ function laine_plot(){
     let xName = document.querySelector(".plotX").value;
     let yName = document.querySelector(".plotY").value;
     
-    let from = parseFloat(document.querySelector(".plotXfrom").value);
-    let to = parseFloat(document.querySelector(".plotXto").value);
+    let from = document.querySelector(".plotXfrom").value;
+    let to = document.querySelector(".plotXto").value;
+    from = parser.evaluate(from);
+    to = parser.evaluate(to);
+
     let Npoints = document.querySelector(".plotNpoints").value;
 
     delta = (to-from)/(Npoints-1)
@@ -106,7 +109,15 @@ function laine_plot(){
     let div = document.getElementById("canvasDiv");
     div.innerText = "";
     let canvas = document.createElement("canvas");
-    canvas.height="400";
+    if (window.innerWidth < 400){
+	canvas.height=window.innerWidth*0.8;
+	canvas.width=window.innerWidth*0.8;
+    }
+    else{
+	canvas.height="400";
+	canvas.width="400";
+    }
+    
     div.appendChild(canvas);
     let ctx = canvas.getContext("2d");
     let myLineChart = new Chart(ctx, {
@@ -289,6 +300,7 @@ function addState(){
 
     // Button
     stateButton.textContent = 'Delete';
+    stateButton.style.padding = '5px';
     stateDelete.appendChild(stateButton);
     stateRow.appendChild(stateDelete);
 
@@ -299,6 +311,9 @@ function addState(){
 	tableSize -=1;
 	updateNumber();
     }
+
+    // Editor
+    editor.refresh();
 }
 
 function addIso(data,propName,propValue,xMax,xMin,xName,yName,fluid){
@@ -428,11 +443,16 @@ function plotStates(){
     // Saturation
     let liqData=[];
     let vapData=[];
-    let delta = (yMax-yMin)/20;
+    let count = 20;
+    let delta = (yMax-yMin)/count;
+    if (delta === 0){
+	delta = (yMin*1.1-yMin*0.9)/count;
+	yMin = 0.9*yMin;
+    }
 
     let exportVap = "\nSat. vap.\n"+xAxis+"\t"+yAxis+"\n";
     exportData+="\nSat. liq.\n"+xAxis+"\t"+yAxis+"\n";
-    for (let i = 0; i<21 ; i++){
+    for (let i = 0; i<count+1 ; i++){
 	let ySat,xSat;
 	ySat = yMin+delta*(i);
 	
@@ -502,12 +522,41 @@ function plotStates(){
     let isoData = []
     for (let i=0;i<stateList.length-1;i++){
 	for (let j=0;j<isoLines.length;j++){
-	    let prop = isoLines[j];	
+	    let prop = isoLines[j];
 	    if (stateList[i][prop] == stateList[i+1][prop]){
 		isoData.push(data[i]);
 		if (prop == yName | prop==xName){
 		    break;
 		}
+
+		// Check mixtures
+		if (prop == "T" | prop == "P"){
+		    // Check if the state is a mixture and the next state is not
+		    let thisState = stateList[i];
+		    let nextState = stateList[i+1];
+		    if (thisState.Q !== -1 & nextState.Q === -1){
+			// 2 - gas ; 5 - supercritical gas ; 6 - two phase ; 0 - liquid ; 3 - supercritical liquid 
+			let nextPhase = Module.PropsSI("Phase",nextState.first[0],nextState.first[1],nextState.second[0],nextState.second[1],fluid);
+			let Qpoint;
+			if (nextPhase === 2 | nextPhase === 5){
+			    Qpoint = 1;
+			}
+			else if (nextPhase === 0 | nextPhase === 3){
+			    Qpoint = 0;
+			}
+			let xValue = Module.PropsSI(xName,"T",thisState.T,"Q",Qpoint,fluid);
+			let yValue = Module.PropsSI(yName,"T",thisState.T,"Q",Qpoint,fluid);
+			if (yName == "D"){
+			    yValue = 1/yValue;
+			}
+			if (xName == "D"){
+			    xValue = 1/xValue;
+			}
+			let point = {x:xValue , y:yValue}
+			isoData.push(point);
+		    }
+		}
+		    
 		if (type.value=="Ph"){
 		    let yBegin = data[i].y;
 		    let yEnd = data[i+1].y;
@@ -546,14 +595,19 @@ function plotStates(){
 	pointRadius:0
     }
     dataPoints.datasets.push(isoDataPlot);
-    // addIso(data,propName,propValue,yMax,yMin,yName,xName,fluid){
     
     // Draw plot
     let div = document.getElementById("canvasDiv");
     div.innerText = "";
     let canvas = document.createElement("canvas");
-    canvas.height="400";
-    canvas.width="400";
+    if (window.innerWidth < 400){
+	canvas.height=window.innerWidth*0.8;
+	canvas.width=window.innerWidth*0.8;
+    }
+    else{
+	canvas.height="400";
+	canvas.width="400";
+    }
     div.appendChild(canvas);
     let ctx = canvas.getContext("2d");
 
