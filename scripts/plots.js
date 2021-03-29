@@ -73,6 +73,8 @@ function laine_plot(){
 
     // Store guesses
     let storeSolution = new Object(); 
+
+    let equationLines = [];
     
     for (let i=0;i<Npoints;i++){
 	// Try to solve

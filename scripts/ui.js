@@ -5,171 +5,118 @@ const solveButton = document.querySelector(".solve");
 const reportButton = document.querySelector(".report");
 
 function changeTextButtons() {
-    if (window.innerWidth < 600 & solveButton.innerText === "Solve (F2)"){
+    if (window.innerWidth < 600 && solveButton.innerText === "Solve (F2)"){
 	solveButton.innerText = "Solve";
-	if (reportButton.innerText == "Report (F4)"){
-	    reportButton.innerText = "Report";
-	}
-	else{
-	    reportButton.innerText = "Edit";
-	}
+	reportButton.innerText = reportButton.innerText == "Report (F4)" ? "Report" : "Edit";
     }
-    else if (window.innerWidth >= 600 & solveButton.innerText === "Solve"){
+    else if (window.innerWidth >= 600 && solveButton.innerText === "Solve"){
 	solveButton.innerText = "Solve (F2)";
-	if (reportButton.innerText == "Report"){
-	    reportButton.innerText = "Report (F4)";
-	}
-	else{
-	    reportButton.innerText = "Edit (F4)";
-	}
+	reportButton.innerText = reportButton.innerText == "Report" ? "Report (F4)" : "Edit (F4)";
     }
-    return true;
-}
-window.onresize = changeTextButtons;    
+};
+window.onresize = changeTextButtons;
 
 /*
   toggle menus
 */
 function toggle(className){
-    let x = document.querySelector(className);    
-    if (x.style.display===""){
-	x.style.display="block";
-    }
-    else{
-	x.style.display="";
-    }
-}
-
-function clear(className){
     let x = document.querySelector(className);
-    x.style.display="";
-}
-
-const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox",".propPlotBox",".plotMenuBox"];
+    x.style.display = x.style.display === "" ? "block" : "";
+};
 
 function clearAll(exception){
+    const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox",".propPlotBox",".plotMenuBox"];
+    // Clear all - leave exception
     for (let i=0;i<classes.length;i++){
 	if (classes[i] !== exception){
-	    clear(classes[i]);
+	    document.querySelector(classes[i]).style.display="";
 	}
     }
-    if (reportButton.innerText === "Edit (F4)" & exception !== "report"){
-	reportButton.click();
+    // Toggle Report button - leave it if is a double click
+    if ((reportButton.innerText === "Edit (F4)" || reportButton.innerText === "Edit") && exception !== "report"){
+	mathDiv.style.display="";
+	solBox.style.display="";
+	editorDiv.style.display="block";
+	reportButton.innerText=window.innerWidth < 600 ? "Report" : "Report (F4)";
+	editor.refresh();
     }
-}
+};
 
 // Remove menus
 // editor is defined on editor.js
-editor.on("focus",function(){
-    clearAll();
-});
-editor.on("click",function(){
-    clearAll();
-});
+editor.on("focus",clearAll);
+editor.on("click",clearAll);
 
-// File button
-const fileButton = document.querySelector(".file");
-const fileBox = document.querySelector(".fileBox");
-fileButton.onclick = function(){
-    if (fileBox.style.display === "block"){
-	clearAll("");
-    }
-    else{
-	toggle(".fileBox");
-	document.activeElement.blur();
-    }
-};
-const fileDropdown = document.querySelector(".fileDropdown");
-fileButton.onmouseover = function(){
-    if (window.innerWidth >= 600){
-	fileBox.style.display="block";
-    }
+/*
+  Dropdown menus
+*/
+
+function dropdownMenu(buttonClass,boxClass,dropdownClass){
+    const button = document.querySelector(buttonClass);
+    const box = document.querySelector(boxClass);
+    button.onclick = function(){
+	clearAll(boxClass);
+	toggle(boxClass);
+    };
+    const dropdown = document.querySelector(dropdownClass);
+    button.onmouseover = function(){
+	if (window.innerWidth >= 600){
+	    box.style.display="block";
+	}
+    };
+    dropdown.onmouseleave = () => box.style.display="";
 }
-fileDropdown.onmouseleave = function(){
-    fileBox.style.display="";
-}
+
+// File dropdown menu
+dropdownMenu(".file",".fileBox",".fileDropdown");
 
 // Function button
-const functionButton = document.querySelector(".function");
-functionButton.onclick = function(){
-    clearAll(".functionBox");
-    toggle(".functionBox");
-};
-const functionDropdown = document.querySelector(".functionDropdown");
-const functionBox = document.querySelector(".functionBox");
-functionButton.onmouseover = function(){
-    if (window.innerWidth >= 600){
-	functionBox.style.display="block";
-    }
-}
-functionDropdown.onmouseleave = function(){
-    functionBox.style.display="";
-}
+dropdownMenu(".function",".functionBox",".functionDropdown");
 
 // Plots menu
-const plotMenuBoxButton = document.querySelector(".plotMenu")
-plotMenuBoxButton.onclick = function(){
-    clearAll(".plotMenuBox");
-    toggle(".plotMenuBox");
-};
-const plotDropdown = document.querySelector(".plotDropdown");
-const plotMenuBox = document.querySelector(".plotMenuBox");
-plotMenuBoxButton.onmouseover = function(){
-    if (window.innerWidth >= 600){
-	plotMenuBox.style.display="block";
+dropdownMenu(".plotMenu",".plotMenuBox",".plotDropdown");
+
+/*
+  SubMenus
+*/
+
+function subMenus(buttonClass,boxClass,cancelClass){
+    const button = document.querySelector(buttonClass)
+    button.onclick = function() {
+	clearAll();
+	toggle(boxClass);
+	editor.refresh();
+    };
+    const cancelButton = document.querySelector(cancelClass)
+    cancelButton.onclick = function() {
+	toggle(boxClass);
+	editor.refresh();
     }
-}
-plotDropdown.onmouseleave = function(){
-    plotMenuBox.style.display="";
-}
+};
 
-const propsButton = document.querySelector(".props")
-propsButton.onclick = function(){
-    clearAll();
-    toggle(".propsBox"); };
+// PropsSI
+subMenus(".props",".propsBox",".propsCancel");
 
-const propsCancelButton = document.querySelector(".propsCancel")
-propsCancelButton.onclick = function(){toggle(".propsBox");};
+// HAPropsSI
+subMenus(".HAprops",".HApropsBox",".HApropsCancel");
 
-const HApropsButton = document.querySelector(".HAprops")
-HApropsButton.onclick = function(){
-    clearAll();
-    toggle(".HApropsBox");};
+// NasaSI
+subMenus(".nasa",".nasaBox",".nasaCancel");
 
-const HApropsCancelButton = document.querySelector(".HApropsCancel")
-HApropsCancelButton.onclick = function(){toggle(".HApropsBox");};
+// Lee-Kesler
+subMenus(".lk",".lkBox",".lkCancel");
 
-const nasaButton = document.querySelector(".nasa")
-nasaButton.onclick = function(){
-    clearAll();
-    toggle(".nasaBox"); };
-
-const nasaCancelButton = document.querySelector(".nasaCancel")
-nasaCancelButton.onclick = function(){toggle(".nasaBox");};
-
-const lkButton = document.querySelector(".lk")
-lkButton.onclick = function(){
-    clearAll();
-    toggle(".lkBox"); };
-
-const lkCancelButton = document.querySelector(".lkCancel")
-lkCancelButton.onclick = function(){toggle(".lkBox");};
-
+// Parametric analysis
 const plotMenuButton = document.querySelector(".plot")
 plotMenuButton.onclick = function(){
     clearAll();
-    if (document.querySelector(".plotBox").style.display===""){
-	// Global var laineProblem
-	laineProblem = plot_check();
-	if (laineProblem != false){
-	    toggle(".plotBox");
-	}
-	else{
-	    solBox.style.display = "";
-	}
+    // Global var laineProblem
+    laineProblem = plot_check();
+    if (laineProblem !== false){
+	toggle(".plotBox");
     }
     else{
-	toggle(".plotBox");
+	solBox.style.display = "";
     }
 };
 
@@ -179,27 +126,15 @@ plotCancelButton.onclick = function(){toggle(".plotBox")};
 const plotButton  = document.querySelector(".plotDraw");
 plotButton.onclick = function(){
     laine_plot();
-    editor.refresh(); // avoid problems with resize
     toggle(".plotBox");
+    editor.refresh();
 };
 
-const closePlotButton  = document.querySelector(".closePlot");
-closePlotButton.onclick = function(){
-    let draw = document.querySelector(".plotDrawBox");
-    draw.style.display = "";
-    editor.refresh(); // avoid problems with resize
-}
-
+// Property plot
 const propPlotMenuButton = document.querySelector(".propPlot")
 propPlotMenuButton.onclick = function(){
     clearAll();
-    if (document.querySelector(".propPlotBox").style.display===""){
-	let test = checkStates();
-	if (test){
-	    toggle(".propPlotBox");
-	}
-    }
-    else{
+    if (checkStates()){
 	toggle(".propPlotBox");
     }
 };
@@ -213,47 +148,39 @@ propPlotButton.onclick = function(){
     plotStates();
 }
 
+// Close buttons
 const closeSolutionButton  = document.querySelector(".closeSolution");
 closeSolutionButton.onclick = function(){
     solBox.style.display = "";
-    editor.refresh(); // avoid problems with resize
+    editor.refresh();
 };
 
-
+const closePlotButton  = document.querySelector(".closePlot");
+closePlotButton.onclick = function(){
+    let draw = document.querySelector(".plotDrawBox");
+    draw.style.display = "";
+    editor.refresh();
+};
 
 /*
   Solver interface
 */
 function report() {
-    clearAll("report");
-    if (mathDiv.style.display==="" | mathDiv.style.display==="none"){
+    if (mathDiv.style.display === "" || mathDiv.style.display === "none"){
+	clearAll("report");
 	laine(false);
-	if (window.innerWidth < 600){
-	    reportButton.innerText="Edit";
-	}
-	else{
-	    reportButton.innerText="Edit (F4)";
-	}
+	reportButton.innerText = window.innerWidth < 600 ? "Edit" : "Edit (F4)";
     }
     else{
-	mathDiv.style.display="";
-	solBox.style.display="";
-	editorDiv.style.display="block";
-	if (window.innerWidth < 600){
-	    reportButton.innerText="Report";
-	}
-	else{
-	    reportButton.innerText="Report (F4)";
-	}
+	clearAll();
     }
-    editor.refresh(); // avoid problems with resize
 }
 reportButton.onclick = report;
 
 solveButton.onclick = function(){
     clearAll();
     laine(true);
-    if (reportButton.innerText == "Edit (F4)"){
+    if (reportButton.innerText === "Edit (F4)"){
 	report();
     }
 }
@@ -268,93 +195,93 @@ function shortcut(key){
 }
 document.onkeydown=shortcut;
 
+/*
+  Write functions
+*/
 
 // PropsSI
 function writePropsSI(){
-    let fluid = document.querySelector(".FluidName");
-    let property = document.querySelector(".Property");
-    let input1 = document.querySelector(".Input1");
-    let input2 = document.querySelector(".Input2");
-    let value1 = document.querySelector(".value1");
-    let value2 = document.querySelector(".value2");
+    const fluid = document.querySelector(".FluidName");
+    const property = document.querySelector(".Property");
+    const input1 = document.querySelector(".Input1");
+    const input2 = document.querySelector(".Input2");
+    const value1 = document.querySelector(".value1");
+    const value2 = document.querySelector(".value2");
 
-    let fluidName=fluid.options[fluid.selectedIndex].value;
-    let propName=property.options[property.selectedIndex].value;
-    let input1Name=input1.options[input1.selectedIndex].value;
-    let input2Name=input2.options[input2.selectedIndex].value;
+    const fluidName = fluid.options[fluid.selectedIndex].value;
+    const propName = property.options[property.selectedIndex].value;
+    const input1Name = input1.options[input1.selectedIndex].value;
+    const input2Name = input2.options[input2.selectedIndex].value;
 
-    let text = "property=PropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+fluidName+"')";
+    const text = `property=PropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${fluidName}')`;
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    propsCancelButton.click();
+    clearAll();
 }
-
 const PropsSIButton = document.querySelector(".butPropsSI");
 PropsSIButton.onclick = writePropsSI;
 
 // HAPropsSI
 function writeHAPropsSI(){
-    let property = document.querySelector(".HAProperty");
-    let input1 = document.querySelector(".HAInput1");
-    let input2 = document.querySelector(".HAInput2");
-    let input3 = document.querySelector(".HAInput3");
-    let value1 = document.querySelector(".HAvalue1");
-    let value2 = document.querySelector(".HAvalue2");
-    let value3 = document.querySelector(".HAvalue3");
+    const property = document.querySelector(".HAProperty");
+    const input1 = document.querySelector(".HAInput1");
+    const input2 = document.querySelector(".HAInput2");
+    const input3 = document.querySelector(".HAInput3");
+    const value1 = document.querySelector(".HAvalue1");
+    const value2 = document.querySelector(".HAvalue2");
+    const value3 = document.querySelector(".HAvalue3");
 
-    let propName=property.options[property.selectedIndex].value;
-    let input1Name=input1.options[input1.selectedIndex].value;
-    let input2Name=input2.options[input2.selectedIndex].value;
-    let input3Name=input2.options[input3.selectedIndex].value;
+    const propName=property.options[property.selectedIndex].value;
+    const input1Name=input1.options[input1.selectedIndex].value;
+    const input2Name=input2.options[input2.selectedIndex].value;
+    const input3Name=input2.options[input3.selectedIndex].value;
 
-    let text = "property=HAPropsSI('"+propName+"','"+input1Name+"',"+value1.value+",'"+input2Name+"',"+value2.value+",'"+input3Name+"',"+value3.value+")";
+    const text = `property=HAPropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${input3Name}',${value3.value})`;
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    HApropsCancelButton.click();
+    clearAll();
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
 
 // Nasa Glenn
 function writeNasa(){
-    const textBox = document.querySelector(".box");
-    let property = document.querySelector(".nasaProp");
-    let specie = document.querySelector(".nasaSpecie");
-    let temp = document.querySelector(".nasaT");
+    const property = document.querySelector(".nasaProp");
+    const specie = document.querySelector(".nasaSpecie");
+    const temp = document.querySelector(".nasaT");
     
-    let propName=property.options[property.selectedIndex].value;
-    let specieName=specie.options[specie.selectedIndex].value;
+    const propName=property.options[property.selectedIndex].value;
+    const specieName=specie.options[specie.selectedIndex].value;
 
-    let text="property=NasaSI('"+propName+"',"+temp.value+",'"+specie.value+"')";
+    const text=`property=NasaSI('${propName}',${temp.value},'${specie.value}')`;
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    nasaCancelButton.click();
+    clearAll();
 }
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
 
 // Lee - Kesler
 function writelk(){
-    const textBox = document.querySelector(".box");
-    let property = document.querySelector(".lkProp");
-    let temp = document.querySelector(".lkT");
-    let press = document.querySelector(".lkP");    
-    let propName=property.options[property.selectedIndex].value;
+    const property = document.querySelector(".lkProp");
+    const temp = document.querySelector(".lkT");
+    const press = document.querySelector(".lkP");    
+    const propName = property.options[property.selectedIndex].value;
     
     let text;
-    if (propName=="Prsat"){
-	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+",'f')";
+    if (propName==="Prsat"){
+	text = `property=LeeKesler('${propName}',${temp.value},'f')`;
     }
-    else if (press.value == "f" || press.value=='g'){
-	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+",\'"+press.value+"\')";
+    else if (press.value === "f" || press.value==='g'){
+	text = `property=LeeKesler('${propName}',${temp.value},'${press.value}')`;
     }
     else{
-	text = "property=LeeKesler"+"(\'"+propName+'\','+temp.value+","+press.value+")";
+	text = `property=LeeKesler('${propName}',${temp.value},${press.value})`;
     }
     textBox.value+="\n"+text;
 
     editor.getDoc().setValue(textBox.value);
-    lkCancelButton.click();
+    clearAll();
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
@@ -364,8 +291,7 @@ leeKeslerButton.onclick = writelk;
 */
 
 // New file
-function newFile()
-{
+function newFile() {
     // Textbox defined in editor.js
     let confirmation = confirm("Are you sure?");
     let fileName = document.getElementById("inputFileNameToSaveAs")
@@ -374,27 +300,23 @@ function newFile()
 	editor.getDoc().setValue(textBox.value);
 	fileName.value="";
     }
-    fileButton.click();
-}
-
+    clearAll();
+};
 const newButton = document.querySelector(".new");
 newButton.onclick = newFile;
 
 // Save a file
-
-function destroyClickedElement(event)
-{
+function destroyClickedElement(event) {
     document.body.removeChild(event.target);
-}
+};
 
-function saveFile()
-{
+function saveFile() {
     let textToSave = document.getElementById("box").value;
     let textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
     let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
     
     let downloadLink = document.createElement("a");
-    let filename = document.getElementById("inputFileNameToSaveAs").value;
+    const filename = document.getElementById("inputFileNameToSaveAs").value;
     if (filename===""){
 	downloadLink.download="laineSave.txt";
     }
@@ -408,11 +330,10 @@ function saveFile()
     document.body.appendChild(downloadLink);
     
     downloadLink.click();
-    fileButton.click();
-}
+    clearAll();
+};
 
-function exportDataFile()
-{
+function exportDataFile() {
     let textToSave = exportData;
     let textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
     let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
@@ -429,37 +350,37 @@ function exportDataFile()
     downloadLink.click();
 }
 
+// Load a file
 let fileInput = document.getElementById("fileToLoad");
-
 function loadFileAsText(){
     clearAll();    
     fileInput.click();
     if (reportButton.innerText=="Edit (F4)"){
 	reportButton.click();
     }
-}
+};
 
-function changeText()
-{
+function changeText() {
     let downloadLink = document.createElement("a");
     let fileToLoad = fileInput.files[0];
     let fileReader = new FileReader();
 
-    fileReader.onload = function(fileLoadedEvent) 
-    {
+    fileReader.onload = function(fileLoadedEvent) {
 	let textFromFileLoaded = fileLoadedEvent.target.result;
 	editor.getDoc().setValue(textFromFileLoaded);	
     };
 
     document.getElementById("inputFileNameToSaveAs").value = fileToLoad.name.slice(0,-4);
     fileReader.readAsText(fileToLoad, "UTF-8");
-}
+};
 
 fileInput.addEventListener("change", function(){
     changeText();
     fileInput.value="";}, false);
 
-// Warning
+/*
+  Close warning
+*/
 window.onbeforeunload = function(e) {
     e = e || window.event;
 

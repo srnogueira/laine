@@ -32,7 +32,6 @@ header input{
     display: grid;
     grid-template-columns: auto auto auto auto auto auto 1fr;
     align-items:center;
-    max-width:100%;
 }
 
 .subMenus input, .subMenus select{
@@ -77,11 +76,6 @@ button:hover{
     background-color: white;
 }
 
-/* Change z-index */
-.plotMenuBox,.functionBox,.fileBox{
-    z-index:11;
-}
-    
 .propPlotBox, .plotBox, .lkBox, .nasaBox, .HApropsBox,.propsBox{
     margin-top:10px;
 }
@@ -229,7 +223,7 @@ a {
     .propsBox table, .HApropsBox table, .nasaBox table, .lkBox table{
 	margin-bottom:10px;
     }
-
+    
     /* Same size */
     input{
 	width:78%;
