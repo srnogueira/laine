@@ -270,8 +270,6 @@ function clearAll(exception){
 	reportButton.innerText=window.innerWidth < 600 ? "Report" : "Report (F4)";
 	editor.refresh();
     }
-    // Hide error box
-    errorBox.style.display='';
 };
 
 // Remove menus

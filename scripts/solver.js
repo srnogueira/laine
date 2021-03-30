@@ -936,7 +936,7 @@ function laine_fun(text,laineOptions) {
 				    }
 				}
 				else{
-				    break loop2D;
+				    continue loop2D;
 				}
 			    }
 			}			
