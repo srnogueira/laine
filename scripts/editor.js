@@ -23,13 +23,3 @@ const editor = CodeMirror.fromTextArea(textBox, {
     lineWrapping: true,
     inputStyle: "textarea",
     mode: "laine"});
-
-// Adding effects with changes
-let editorDiv = document.querySelector(".CodeMirror")
-const solBox = document.querySelector(".solBox");
-const errorBox = document.querySelector(".errorBox");
-editor.on("change",function(){
-    textBox.value=editor.getValue();
-    solBox.style.display="";
-    errorBox.style.display="";
-});

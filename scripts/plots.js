@@ -3,26 +3,25 @@
 */
 
 // Data for download
-var exportData;
-var laineProblem;
+let exportData;
+let laineProblem;
 
 function plot_check(){
     /*
       Function: Create a plot menu and save problem for latter 
     */
-    
+    'use strict';
     // Check if the problem has 1 degree of freedom
-    let problem = laine_fun(undefined,true,true,undefined,undefined);
-    if (problem == undefined){
-	let errorText= "Type: No degree of freedom \nDescription: Try to remove an equation";
-	displayError(errorText);
+    let problem = laine_fun(editor.getValue(),{plot:true});
+    if (problem === undefined){
+	let error= new laineError("No degree of freedom","Try to remove an equation",undefined);
+	displayError(error);
 	return false;
     }
 
-    let degrees = problem.names.length-problem.equations.length;
-
+    const degrees = problem.names.length-problem.equations.length;
     if (degrees>1){
-	let errorText= "Type: 2 or + degrees of freedom \nDescription: Try to include more equations";
+	let errorText= new laineError("2 or + degrees of freedom","Try to include more equations",undefined);
 	displayError(errorText);
 	return false;
     }
@@ -47,67 +46,10 @@ function plot_check(){
     return problem;
 }
 
-
-function laine_plot(){
+function createPlot(dataObject,xName,yName){
     /*
-      Function: Create a plot
+      Creates a plot
     */
-    let t1 = performance.now();
-
-    let problem = laineProblem;
-    
-    // Second run: solve the problem for multiple values
-    let xName = document.querySelector(".plotX").value;
-    let yName = document.querySelector(".plotY").value;
-    
-    let from = document.querySelector(".plotXfrom").value;
-    let to = document.querySelector(".plotXto").value;
-    from = parser.evaluate(from);
-    to = parser.evaluate(to);
-
-    let Npoints = document.querySelector(".plotNpoints").value;
-
-    delta = (to-from)/(Npoints-1)
-    let data = [];
-    exportData=xName+"\t"+yName+"\n";
-
-    // Store guesses
-    let storeSolution = new Object(); 
-
-    let equationLines = [];
-    
-    for (let i=0;i<Npoints;i++){
-	// Try to solve
-	parser.scope[xName] = from + delta*i;
-	try{
-	    if (i==0){
-		laine_fun(problem.equations,true,false,undefined,yName);
-	    }
-	    else{
-		laine_fun(problem.equations,true,false,storeSolution,yName);
-	    }
-	}
-	catch(e){
-	    let errorText = e.alert ? e.alert : e;
-	    displayError(errorText);
-	    return false;
-	}
-	
-	// Store data
-	let point = {x: parser.scope[xName], y:parser.scope[yName].toPrecision(5)};
-	data.push(point);
-	exportData+=""+point.x+"\t"+point.y+"\n";
-
-	// Delete solution
-	for (let j=0;j<problem.names.length;j++){
-	    if (problem.names[j]!=xName){
-		storeSolution[problem.names[j]] = parser.scope[problem.names[j]];
-	    }
-	    delete parser.scope[problem.names[j]];
-	}
-    }
-
-    // Draw plot
     let div = document.getElementById("canvasDiv");
     div.innerText = "";
     let canvas = document.createElement("canvas");
@@ -119,17 +61,13 @@ function laine_plot(){
 	canvas.height="400";
 	canvas.width="400";
     }
-    
     div.appendChild(canvas);
+
     let ctx = canvas.getContext("2d");
+
     let myLineChart = new Chart(ctx, {
 	type: 'line',
-	data: { datasets:[{
-	    fill: false,
-	    backgroundColor: 'rgba(0, 0, 0, 1)',
-	    borderColor: 'rgba(0, 0, 0, 1)',
-	    data: data}]
-	      },
+	data:dataObject,
 	options:{
 	    responsive: false,
 	    title:{
@@ -164,8 +102,83 @@ function laine_plot(){
     
     let plotDrawBox = document.querySelector(".plotDrawBox");
     plotDrawBox.style.display="block";
+}
+
+
+function laine_plot(){
+    /*
+      Function: Create a plot
+    */
+    'use strict';
+    const t1 = performance.now();
+    let problem = laineProblem;
     
-    let t2 = performance.now();
+    // Second run: solve the problem for multiple values
+    let xName = document.querySelector(".plotX").value;
+    let yName = document.querySelector(".plotY").value;
+    
+    let from = document.querySelector(".plotXfrom").value;
+    let to = document.querySelector(".plotXto").value;
+    from = parser.evaluate(from);
+    to = parser.evaluate(to);
+
+    const Npoints = document.querySelector(".plotNpoints").value;
+
+    const delta = (to-from)/(Npoints-1)
+    let data = [];
+    exportData=`${xName}\t${yName}\n`;
+
+    // Store guesses
+    let storeSolution = {}; 
+
+    let equationLines = '';
+    for (let equation of problem.equations){
+	equationLines += `${equation.lhs}=${equation.rhs}\n`;
+    }
+    let guessText = '';
+    for (let userGuess in problem.options){
+	guessText += `${userGuess}=${problem.options[userGuess]}?\n`;
+    }
+    for (let i=0;i<Npoints;i++){
+	// Try to solve
+	let stateVar = `${xName} = ${from + delta*i}\n`;
+	try{
+	    if (i===0){
+		laine_fun(stateVar+guessText+equationLines,{yVar:yName});
+	    }
+	    else{
+		laine_fun(stateVar+equationLines,{guessPlot:storeSolution,yVar:yName});
+	    }
+	}
+	catch(e){
+	    console.error(e);
+	    let error = new  laineError("Fail solution","Solver fail to find solution at some points",stateVar);
+	    displayError(error);
+	    continue;
+	}
+	
+	// Store data
+	let point = {x: parser.scope[xName], y:parser.scope[yName].toPrecision(5)};
+	data.push(point);
+	exportData+=`${point.x}\t${point.y}\n`;
+
+	// Store solution
+	for (let j=0;j<problem.names.length;j++){
+	    if (problem.names[j]!==xName){
+		storeSolution[problem.names[j]] = parser.scope[problem.names[j]];
+	    }
+	    delete parser.scope[problem.names[j]];
+	}
+    }
+
+    // Draw plot -- could be a function
+    const dataObject = {datasets:[{
+	fill: false,
+	backgroundColor: 'rgba(0, 0, 0, 1)',
+	borderColor: 'rgba(0, 0, 0, 1)',
+	data: data}]};
+    createPlot(dataObject,xName,yName);
+    const t2 = performance.now();
     console.log("Plot time:",t2-t1,"ms")
     return false;
 }
@@ -175,7 +188,8 @@ function laine_plot(){
 */
 
 function State(text){
-    let pieces = text.split(',');
+    'use strict';
+    const pieces = text.split(',');
     // State definition
     let value;
     value = parser.evaluate(pieces[2]);
@@ -194,28 +208,32 @@ function State(text){
 
 // Grab the table to add more states
 const stateTable = document.querySelector(".stateTable");
-var tableSize = 1;
-var stateOptions // Global variable for states
+let tableSize = 1;
+let stateOptions // Global variable for states
 
 function checkStates(){
     /*
       Function : Creates the property plot menu
     */
+    'use strict';
     // Erase
     stateTable.innerHTML="";
     tableSize = 1;
-    
-    let test = laine(true);
-    solBox.style.display=""; // not ideal, but works
-    if (test==false){
+
+    const text = editor.getValue();
+    try{
+	laine_fun(text,{fast:true});
+    }
+    catch(e){
+	console.error(e);
+	displayError(e);
 	return false;
     }
-	
+    	
     // Grab text and match PropsSI calls
-    let text = editor.getValue();
-    let regexComment = /#.*\n/g; // removes comments
-    let regex = /PropsSI\(.*(?=\))/g; // captures PropsSI(...
-    let found = text.replace(regexComment,'').match(regex);
+    const regexComment = /#.*\n/g; // removes comments
+    const regex = /PropsSI\(.*(?=\))/g; // captures PropsSI(...
+    const found = text.replace(regexComment,'').match(regex);
 
     // Parse PropsSI calls into states
     let states = [];
@@ -223,11 +241,11 @@ function checkStates(){
 	states.push(new State(found[i]));
     };
 
-    // Create the menu - lazy mode (not exclude wrong possibilities)
+    // Create the menu
     let optionText;
     let fluids = [];
     let options =[];
-    let optionsEntry =[]; // Necessary to verify
+    let optionsEntry = []; // Necessary to verify
     let fluidsSelect = document.querySelector(".propPlotFluid");
     fluidsSelect.options.length = 0;
 
@@ -242,7 +260,7 @@ function checkStates(){
 	}
 
 	// States
-	if (states[i].Q == -1){
+	if (states[i].Q === -1){
 	    optionText ="T: "+states[i].T.toPrecision(5)+" [K] ; P: "+states[i].P.toPrecision(5)+" [Pa]";
 	}
 	else{
@@ -262,7 +280,7 @@ function updateNumber(){
     /*
       Function: Update state numbers
     */
-    
+    'use strict';
     for (let i=0;i<stateTable.children.length;i++){
 	let row = stateTable.children[i];
 	let number = i+1
@@ -273,9 +291,9 @@ function updateNumber(){
 
 function addState(){
     /*
-      Function: creates a new state entry
+      Function: creates a new state entry (change it to grids);
     */
-    
+    'use strict';
     // Create elements
     let stateRow = document.createElement("tr")
     let stateNumber = document.createElement("td")
@@ -318,46 +336,32 @@ function addState(){
     editor.refresh();
 }
 
-function addIso(data,propName,propValue,xMax,xMin,xName,yName,fluid){
+function addIso(data,coord,propName,propValue,max,min,name,otherName,fluid){
     /*
       Function: creates a dataset for a isoline
     */
-    let delta = (xMax-xMin)/40;
+    'use strict';
+    const delta = (max-min)/40;
+    let xValue,yValue,xName,yName;
     for (let i=0;i<41;i++){
-	let xValue;
-	xValue = parseFloat(xMin)+delta*(i);	
-	let yValue = Module.PropsSI(yName,xName,xValue,propName,propValue,fluid);
-	if (yName == "D"){
-	    yValue = 1/yValue;
+	if (coord === 'x'){
+	    xValue = parseFloat(min)+delta*i;
+	    xName = name;
+	    yName = otherName;
+	    yValue = Module.PropsSI(otherName,xName,xValue,propName,propValue,fluid);
 	}
-	if (xName == "D"){
-	    xValue = 1/xValue;
+	else{
+	    yValue = parseFloat(min)+delta*(i);
+	    yName = name;
+	    xName = otherName;
+	    xValue = Module.PropsSI(otherName,name,yValue,propName,propValue,fluid);
 	}
-	if (xValue != Infinity & yValue != Infinity){
+	yValue = yName === "D" ? 1/yValue : yValue;
+	xValue = xName === "D" ? 1/xValue : xValue;
+	if (xValue !== Infinity && yValue !== Infinity){
 	    let point = {x: xValue, y:yValue};
 	    data.push(point);
-	}
-    }
-    return data;
-}
-function addIso2(data,propName,propValue,yMax,yMin,yName,xName,fluid){
-    /*
-      Function: creates a dataset for a isoline
-    */
-    let delta = (yMax-yMin)/40;
-    for (let i=0;i<41;i++){
-	let yValue;
-	yValue = parseFloat(yMin)+delta*(i);	
-	let xValue = Module.PropsSI(xName,yName,yValue,propName,propValue,fluid);
-	if (xName == "D"){
-	    xValue = 1/xValue;
-	}
-	if (yName == "D"){
-	    yValue = 1/yValue;
-	}
-	if (xValue != Infinity & yValue != Infinity){
-	    let point = {x: xValue, y:yValue};
-	    data.push(point);
+	    exportData+=`${point.x}\t${point.y}\n`;
 	}
     }
     return data;
@@ -370,23 +374,23 @@ function plotStates(){
     /*
       Function: Create the plot
     */
-    
+    'use strict';
     // Axis definition
     let xName,yName,xAxis,yAxis;
     let type = document.querySelector(".propPlotType");
-    if (type.value == "Ts"){
+    if (type.value === "Ts"){
 	xName = "S";
 	xAxis = "s [J/(kg.K)]";
 	yName = "T";
 	yAxis = "T [K]";
     }
-    else if (type.value == "Ph"){
+    else if (type.value === "Ph"){
 	xName = "H";
 	xAxis = "h [J/kg]";
 	yName = "P";
 	yAxis = "P [Pa]";
     }
-    else if (type.value == "Pv") {
+    else if (type.value === "Pv") {
 	xName = "D";
 	xAxis = "v [m³/kg]";
 	yName = "P";
@@ -406,12 +410,12 @@ function plotStates(){
     let yMax=0;
     let fluid;
     let stateList=[];
-    exportData="States\n"+xAxis+"\t"+yAxis+"\n";
+    exportData=`States\n${xAxis}\t${yAxis}\n`;
 
+    let xValue,yValue;
     for (let i=0;i<list.length;i++){
-	let xValue,yValue;
-	let stateID = list[i].children[1].children[0].value;
-	let state = stateOptions[stateID][1];
+	const stateID = list[i].children[1].children[0].value;
+	const state = stateOptions[stateID][1];
 	stateList.push(state);
 	
 	fluid = state.fluid;
@@ -427,80 +431,61 @@ function plotStates(){
 	}
 
 	// As string
-	if (xName == "D"){
-	    let temp = 1/xValue;
-	    xValue = temp;
-	}
-	else{
-	    xValue = xValue;
-	}
+	xValue = xName === "D" ? 1/xValue : xValue;
 	yValue = yValue;
 
 	let point = {x: xValue, y:yValue};
 	data.push(point);
 	
-	exportData+=""+point.x+"\t"+point.y+"\n";
+	exportData+=`${point.x}\t${point.y}\n`;
     }
 
     // Saturation
     let liqData=[];
     let vapData=[];
-    let count = 20;
-    let delta = (yMax-yMin)/count;
+    const count = 20;
+    const delta = (yMax-yMin)/count;
     if (delta === 0){
 	delta = (yMin*1.1-yMin*0.9)/count;
 	yMin = 0.9*yMin;
     }
 
-    let exportVap = "\nSat. vap.\n"+xAxis+"\t"+yAxis+"\n";
-    exportData+="\nSat. liq.\n"+xAxis+"\t"+yAxis+"\n";
+    let exportVap = `\nSat. vap.\n${xAxis}\t${yAxis}\n`;
+    exportData+=`\nSat. liq.\n${xAxis}\t${yAxis}\n`;
+    let ySat,xSat;
     for (let i = 0; i<count+1 ; i++){
-	let ySat,xSat;
 	ySat = yMin+delta*(i);
-	
-	// Sat liq.
+	// Liq.
 	xSat = Module.PropsSI(xName,yName,ySat,"Q",0,fluid);
-	if (xSat != Infinity){
-	    if (xName == "D"){
-		let temp = 1/xSat;
-		xSat = temp;
-	    }
-	    else{
-		xSat = xSat;
-	    }
+	if (xSat !== Infinity){
+	    xSat = xName === "D" ? 1/xSat : xSat;
 	    let pointLiq = {x: xSat, y:ySat};
 	    liqData.push(pointLiq);
-	    exportData+=""+pointLiq.x+"\t"+pointLiq.y+"\n";
+	    exportData+=`${pointLiq.x}\t${pointLiq.y}\n`;
 	}
 
 	// Sat vap.
 	xSat = Module.PropsSI(xName,yName,ySat,"Q",1,fluid);
-
-	if (xSat != Infinity){
-	    if (xName == "D"){
-		let temp = 1/xSat;
-		xSat = temp;
-	    }
-	    else{
-		xSat = xSat;
-	    }
+	if (xSat !== Infinity){
+	    xSat = xName === "D" ? 1/xSat : xSat;
 	    let pointVap = {x: xSat, y:ySat};
 	    vapData.push(pointVap);
-	    exportVap+=""+pointVap.x+"\t"+pointVap.y+"\n";
+	    exportVap+=`${pointVap.x}\t${pointVap.y}\n`;
 	}
     }
     exportData += exportVap;
 
-    let dataPoints = { datasets:[{
-	label:"States",
-	lineTension:0,
-	fill: false,
-	backgroundColor: 'rgba(0, 0, 0, 1)',
-	borderColor: 'rgba(0, 0, 0, 1)',
-	data: data,
-	showLine:false,
-	pointRadius:5,
-    },
+    let dataPoints = { datasets:[
+	{
+	    label:"States",
+	    lineTension:0,
+	    fill: false,
+	    backgroundColor: 'rgba(0, 0, 0, 1)',
+	    borderColor: 'rgba(0, 0, 0, 1)',
+	    data: data,
+	    showLine:false,
+	    pointRadius:5,
+	},
 	{
 	    label:"Sat. liq.",
 	    backgroundColor: 'rgba(0, 0, 255, 1)',
@@ -517,22 +502,24 @@ function plotStates(){
 	    pointRadius: 0,
 	    fill:false
 	}]
-	      }
-
+		     };
+    
     // Process
     let isoLines = ["P","S","T","H","D"]; // T can't be first
     let isoData = []
+    exportData+=`\nProcess\n${xAxis}\t${yAxis}\n`;
     for (let i=0;i<stateList.length-1;i++){
 	for (let j=0;j<isoLines.length;j++){
 	    let prop = isoLines[j];
 	    if (stateList[i][prop] == stateList[i+1][prop]){
 		isoData.push(data[i]);
-		if (prop == yName | prop==xName){
+		exportData+=`${data[i].x}\t${data[i].y}\n`;
+		if (prop === yName || prop===xName){
 		    break;
 		}
 
 		// Check mixtures
-		if (prop == "T" | prop == "P"){
+		if (prop === "T" || prop === "P"){
 		    // Check if the state is a mixture and the next state is not
 		    let thisState = stateList[i];
 		    let nextState = stateList[i+1];
@@ -548,44 +535,43 @@ function plotStates(){
 			}
 			let xValue = Module.PropsSI(xName,"T",thisState.T,"Q",Qpoint,fluid);
 			let yValue = Module.PropsSI(yName,"T",thisState.T,"Q",Qpoint,fluid);
-			if (yName == "D"){
-			    yValue = 1/yValue;
-			}
-			if (xName == "D"){
-			    xValue = 1/xValue;
-			}
+			yValue = yName === "D" ? 1/yValue : yValue;
+			xValue = xName === "D" ? 1/xValue : xValue;
 			let point = {x:xValue , y:yValue}
 			isoData.push(point);
+			exportData+=`${point.x}\t${point.y}\n`;
 		    }
 		}
 		    
-		if (type.value=="Ph"){
+		if (type.value==="Ph"){
 		    let yBegin = data[i].y;
 		    let yEnd = data[i+1].y;
-		    if (yName == "D"){
+		    if (yName === "D"){
 			yBegin = 1/yBegin;
 			yEnd = 1/yEnd;
 		    }
-		    addIso2(isoData,prop,stateList[i][prop],yEnd,yBegin,yName,xName,fluid);
+		    addIso(isoData,'y',prop,stateList[i][prop],yEnd,yBegin,yName,xName,fluid);
 		    break;
 		}
 		else{
 		    let xBegin = data[i].x;
 		    let xEnd = data[i+1].x;
-		    if (xName == "D"){
+		    if (xName === "D"){
 			xBegin = 1/xBegin;
 			xEnd = 1/xEnd;
 		    }
-		    addIso(isoData,prop,stateList[i][prop],xEnd,xBegin,xName,yName,fluid);
+		    addIso(isoData,'x',prop,stateList[i][prop],xEnd,xBegin,xName,yName,fluid);
 		    break;
 		}
 	    }
-	    if (j==isoLines.length-1){
+	    if (j===isoLines.length-1){
 		isoData.push(data[i]);
+		exportData+=`${data[i].x}\t${data[i].y}\n`;
 	    }
 	}
     }
     isoData.push(data[stateList.length-1])
+    exportData+=`${data[stateList.length-1].x}\t${data[stateList.length-1].y}\n`;
     let isoDataPlot = {
 	    label:"Process",
 	    lineTension:0,
@@ -598,62 +584,11 @@ function plotStates(){
     }
     dataPoints.datasets.push(isoDataPlot);
     
-    // Draw plot
-    let div = document.getElementById("canvasDiv");
-    div.innerText = "";
-    let canvas = document.createElement("canvas");
-    if (window.innerWidth < 400){
-	canvas.height=window.innerWidth*0.8;
-	canvas.width=window.innerWidth*0.8;
-    }
-    else{
-	canvas.height="400";
-	canvas.width="400";
-    }
-    div.appendChild(canvas);
-    let ctx = canvas.getContext("2d");
-
-    let myLineChart = new Chart(ctx, {
-	type: 'line',
-	data: dataPoints,
-		
-	options:{
-	    responsive: false,
-	    title:{
-		display: true,
-		text: yAxis+" vs. "+xAxis,
-	    },
-	    maintainAspectRatio:false,
-	    legend: {
-		display:true,
-	    },
-	    scales: {
-		xAxes: [{
-		    display: true,
-		    type:"linear",
-		    scaleLabel: {
-			display: true,
-			labelString: xAxis
-		    }
-		}],
-		yAxes: [{
-		    display: true,
-		    type: "linear",
-		    scaleLabel: {
-			display: true,
-			labelString: yAxis
-		    },
-		}]
-	    }
-	}
-    });
-    myLineChart.update();
+    // Draw plot - could be a function;
+    createPlot(dataPoints,xAxis,yAxis);
 
     // Show
     solBox.style.display="none";
     let plotDrawBox = document.querySelector(".plotDrawBox");
     plotDrawBox.style.display="block";
 }
-
-// Create the saturation line
-// Create pressure lines

@@ -1,5 +1,5 @@
 /*
-  Parser - Auxiliary functions
+  AUXILIARY FUNCTIONS
 */
 
 //  Import functions to math.js parser
@@ -31,8 +31,7 @@ function laineError(name,message,numb) {
     'use strict';
     this.name = name;
     this.message = message;
-    this.numb = numb;
-    this.alert = `Type: ${name}\nDescription: ${message}\nLine: ${numb}`;
+    this.lineNumber = numb;
 };
 
 /*
@@ -44,7 +43,7 @@ function checkLine(line,number){
        Function: checks if the line is an equation
     */
     'use strict';
-    if ((line==="")||(line.startsWith("#"))){
+    if (line===""||line.startsWith("#")){
 	return false;
     }
     const form = /\=/; // OBS: could be improved for '=(blank)' or '(blank)='
@@ -105,7 +104,7 @@ function varsName(line){
 }
 
 /*
-  Equation object
+  EQUATION OBJECT
 */
 
 function updateText(text,name,value){
@@ -154,7 +153,7 @@ function Equation(line,number){
     this.update = updateEquation;
 }
 
-function cleanLines(lines){
+function cleanLines(lines,options){
     /*
       Function: Pre-parse lines into equations
     */
@@ -170,6 +169,20 @@ function cleanLines(lines){
 	    const aux = lines[i].split(';');
 	    // Store equations
 	    for (let subLine of aux){
+		// check if is a guess
+		if(subLine.endsWith("?")){
+		    subLine = subLine.slice(0,-1);
+		    if (checkLine(subLine,i+1)){
+			let sides = subLine.split('=');
+			let value = parseFloat(sides[1]);
+			if (!value){
+			    throw new laineError("Guess input","Please input guesses as 'var = value?'",i+1);
+			}
+			let name = sides[0].trim();
+			options.userGuess[name] = value;
+		    }
+		    continue;
+		}
 		try{
 		    // Store constants and user-defined functions
 		    const ans = parser.evaluate(subLine);
@@ -177,17 +190,17 @@ function cleanLines(lines){
 			// Remove object from parser scope (avoid errors)
 			lhs = subLine.split('=')[0].trim();
 			parser.remove(lhs);
-			// Throw a dummy error
-			throw new laineError("Parse error","Not a real evaluation",i+1);
 		    }
 		}
-		catch{
+		catch(e){
+		    //console.error(e);
 		    // Try to create a equation object
 		    try{
 			equations.push(new Equation(subLine,i+1));
 		    }
 		    catch(e){
-			throw new laineError("Unexpected error",e,i+1);
+			const name = e.name ? e.name : "Unexpected"
+			throw new laineError(name,e.message,i+1);
 		    }
 		}
 	    }
@@ -236,25 +249,20 @@ function solveProblem(options){
 	    solved=true;
 	}
 	catch(e){
+	    //console.error(e); // for debug
 	    if (performance.now()-tStart>3E3 || count > maxCount){
-		console.error(e);
-		if (e.alert === undefined){
-		    throw new laineError("Unexpected error",e,this.numbers);
-		}
-		else{
-		    throw new laineError('Difficult (or unsolvable) problem','Could not find a solution',this.numbers);
-		}
+		throw new laineError("Difficult (or unsolvable) problem","Max. evaluation time or tries",this.numbers);
 	    }
 	    else{
 		if (dimension === 1){
 		    // Binary search or negative guesses
-		    count = options.guess !== undefined ? 0 : count;
-		    options.guess = undefined;
+		    count = options.guessPlot !== undefined ? 0 : count;
+		    options.guessPlot = undefined;
 		    options.binary = count === 1 ? true: false;
 		    options.negative = count === 2 ? true: false;
 		}
 		else {
-		    if (dimension === 2 && count>5){
+		    if (dimension === 2 && count>4){
 			options.pairSearch = options.pairSearch ? false: true;
 		    }
 		    if (count>10){
@@ -348,7 +356,8 @@ function binary_search(problem){
 	try{
 	    ans[i] = compiled.evaluate(scope);
 	}
-	catch{
+	catch(e){
+	    //console.error(e);
 	    ans[i] = undefined;
 	    sign = undefined;
 	    continue;
@@ -421,9 +430,6 @@ function getGuessList(excludedList,negative){
 	    guessList.push(guess);
 	}
     }
-    if (guessList.length === 0){
-	throw laineError('Initial guess','Initial guess was a failure',"null");
-    }
     return guessList;
 }
 
@@ -480,7 +486,7 @@ function find_guess(problem,options){
 	    // Iterate
 	    for (let value of guessList){
 		copy.scope[fixed]=value*(1+Math.random()/2);
-		let options1D = {binary:false, negative:options.negative, returnValue:true, pairSearch:false, excludedList:[]};
+		let options1D = {binary:false, negative:options.negative, returnValue:true, pairSearch:false, excludedList:[], userGuess:{}, plotGuess:undefined};
 		// Solve and store each pair of solution
 		try{
 		    const result = solver(copy,options1D);
@@ -498,7 +504,8 @@ function find_guess(problem,options){
 			countSecond++;
 		    }
 		}
-		catch {
+		catch(e){
+		    //console.error(e);
 		    continue;
 		}
 	    }
@@ -536,7 +543,13 @@ function find_guess(problem,options){
 	    for(let i=0;i<guessListLength;i++){ 
 		// Update guess
 		for (let name of names){
-		    let value = guessList[i]*(1+Math.random());
+		    let value;
+		    if (options.userGuess[name] !== undefined){
+			value = options.userGuess[name];
+		    }
+		    else{
+			value = guessList[i]*(1+Math.random());
+		    }
 		    scope[name]=value;
 		    varsList[i].push(value);
 		}
@@ -546,7 +559,8 @@ function find_guess(problem,options){
 			const aux=compiledEq.evaluate(scope);
 			ans_list[i]+=Math.abs(aux);
 		    }
-		    catch {
+		    catch(e) {
+			//console.error(e);
 			ans_list[i]=Infinity;
 			continue equationLoop;
 		    }
@@ -568,7 +582,10 @@ function find_guess(problem,options){
 	    }
 	    count++
 	}
-	options.excludedList.push(guessList[index]);
+	if (varsList[index] === undefined){
+	    throw new laineError("Find guess","Could not find a guess",problem.numbers);
+	}
+	options.excludedList.push(guessList[index]);;
 	return varsList[index];
     }
 }
@@ -673,18 +690,15 @@ function solver(problem,options){
     let answers=[];
     let first_guess;
 
-    if (options.guess===undefined){
+    if (options.guessPlot===undefined){
 	first_guess = find_guess(problem,options);
-	if (first_guess === undefined){
-	    throw new laineError('Bad start','Initial guess was a failure',problem.numbers);
-	}
 	for (let i=0;i<namesLength;i++){
 	    guesses.push(first_guess[i]);
 	}
     }
     else{
 	for (let name of names){
-	    guesses.push(options.guess[name]);
+	    guesses.push(options.guessPlot[name]);
 	}
     }
     answers=calcFun(problem,guesses,answers);
@@ -788,170 +802,12 @@ function solver(problem,options){
 }
 
 /*
-  REPORTS
-*/
-
-function writeAns(solution,fast){
-    /*
-      Function: write answers in the results box
-    */
-    'use strict';
-    let key = solution[0];
-    let value = solution[1];
-    let msg;
-    switch (typeof(value)){
-    case "number":
-    	value = value.toPrecision(5);
-	break;
-    case "function":
-	return null;
-    }
-
-    let text;
-    if (typeof(value)==="object"){
-	value = Object.entries(value);
-	text="{";
-	const valueLength=value.length;
-	for (let i=0;i<valueLength;i++){
-	    if (typeof(value[i][1])==="number"){
-		value[i][1] = value[i][1].toPrecision(5);
-	    }
-	    text+=value[i][0]+" : "+value[i][1];
-	    if (i<(valueLength-1)){
-		text+=" ,";
-	    }
-	}
-	text+='}';
-    }
-    else{
-	text = value.toString();
-    }
-    
-    if(fast){
-	let para = outDiv.insertRow(-1);
-	let varCell = para.insertCell(0);
-	varCell.textContent = key;
-	let valueCell = para.insertCell(1);
-	valueCell.textContent = text;
-    }
-    else{
-	msg=key+" = "+text;
-	let para=document.createElement('p');
-	para.textContent="$$"+formatMathJax(msg)+"$$";
-	outDiv.appendChild(para);
-    }
-}
-
-function formatMathJax(line){
-    /*
-      Function: make some corrections in the MathJax style
-    */
-    'use strict';
-    // Add double equals '=='
-    const sides=line.split('=');
-    line=sides[0]+'=='+sides[1];
-
-    // Change underlines to [] to render correctly
-    const symbols = /(\*|\+|\-|\/|\(|\^|\=|,|\))/;
-    if (line.includes("_")){
-	const pieces=line.split("_");
-	line=pieces[0];
-	const piecesLength = pieces.length
-	for (let i=1;i<piecesLength;i++){
-	    const piece=pieces[i];
-	    line+="[";
-	    const pieceLength = piece.length;
-	    for (let j=0;j<pieceLength;j++){
-		if (symbols.test(piece[j])){
-		    line+=piece.slice(0,j)+"]"+piece.slice(j,pieceLength);
-		    break;
-		}
-		else if (j===(pieceLength-1)){
-		    if (piece.slice(pieceLength-1,pieceLength)==='}'){
-			line+=piece.slice(0,pieceLength-1)+"]"+piece.slice(pieceLength-1,pieceLength);
-		    }
-		    else{
-			line+=piece+"]";
-		    }
-		}
-	    }
-	}
-	// Double underlines
-	if (line.includes("][")){
-	    line=line.replace(/\]\[/g,",");
-	}
-    }
-
-    // Change greek variables names into symbols (not optimized)
-    const greek = ['$alpha','$beta','$gamma','$delta','$epsilon','$zeta','$eta','$theta','$iota','$kappa','$lambda','$mu','$nu','$xi','$omicron','$pi','$rho','$sigma','$tau','$upsilon','$phi','$chi','$psi','$omega','$Alpha','$Beta','$Gamma','$Delta','$Epsilon','$Zeta','$Eta','$Theta','$Iota','$Kappa','$Lambda','$Mu','$Nu','$Xi','$Omicron','$Pi','$Rho','$Sigma','$Tau','$Upsilon','$Phi','$Chi','$Psi','$Omega'];
-    for(let letter of greek){
-	if (line.includes(letter)){
-	    const pieces=line.split(letter);
-	    line = pieces[0];
-	    const piecesLength = pieces.length;
-	    for (let j =1; j<piecesLength; j++){
-		line+=letter.slice(1)+' '+pieces[j];
-	    }
-	}
-    }
-    
-    // Return parse to Tex
-    return math.parse(line).toTex({parenthesis: 'auto'});
-}
-
-const mathDiv = document.querySelector(".mathDiv"); // Report element
-
-function writeEqs(lines){
-    /*
-      Function : Write equations for reports
-    */
-    'use strict';
-    
-    // Clear and start
-    mathDiv.innerHTML="";
-    let title=document.createElement('h2');
-
-    let text;
-    const linesLength = lines.length;
-    for (let i=0; i<linesLength ; i++){
-	// Check if is an equation or comment
-	if (checkLine(lines[i].trim(),i)){
-	    // Check if is there is more than one equation
-	    const aux = lines[i].split(';');
-	    for (let subline of aux){
-		// Separate side comments
-		const sep = subline.split('#');
-		// Join comments
-		let comment=' \\text{';
-		const sepLength = sep.length
-		for(let i=1;i<sep.length;i++){
-		    comment+=sep[i];
-		}
-		let para=document.createElement('p');
-		para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
-		mathDiv.appendChild(para);
-	    }
-	}
-	else{
-	    // Applies markdown format
-	    let converter = new showdown.Converter();
-	    text=lines[i].slice(1,lines[i].length);
-	    let para = converter.makeHtml(text);
-	    mathDiv.innerHTML+=para;
-	}   
-    }
-    
-}
-
-/*
   LAINE
 */
 
-const outDiv = document.querySelector(".out"); // Solution element
-let parser=math.parser();  // create parser object
+const parser=math.parser();  // create parser object
 
-// Create another version of the solver which uses a Problem as input
-function laine_fun(list,fast,plot,guesslist,yVar) {
+function laine_fun(text,laineOptions) {
     /*
       Function : Parse + Solve
       Fast : determines how the solution is presented
@@ -962,38 +818,34 @@ function laine_fun(list,fast,plot,guesslist,yVar) {
     let equations;
 
     // Parse text or use minimal problem (for plots)
-    if (list === undefined){
-	// Clear parser and errors
+    // Clear parser and errors
+    if (laineOptions.yVar === undefined){
 	parser.clear();
-    
-	// Start solver
-	let lines=(editor.getValue()).split("\n");  // break text into lines
-    
-	// MathJax equations - could be asyncronous.
-	if (!fast){
-	    writeEqs(lines);
-	}
-    
-	// Get expression lines and 'substitution book'
-	equations =cleanLines(lines);  // clean text	    
     }
-    else{
-	equations = JSON.parse(JSON.stringify(list)) // deepClone (because the algorithm is dumb)
-	// parser is a global variable, we just don't erase some variables (related with x)
+    
+    // Start solver
+    let lines=text.split("\n");  // break text into lines
+
+    // Create options objects
+    if (laineOptions === undefined){
+	laineOptions = {};
     }
+    if (laineOptions.userGuess === undefined){
+	laineOptions.userGuess = {};
+    }
+    // Get expression lines and 'substitution book'
+    equations =cleanLines(lines,laineOptions);  // clean text
     equations.sort(moreVar);  // sorting
     
     let name;
     loop1D_2D: while (equations.length>0){
 	// Avoid long loops
 	if (performance.now()-t1>3E3){
-	    throw new laineError('Difficult (or unsolvable) problem',
-				 'Could not find a solution',
-				 equations[0].number);
+	    throw new laineError('Difficult (or unsolvable) problem','Could not find a solution',equations[0].number);
 	}
 	//[plots] Break loop if y is already computed
-	if (yVar !== undefined){
-	    if (parser.get(yVar)!==undefined){
+	if (laineOptions.yVar !== undefined){
+	    if (parser.get(laineOptions.yVar)!==undefined){
 		return false;
 	    }
 	}
@@ -1007,15 +859,12 @@ function laine_fun(list,fast,plot,guesslist,yVar) {
 	else if (name.length===1){
 	    // Check if solution has already been computed
 	    if (parser.get(name[0])!==undefined){
-	    	throw new laineError('Redefined variable','Variable '+name[0]+' has been redefined',equations[0].number);
+	    	throw new laineError('Redefined variable',`Variable ${name[0]} has been redefined`,equations[0].number);
 	    }
 	    // Try to solve the 1D problem
 	    let problem1D = new Problem([equations[0]])
-	    let options = {negative:false, binary:false, returnValue:false, pairSearch:false, guess:undefined, excludedList:[]};
+	    let options = {negative:false, binary:false, returnValue:false, pairSearch:false, guessPlot:laineOptions.guessPlot, userGuess:laineOptions.userGuess, excludedList:[]};
 	    // Try to solve the 1D problem
-	    if (guesslist !== undefined){
-		options.guess = guesslist;
-	    }
 	    problem1D.solve(options);
 	    equations.shift();  // clear solved line
 	}
@@ -1079,11 +928,7 @@ function laine_fun(list,fast,plot,guesslist,yVar) {
 				    varsB = equations[j].vars;
 				    if ((varsA[0] === varsB[0] && varsA[1] === varsB[1]) || (varsA[1] === varsB[0] && varsA[0] === varsB[1])){
 					// Try solving using Newton-Raphson with random guesses multiple times 
-					let count=0;
-					let options2D = {binary:false, negative:false, returnValue:false, pairSearch:false, guess:undefined, excludedList:[]}
-					if (guesslist != undefined){
-					    options2D.guess = guesslist;
-					}
+					let options2D = {binary:false, negative:false, returnValue:false, pairSearch:false, guessPlot:laineOptions.guessPlot, userGuess:laineOptions.userGuess, excludedList:[]};
 					let problem = new Problem([equations[i],equations[j]]);
 					problem.solve(options2D);
 					changed = true;
@@ -1120,81 +965,20 @@ function laine_fun(list,fast,plot,guesslist,yVar) {
     // Solving multiple equations at the same time
     if (equations.length>0){	
 	// Try solving using Newton-Raphson with random guesses multiple times 
-	let options = {negative:false, binary:false, pairSearch:false, returnValue:false, guess:undefined, excludedList:[]};
-	if (guesslist != undefined){
-	    options.guess = guesslist;
-	}
+	let options = {negative:false, binary:false, pairSearch:false, returnValue:false, guessPlot:laineOptions.guessPlot, userGuess:laineOptions.userGuess, excludedList:[]};
 	let problem = new Problem(equations);
-	
 	// Check the problem is correct
 	if (equations.length !== problem.names.length){
 	    // Return problem to create plot menu
-	    if (plot === true){
+	    if (laineOptions.plot === true){
+		problem.options = laineOptions.userGuess;
 		return problem;
 	    }
 	    throw new laineError('Degrees of freedom',`The problem has ${problem.names.length} variables and ${equations.length} equations`,problem.numbers);
 	}
 
 	problem.solve(options);
-    }
-
-    // If its a plot run, just terminate
-    if (list!==undefined){
-	return false;
-    }
-    
-    outDiv.innerText="";  // clear space
-    const solutions = Object.entries(parser.getAll());
-    const solutionsLength = solutions.length;
-    for (let i=0;i<solutionsLength;i++){
-	writeAns(solutions[i],fast);
-    }
-    		
-    if (fast) {
-	mathDiv.style.display="none";
-	editorDiv.style.display="block";
-    }
-    else {
-	mathDiv.style.display="block";
-	editorDiv.style.display="none";
-	MathJax.typeset();
-    }
-    solBox.style.display="inline-block";
+    }    
     const t2 =performance.now();
     console.log("evaluation time:",t2-t1,"ms");
-}
-
-function displayError(messageText){
-    /*
-      Function: display error messages
-    */
-    'use strict';
-    errorBox.innerText = "";
-    let header = document.createElement("h2");
-    header.innerText= "Error";
-    let message = document.createElement("span");
-    message.innerText= messageText;
-    errorBox.appendChild(header);
-    errorBox.appendChild(message);
-    errorBox.style.display = "inline-block";
-    editor.refresh();
-}
-
-function laine(isfast){
-    /*
-      Function: calls solver for buttons and create a error message if necessary
-    */
-    'use strict';
-    errorBox.style.display = "";
-    try{
-	laine_fun(undefined,isfast,false,undefined,undefined);
-	editor.refresh(); // avoid problems with resize
-	return true;
-    }
-    catch(e){
-	console.error(e);
-	const errorText = e.alert ? e.alert : e;
-	displayError(errorText);
-	return false;
-    }
 }

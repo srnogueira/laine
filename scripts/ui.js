@@ -1,4 +1,234 @@
 /*
+  REPORTS
+*/
+
+const outDiv = document.querySelector(".out"); // Solution element
+const mathDiv = document.querySelector(".mathDiv"); // Report element
+function writeEqs(inputText){
+    /*
+      Function : Write equations for reports
+    */
+    'use strict';
+    const lines = inputText.split('\n');
+    // Clear and start
+    mathDiv.innerHTML="";
+    let title=document.createElement('h2');
+    let text;
+    const linesLength = lines.length;
+    for (let i=0; i<linesLength ; i++){
+	// Check if is an equation or comment
+	if (checkLine(lines[i].trim(),i)){
+	    // Check if is there is more than one equation
+	    const aux = lines[i].split(';');
+	    for (let subline of aux){
+		// Separate side comments
+		const sep = subline.split('#');
+		// Join comments
+		let comment=' \\text{';
+		const sepLength = sep.length
+		for(let i=1;i<sep.length;i++){
+		    comment+=sep[i];
+		}
+		let para=document.createElement('p');
+		para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
+		mathDiv.appendChild(para);
+	    }
+	}
+	else{
+	    // Applies markdown format
+	    let converter = new showdown.Converter();
+	    text=lines[i].slice(1,lines[i].length);
+	    let para = converter.makeHtml(text);
+	    mathDiv.innerHTML+=para;
+	}   
+    }    
+}
+
+function displayResults(fast){
+    // show function
+    'use strict';
+    outDiv.innerText="";  // clear space
+    const solutions = Object.entries(parser.getAll());
+    const solutionsLength = solutions.length;
+    for (let i=0;i<solutionsLength;i++){
+	writeAns(solutions[i],fast);
+    }
+    if (fast) {
+	mathDiv.style.display="none";
+	editorDiv.style.display="block";
+    }
+    else {
+	mathDiv.style.display="block";
+	editorDiv.style.display="none";
+	MathJax.typeset();
+    }
+    solBox.style.display="inline-block";
+}
+
+function displayError(e){
+    /*
+      Function: display error messages
+    */
+    'use strict';
+    errorBox.innerText = "";
+    let header = document.createElement("h2");
+    header.innerText= "Error";
+    let message = document.createElement("span");
+    const messageText = `Type: ${e.name}\nDescription: ${e.message}\nLine: ${e.lineNumber}`;
+    message.innerText= messageText;
+    errorBox.appendChild(header);
+    errorBox.appendChild(message);
+    errorBox.style.display = "inline-block";
+    editor.refresh();
+}
+
+function writeAns(solution,fast){
+    /*
+      Function: write answers in the results box
+    */
+    'use strict';
+    let key = solution[0];
+    let value = solution[1];
+    let msg;
+    switch (typeof(value)){
+    case "number":
+    	value = value.toPrecision(5);
+	break;
+    case "function":
+	return null;
+    }
+
+    let text;
+    if (typeof(value)==="object"){
+	value = Object.entries(value);
+	text="{";
+	const valueLength=value.length;
+	for (let i=0;i<valueLength;i++){
+	    if (typeof(value[i][1])==="number"){
+		value[i][1] = value[i][1].toPrecision(5);
+	    }
+	    text+=value[i][0]+" : "+value[i][1];
+	    if (i<(valueLength-1)){
+		text+=" ,";
+	    }
+	}
+	text+='}';
+    }
+    else{
+	text = value.toString();
+    }
+    
+    if(fast){
+	let para = outDiv.insertRow(-1);
+	let varCell = para.insertCell(0);
+	varCell.textContent = key;
+	let valueCell = para.insertCell(1);
+	valueCell.textContent = text;
+    }
+    else{
+	msg=key+" = "+text;
+	let para=document.createElement('p');
+	para.textContent="$$"+formatMathJax(msg)+"$$";
+	outDiv.appendChild(para);
+    }
+}
+
+function formatMathJax(line){
+    /*
+      Function: make some corrections in the MathJax style
+    */
+    'use strict';
+    // Add double equals '=='
+    const sides=line.split('=');
+    line=sides[0]+'=='+sides[1];
+
+    // Change underlines to [] to render correctly
+    const symbols = /(\*|\+|\-|\/|\(|\^|\=|,|\))/;
+    if (line.includes("_")){
+	const pieces=line.split("_");
+	line=pieces[0];
+	const piecesLength = pieces.length
+	for (let i=1;i<piecesLength;i++){
+	    const piece=pieces[i];
+	    line+="[";
+	    const pieceLength = piece.length;
+	    for (let j=0;j<pieceLength;j++){
+		if (symbols.test(piece[j])){
+		    line+=piece.slice(0,j)+"]"+piece.slice(j,pieceLength);
+		    break;
+		}
+		else if (j===(pieceLength-1)){
+		    if (piece.slice(pieceLength-1,pieceLength)==='}'){
+			line+=piece.slice(0,pieceLength-1)+"]"+piece.slice(pieceLength-1,pieceLength);
+		    }
+		    else{
+			line+=piece+"]";
+		    }
+		}
+	    }
+	}
+	// Double underlines
+	if (line.includes("][")){
+	    line=line.replace(/\]\[/g,",");
+	}
+    }
+
+    // Change greek variables names into symbols (not optimized)
+    const greek = ['$alpha','$beta','$gamma','$delta','$epsilon','$zeta','$eta','$theta','$iota','$kappa','$lambda','$mu','$nu','$xi','$omicron','$pi','$rho','$sigma','$tau','$upsilon','$phi','$chi','$psi','$omega','$Alpha','$Beta','$Gamma','$Delta','$Epsilon','$Zeta','$Eta','$Theta','$Iota','$Kappa','$Lambda','$Mu','$Nu','$Xi','$Omicron','$Pi','$Rho','$Sigma','$Tau','$Upsilon','$Phi','$Chi','$Psi','$Omega'];
+    for(let letter of greek){
+	if (line.includes(letter)){
+	    const pieces=line.split(letter);
+	    line = pieces[0];
+	    const piecesLength = pieces.length;
+	    for (let j =1; j<piecesLength; j++){
+		line+=`${letter.slice(1)} ${pieces[j]}`; // just add a space
+	    }
+	}
+    }
+    
+    // Return parse to Tex
+    return math.parse(line).toTex({parenthesis: 'auto'});
+}
+
+function laine(isfast){
+    /*
+      Function: calls solver for buttons and create a error message if necessary
+    */
+    'use strict';
+    errorBox.style.display = "";
+    const lines = editor.getValue();
+    if (!isfast){
+	writeEqs(lines);
+    }
+    try{
+	laine_fun(lines,{});
+	displayResults(isfast);
+	// MathJax equations 
+	editor.refresh(); // avoid problems with resize
+	return true;
+    }
+    catch(e){
+	console.error(e);
+	displayError(e);
+	return false;
+    }
+}
+
+/*
+  EDITOR
+*/
+// Adding effects with changes
+let editorDiv = document.querySelector(".CodeMirror")
+const solBox = document.querySelector(".solBox");
+const errorBox = document.querySelector(".errorBox");
+
+editor.on("change",function(){
+    textBox.value=editor.getValue();
+    solBox.style.display="";
+    errorBox.style.display="";
+});
+
+/*
   Button name : Mobile vs. Desktop
 */
 const solveButton = document.querySelector(".solve");
@@ -40,12 +270,16 @@ function clearAll(exception){
 	reportButton.innerText=window.innerWidth < 600 ? "Report" : "Report (F4)";
 	editor.refresh();
     }
+    // Hide error box
+    errorBox.style.display='';
 };
 
 // Remove menus
+
 // editor is defined on editor.js
 editor.on("focus",clearAll);
 editor.on("click",clearAll);
+
 
 /*
   Dropdown menus
