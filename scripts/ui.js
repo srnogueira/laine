@@ -201,7 +201,7 @@ function laine(isfast){
 	writeEqs(lines);
     }
     try{
-	laine_fun(lines,{});
+	laineSolver(lines);
 	displayResults(isfast);
 	// MathJax equations 
 	editor.refresh(); // avoid problems with resize

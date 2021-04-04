@@ -12,7 +12,7 @@ function plot_check(){
     */
     'use strict';
     // Check if the problem has 1 degree of freedom
-    let problem = laine_fun(editor.getValue(),{plot:true});
+    let problem = laineSolver(editor.getValue(),{plot:true});
     if (problem === undefined){
 	let error= new laineError("No degree of freedom","Try to remove an equation",undefined);
 	displayError(error);
@@ -144,10 +144,10 @@ function laine_plot(){
 	let stateVar = `${xName} = ${from + delta*i}\n`;
 	try{
 	    if (i===0){
-		laine_fun(stateVar+guessText+equationLines,{yVar:yName});
+		laineSolver(stateVar+guessText+equationLines,{yVar:yName});
 	    }
 	    else{
-		laine_fun(stateVar+equationLines,{guessPlot:storeSolution,yVar:yName});
+		laineSolver(stateVar+equationLines,{guessPlot:storeSolution,yVar:yName});
 	    }
 	}
 	catch(e){
@@ -222,7 +222,7 @@ function checkStates(){
 
     const text = editor.getValue();
     try{
-	laine_fun(text,{fast:true});
+	laineSolver(text);
     }
     catch(e){
 	console.error(e);
