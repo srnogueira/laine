@@ -17,30 +17,32 @@ function writeEqs(inputText){
     const linesLength = lines.length;
     for (let i=0; i<linesLength ; i++){
 	// Check if is an equation or comment
-	if (checkLine(lines[i].trim(),i)){
-	    // Check if is there is more than one equation
-	    const aux = lines[i].split(';');
-	    for (let subline of aux){
-		// Separate side comments
-		const sep = subline.split('#');
-		// Join comments
-		let comment=' \\text{';
-		const sepLength = sep.length
-		for(let i=1;i<sep.length;i++){
-		    comment+=sep[i];
+	if (!lines[i].endsWith('?')){
+	    if (checkLine(lines[i].trim(),i)){
+		// Check if is there is more than one equation
+		const aux = lines[i].split(';');
+		for (let subline of aux){
+		    // Separate side comments
+		    const sep = subline.split('#');
+		    // Join comments
+		    let comment=' \\text{';
+		    const sepLength = sep.length
+		    for(let i=1;i<sep.length;i++){
+			comment+=sep[i];
+		    }
+		    let para=document.createElement('p');
+		    para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
+		    mathDiv.appendChild(para);
 		}
-		let para=document.createElement('p');
-		para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
-		mathDiv.appendChild(para);
+	    }
+	    else{
+		// Applies markdown format
+		let converter = new showdown.Converter();
+		text=lines[i].slice(1,lines[i].length);
+		let para = converter.makeHtml(text);
+		mathDiv.innerHTML+=para;
 	    }
 	}
-	else{
-	    // Applies markdown format
-	    let converter = new showdown.Converter();
-	    text=lines[i].slice(1,lines[i].length);
-	    let para = converter.makeHtml(text);
-	    mathDiv.innerHTML+=para;
-	}   
     }    
 }
 

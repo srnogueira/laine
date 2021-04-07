@@ -12,13 +12,13 @@ function plot_check(){
     */
     'use strict';
     // Check if the problem has 1 degree of freedom
-    let problem = laineSolver(editor.getValue(),{plot:true});
+    let problem = laineSolver(editor.getValue(),{returnProblem:true});
     if (problem === undefined){
 	let error= new laineError("No degree of freedom","Try to remove an equation",undefined);
 	displayError(error);
 	return false;
     }
-
+    
     const degrees = problem.names.length-problem.equations.length;
     if (degrees>1){
 	let errorText= new laineError("2 or + degrees of freedom","Try to include more equations",undefined);
@@ -144,14 +144,14 @@ function laine_plot(){
 	let stateVar = `${xName} = ${from + delta*i}\n`;
 	try{
 	    if (i===0){
-		laineSolver(stateVar+guessText+equationLines,{yVar:yName});
+		laineSolver(stateVar+guessText+equationLines,{solveFor:yName});
 	    }
 	    else{
-		laineSolver(stateVar+equationLines,{guessPlot:storeSolution,yVar:yName});
+		laineSolver(stateVar+equationLines,{savedSolution:storeSolution,solveFor:yName});
 	    }
 	}
 	catch(e){
-	    console.error(e);
+	    //console.error(e);
 	    let error = new  laineError("Fail solution","Solver fail to find solution at some points",stateVar);
 	    displayError(error);
 	    continue;
@@ -225,13 +225,13 @@ function checkStates(){
 	laineSolver(text);
     }
     catch(e){
-	console.error(e);
+	//console.error(e);
 	displayError(e);
 	return false;
     }
     	
     // Grab text and match PropsSI calls
-    const regexComment = /#.*\n/g; // removes comments
+    const regexComment = /#.*/g; // removes comments
     const regex = /PropsSI\(.*(?=\))/g; // captures PropsSI(...
     const found = text.replace(regexComment,'').match(regex);
 
@@ -376,6 +376,7 @@ function plotStates(){
     */
     'use strict';
     // Axis definition
+    const t1 = performance.now();
     let xName,yName,xAxis,yAxis;
     let type = document.querySelector(".propPlotType");
     if (type.value === "Ts"){
@@ -444,7 +445,7 @@ function plotStates(){
     let liqData=[];
     let vapData=[];
     const count = 20;
-    const delta = (yMax-yMin)/count;
+    let delta = (yMax-yMin)/count;
     if (delta === 0){
 	delta = (yMin*1.1-yMin*0.9)/count;
 	yMin = 0.9*yMin;
@@ -591,4 +592,5 @@ function plotStates(){
     solBox.style.display="none";
     let plotDrawBox = document.querySelector(".plotDrawBox");
     plotDrawBox.style.display="block";
+    console.log("Plot time:",performance.now()-t1,"ms")
 }
