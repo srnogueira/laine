@@ -1,4 +1,7 @@
-// EDITOR
+/* 
+   Editor
+*/
+
 // Simple mode for text highlight
 CodeMirror.defineSimpleMode("laine", {
     start: [
@@ -10,6 +13,7 @@ CodeMirror.defineSimpleMode("laine", {
 	{regex: /[a-zA-Z$][\w$]*/, token: "variable"},
     ],
 });
+
 // Creating the editor
 let textBox = document.querySelector(".box");
 const editor = CodeMirror.fromTextArea(textBox, {

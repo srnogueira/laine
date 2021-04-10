@@ -167,10 +167,10 @@ function solve1D2D(equations,laineOptions){
 	// Get number of variables : (0) just remove ; (1) 1D solve; (2) 2D solve  
 	name=equations[0].vars;
 	if (name.length === 0){
-	    throw new laineError('Redefined variable / No variable',
-				 `Some variable has been redefined / There is no variables`,
+	    throw new laineError('Redefined variable',
+				 `Some variable has been redefined`,
 				 `Line ${equations[0].number}`,
-				 `Remove or correct the line ${equations[0].number}`);
+				 'Remove or correct the line ${equations[0].number}');
 	}
 	else if (name.length===1){
 	    // Try to simply evaluate

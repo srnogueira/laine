@@ -6,36 +6,28 @@
     <meta name="viewport" content="width=device-width">
     <meta name="author" content="Rafael Nogueira Nakashima">
     <meta name="description" content="laine solves equations and thermodynamic problems">
-
+    <meta name="theme-color" content="#C93833">
+    <link rel="manifest" href="manifest.json">
     <!-- head -->
     <title>laine | equation solver</title>
     <link rel="shortcut icon" type="image/x-icon" href="img/laine.png">
-
+    <link rel="apple-touch-icon" href="img/laineApple.png">
     <!-- font -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
-
+    <link defer href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+    <link defer href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
     <!-- css -->
     <link href="styles/style.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles/codemirror.css">
-    
-    <!-- codemirror javascript -->
-    <script src="scripts/third-party/codemirror.js"></script>
-    <script src="scripts/third-party/simple.js"></script>
+    <link defer rel="stylesheet" href="styles/codemirror.css">
   </head>
-
   <body class="body">
-
     <!-- Main menu -->
     <header>
       <div class="laineHead">
-	<img alt="laine-logo" width="50px" src="img/laine.png">
+	<img alt="laine-logo" width="45" heigth="45" src="img/laine.png">
 	<h1>laine</h1>
 	<input  id="inputFileNameToSaveAs" placeholder="Untitled problem"></input>
       </div>
     </header>
-
     <!-- Navigation menu -->
     <nav class="laineMenu">
       <!-- File menu -->
@@ -48,7 +40,6 @@
 	  <button onclick="loadFileAsText()">Load</button>
 	</div>
       </div>
-      
       <!-- Function menu -->
       <div class="functionDropdown">
 	<button class="function">Functions</button>
@@ -59,10 +50,8 @@
 	  <button class="lk">Lee-Kesler</button>
 	</div>
       </div>
-
       <button class="solve"> Solve (F2)</button>
       <button class="report"> Report (F4)</button>
-
       <!-- Change name if screen is small -->
       <script>
 	if (window.innerWidth < 600){
@@ -70,7 +59,6 @@
 	    document.querySelector(".report").innerText = "Report";
 	};
       </script>
-      
       <!-- Plot menu -->
       <div class="plotDropdown">
 	<button class="plotMenu"> Plots</button>
@@ -80,7 +68,6 @@
 	</div>
       </div>
     </nav>
-
     <nav class="subMenus">
       <!-- PropsSI -->
       <div class="propsBox">
@@ -339,7 +326,6 @@
 	  <button class="propsCancel">Cancel</button>
 	</div>
       </div>
-
       <!-- HAPropsSI -->
       <div class="HApropsBox">
 	<table>
@@ -387,7 +373,6 @@
 	    <td>Input (1)</td>
 	    <td>
 	      <input class="HAvalue1" placeholder="value"></input>
-
 	      <select class="HAInput1">
 		<optgroup label="Temperatures">
 		  <option value="B">Wet-Bulb Temperature (K)</option>
@@ -486,7 +471,6 @@
 	  <button class="HApropsCancel">Cancel</button>
 	</div>
       </div>
-
       <!-- NasaSI -->
       <div class="nasaBox">
 	<table>
@@ -558,10 +542,10 @@
 	  </tr>
 	  <tr>
 	    <td>
-	      Temperature (K)
+	      Temperature
 	    </td>
 	    <td>
-	      <input class="nasaT" placeholder="value"></input>
+	      <input class="nasaT" placeholder="value"></input> (K)
 	    </td>
 	  </tr>
 	  <tr>
@@ -580,7 +564,6 @@
 	  <button class="nasaCancel">Cancel</button>
 	</div>
       </div>
-
       <!-- Function Menu -->
       <div class="lkBox">
 	<table>
@@ -623,7 +606,6 @@
 	  <button class="lkCancel">Cancel</button>
 	</div>
       </div>
-
       <!-- Analysis box -->
       <div class="plotBox">
 	<table>
@@ -657,7 +639,6 @@
 	  <button class="plotCancel">Cancel</button>
 	</div>
       </div>
-
       <!-- Property plot box -->
       <div class="propPlotBox">
 	<table>
@@ -688,7 +669,6 @@
 	  <button class="propPlotCancel">Cancel</button>
 	</div>
     </nav>
-
     <main>
       <!-- Interface -->
       <div class="interface">
@@ -696,116 +676,102 @@
 	<div class="problemBox">
 	  <!-- Equations Box -->
 	  <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
-## Tutorial
-### Basic problems
-#1. Write and solve nonlinear system of equations
+# Write and solve nonlinear system of equations
 x^2+y^2=10
 x*y=3
-#2. Press *Solve* to find a solution
-#3. Use *Report* to render equations (may be slow).
-#**OBS**: comments are render as **markdown**.
-
-### Functions
-# 1. Math functions and constants:
-omega = sin(pi/2)
-# 2. Thermodynamic property functions:
-h_1=PropsSI('H','T',298.15,'P',1E5,'Water')  # J/kg
-
-### Property plots
-# 1. Define states by calling the PropsSI function
-h_2=PropsSI('H','T',473.15,'P',1E5,'Water')  # J/kg
-# 2. Choose the fluid, plot type and states
-# 3. Plot! the results
-
-### Parametric analysis
-# 1. Define a problem with 1 degree of freedom
-# w = 1/z
-# 2. Use *Parametric analysis* to define variables
-# 3. Save data using *Export*
-#**OBS**: *Parametric analysis* **can't** be used with *Solve* and vice-versa
-
-### User-defined functions
-# Create convenient functions
-kelvin(celsius) = celsius+273.15
-T_kelvin = kelvin(50)</textarea>
-	
+# Press Solve to see the results</textarea>
+	  <!-- codemirror javascript -->
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"></script>
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/addon/mode/simple.min.js"></script>
 	  <!-- Render results -->
 	  <div class="mathDiv">
 	  </div>
 	</div>
-	
-      	<!-- Results side -->
-	<div class="sideBar">
-	  <!-- ErrorBox -->
-	  <div class="errorBox">
-	  </div>
-
-	  <!-- Results -->
-	  <div class="solBox">
-	    <table>
-	      <td><h2>Solution | </h2></td>
-	      <td><button class="closeSolution">Close</button></td>
-	    </table>
-	    <table class="out">
-	    </table>
-	  </div>
-
-	  <!-- PlotBox -->
-	  <div class="plotDrawBox">
-	    <table>
-	      <td><h2>Plot | </h2></td>
-	      <td><button onclick="exportDataFile()">Export</button></td>
-	      <td><button class="closePlot">Close</button></td>
-	    </table>
-	    <div id="canvasDiv">
-	      <canvas id="myChart" height="400"></canvas>
+      	  <!-- Results side -->
+	  <div class="sideBar">	    
+	    <!-- ErrorBox -->
+	    <div class="errorBox">
+	      <table>
+		<td><h2>Error |</h2></td>
+		<td><button class="closeError">Close</button></td>
+	      </table>
+	      <div class="errorGrid"></div>
+	    </div>
+	    <!-- Results -->
+	    <div class="solBox">
+	      <table>
+		<td><h2>Solution | </h2></td>
+		<td><button class="closeSolution">Close</button></td>
+	      </table>
+	      <table class="out">
+	      </table>
+	    </div>
+	    <!-- PlotBox -->
+	    <div class="plotDrawBox">
+	      <table>
+		<td><h2>Plot | </h2></td>
+		<td><button onclick="exportDataFile()">Export</button></td>
+		<td><button class="closePlot">Close</button></td>
+	      </table>
+	      <div id="canvasDiv">
+		<canvas id="myChart" height="400"></canvas>
+	      </div>
+	    </div>
+	    <!-- About -->
+	    <div class="about">
+	      <table>
+		<td><h2> About laine |</h2></td>
+		<td><button class="closeAbout">Close</button></td>
+	      </table>
+	      <p> laine can solve <em>nonlinear systems of equations</em> in a easy way. Just input your equations and press <em>Solve (F2)</em> or <em>Report (F4)</em>:</p>
+	      <p>$$\begin{eqnarray}\text{In math: }x^2+x=3 \\ \text{In laine: x^2+x=3}\end{eqnarray}$$</p>
+	      <p> You can also use <em>Functions</em> to input thermodynamic properties in your problem. For example, the specific enthalpy of Air at 298 K and 1E5 Pa can be written in laine as:</p>
+	      <p>$$h_{air} = \text{PropsSI('H','T',298,'P',1E5,'Air')}$$</p>
+	      <p> laine can also create a <em>Parametric Analysis</em> or a <em>Property Plot</em> to visualize your results. Just remember that a <em>Parametric Analysis</em> requires a problem with just <em> one (1) degree of freedom</em>, while a <em>Property Plot</em> requires that the problem <em>calls the function PropsSI.</em></p>
+	      <p> If you need more details you can consult the <a target="_blank" rel="noopener" href="https://github.com/srnogueira/laine">Documentation</a>. You can also report an issue on our <a target="_blank" rel="noopener" href="https://github.com/srnogueira/laine/issues">Github page</a>.
 	    </div>
 	  </div>
-	</div>
-	
       </div>
     </main>
   </body>
-  
   <!-- Links and credits -->
   <footer>
     <p class="printFooter">
-      made with laine. Visit the webapp in <a target="_blank" href="https://srnogueira.github.io/laine">https://srnogueira.github.io/laine</a>
+      made with laine. Visit the website at <a target="_blank" rel="noopener" href="https://laine.com.br">https://laine.com.br</a>
     </p>
     <p>
       developed by Rafael Nogueira Nakashima <br>
       <a href="mailto:rafaelnnakashima@usp.br">Email</a> |
-      <a target="_blank" href="https://github.com/srnogueira/laine">Documentation</a> |
-      <a target="_blank" href="https://github.com/srnogueira/laine/issues">Issues</a>
+      <a target="_blank" rel="noopener" href="https://github.com/srnogueira/laine">Documentation</a> |
+      <a target="_blank" rel="noopener" href="https://github.com/srnogueira/laine/issues">Issues</a>
     </p>
   </footer>
-
   <!-- Important stuff -->
   <!-- codemirror javascript -->
   <script src="scripts/editor.js"></script> <!-- creates editor -->
   <!-- parser javascript -->
-  <script src="scripts/third-party/math.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.3.0/math.min.js"></script>
   <!-- thermodynamic functions javascript -->
-  <script src="scripts/third-party/coolprop.js"></script>
+  <script async src="scripts/third-party/coolprop.js"></script>
   <!-- laine javascript -->
-  <script src="scripts/functions.js"></script>
-  <script src="scripts/laine.js"></script>
-  <script src="scripts/plots.js"></script>
-  <script src="scripts/ui.js"></script>
-  
+  <script defer src="scripts/functions.js"></script>
+  <script defer src="scripts/laine.js"></script>
+  <script defer src="scripts/plots.js"></script>
+  <script defer src="scripts/ui.js"></script>
   <!-- not so important stuff -->
+  <!-- Install -->
+  <script src="app.js"></script>
   <!-- math render javascript -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script> <!-- For promise -->
-  <script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <!-- charts -->
-  <script async src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
   <!-- showdown -->
-  <script async src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
   <!-- Report fonts -->
-  <link async href="https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap" rel="stylesheet">
+  <link defer href="https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap" rel="stylesheet">
   <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1F6P2D472J"></script>
-  <script async >
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-1F6P2D472J"></script>
+  <script defer >
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());

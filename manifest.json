@@ -1,0 +1,22 @@
+{
+    "name": "laine",
+    "short_name": "laine",
+    "start_url": "./index.html",
+    "display": "minimal-ui",
+    "background_color": "#FFFFFF",
+    "theme_color": "#C93833",
+    "icons":[{	"src": "/img/laine192.png",
+		"sizes": "192x192",
+		"type": "image/png"
+	     },{
+		 "src": "/img/laineMaskable.png",
+		 "sizes": "192x192",
+		 "type": "image/png",
+		 "purpose":"any maskable"
+	     },{
+		 "src": "/img/laine512.png",
+		 "sizes": "512x512",
+		 "type": "image/png"
+	     }
+	    ]
+}

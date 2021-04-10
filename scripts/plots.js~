@@ -1,6 +1,6 @@
 // PARAMETRIC ANALYSIS
-'use strict';
 // Data for download
+'use strict';
 let exportData;
 let laineProblem;
 function plot_check(){
@@ -31,11 +31,14 @@ function plot_check(){
 	displayError(errorText);
 	return false;
     }
+
     // If is the first run, just create a menu
     let xSelect = document.querySelector(".plotX");
     let ySelect = document.querySelector(".plotY");
+
     xSelect.options.length = 0;
     ySelect.options.length = 0;
+
     for (let i=0; i<problem.names.length; i++){
 	let optX = document.createElement("option");
 	let optY = document.createElement("option");
@@ -48,6 +51,7 @@ function plot_check(){
     }
     return problem;
 }
+
 function createPlot(dataObject,xName,yName){
     /*
       Creates a plot
@@ -64,7 +68,9 @@ function createPlot(dataObject,xName,yName){
 	canvas.width="400";
     }
     div.appendChild(canvas);
+
     let ctx = canvas.getContext("2d");
+
     let myLineChart = new Chart(ctx, {
 	type: 'line',
 	data:dataObject,
@@ -99,26 +105,37 @@ function createPlot(dataObject,xName,yName){
 	}
     });
     myLineChart.update();
+    
     let plotDrawBox = document.querySelector(".plotDrawBox");
     plotDrawBox.style.display="block";
 }
+
+
 function laine_plot(){
-    // Function: Create a plot
+    /*
+      Function: Create a plot
+    */
     const t1 = performance.now();
     let problem = laineProblem;
+    
     // Second run: solve the problem for multiple values
     let xName = document.querySelector(".plotX").value;
     let yName = document.querySelector(".plotY").value;
+    
     let from = document.querySelector(".plotXfrom").value;
     let to = document.querySelector(".plotXto").value;
     from = parser.evaluate(from);
     to = parser.evaluate(to);
+
     const Npoints = document.querySelector(".plotNpoints").value;
+
     const delta = (to-from)/(Npoints-1)
     let data = [];
     exportData=`${xName}\t${yName}\n`;
+
     // Store guesses
     let storeSolution = {}; 
+
     let equationLines = '';
     for (let equation of problem.equations){
 	equationLines += `${equation.lhs}=${equation.rhs}\n`;
@@ -164,6 +181,7 @@ function laine_plot(){
 				       "Verify if the problem is correct and change the x range");
 	displayError(error);
     }
+    
     // Draw plot -- could be a function
     const dataObject = {datasets:[{
 	fill: false,
@@ -175,7 +193,11 @@ function laine_plot(){
     console.log("Plot time:",t2-t1,"ms")
     return false;
 }
-// PROPERTY PLOTS
+
+/*
+  Property plots
+*/
+
 function State(text){
     const pieces = text.split(',');
     // State definition
@@ -193,12 +215,16 @@ function State(text){
     this.H = Module.PropsSI('H',this.first[0],this.first[1],this.second[0],this.second[1],this.fluid);
     this.D = Module.PropsSI('D',this.first[0],this.first[1],this.second[0],this.second[1],this.fluid);
 }
+
 // Grab the table to add more states
 const stateTable = document.querySelector(".stateTable");
 let tableSize = 1;
 let stateOptions // Global variable for states
+
 function checkStates(){
-    // Function : Creates the property plot menu
+    /*
+      Function : Creates the property plot menu
+    */
     // Erase
     stateTable.innerHTML="";
     tableSize = 1;
@@ -212,10 +238,12 @@ function checkStates(){
 	displayError(e);
 	return false;
     }
+    	
     // Grab text and match PropsSI calls
     const regexComment = /#.*/g; // removes comments
     const regex = /PropsSI\(.*(?=\))/g; // captures PropsSI(...
     const found = text.replace(regexComment,'').match(regex);
+
     // Parse PropsSI calls into states
     let states = [];
     if (found){
@@ -231,6 +259,7 @@ function checkStates(){
 	displayError(e);
 	return false;
     }
+    
     // Create the menu
     let optionText;
     let fluids = [];
@@ -238,6 +267,7 @@ function checkStates(){
     let optionsEntry = []; // Necessary to verify
     let fluidsSelect = document.querySelector(".propPlotFluid");
     fluidsSelect.options.length = 0;
+
     for (let i=0;i<states.length;i++){
 	// Fluids
 	if (!fluids.includes(states[i].fluid)){
@@ -247,6 +277,7 @@ function checkStates(){
 	    fluidOpt.text = states[i].fluid ;
 	    fluidsSelect.add(fluidOpt);
 	}
+
 	// States
 	if (states[i].Q === -1){
 	    optionText ="T: "+states[i].T.toPrecision(5)+" [K] ; P: "+states[i].P.toPrecision(5)+" [Pa]";
@@ -263,8 +294,11 @@ function checkStates(){
     stateOptions = options;
     return true;
 }
+
 function updateNumber(){
-    // Function: Update state numbers
+    /*
+      Function: Update state numbers
+    */
     for (let i=0;i<stateTable.children.length;i++){
 	let row = stateTable.children[i];
 	let number = i+1
@@ -272,8 +306,11 @@ function updateNumber(){
     }
     return false;
 }
+
 function addState(){
-    // Function: creates a new state entry (change it to grids);
+    /*
+      Function: creates a new state entry (change it to grids);
+    */
     // Create elements
     let stateRow = document.createElement("tr")
     let stateNumber = document.createElement("td")
@@ -281,10 +318,12 @@ function addState(){
     let stateSelect = document.createElement("select")
     let stateDelete = document.createElement("td")
     let stateButton = document.createElement("button")
+
     // Number
     stateNumber.textContent = "("+tableSize+")";
     tableSize += 1;
     stateRow.appendChild(stateNumber);
+
     // Options
     stateSelect.options.length = 0;
     for (let i=0;i<stateOptions.length;i++){
@@ -295,11 +334,13 @@ function addState(){
     }
     stateChoice.appendChild(stateSelect);
     stateRow.appendChild(stateChoice);
+
     // Button
     stateButton.textContent = 'Delete';
     stateButton.style.padding = '5px';
     stateDelete.appendChild(stateButton);
     stateRow.appendChild(stateDelete);
+
     // Table
     stateTable.appendChild(stateRow);
     stateButton.onclick = function() {
@@ -307,11 +348,15 @@ function addState(){
 	tableSize -=1;
 	updateNumber();
     }
+
     // Editor
     editor.refresh();
 }
+
 function addIso(data,coord,propName,propValue,max,min,name,otherName,fluid){
-    // Function: creates a dataset for a isoline
+    /*
+      Function: creates a dataset for a isoline
+    */
     const delta = (max-min)/40;
     let xValue,yValue,xName,yName;
     for (let i=0;i<41;i++){
@@ -337,10 +382,14 @@ function addIso(data,coord,propName,propValue,max,min,name,otherName,fluid){
     }
     return data;
 }
+
 const addStateButton = document.querySelector(".plotAddState")
 addStateButton.onclick = addState;
+
 function plotStates(){
-    // Function: Create the plot
+    /*
+      Function: Create the plot
+    */
     // Axis definition
     const t1 = performance.now();
     let xName,yName,xAxis,yAxis;
@@ -369,6 +418,7 @@ function plotStates(){
 	yName = "T";
 	yAxis = "T [K]";
     }
+
     // Points definition
     let data = [];
     let list = stateTable.children;
@@ -377,14 +427,17 @@ function plotStates(){
     let fluid;
     let stateList=[];
     exportData=`States\n${xAxis}\t${yAxis}\n`;
+
     let xValue,yValue;
     for (let i=0;i<list.length;i++){
 	const stateID = list[i].children[1].children[0].value;
 	const state = stateOptions[stateID][1];
 	stateList.push(state);
+	
 	fluid = state.fluid;
 	xValue = Module.PropsSI(xName,state.first[0],state.first[1],state.second[0],state.second[1],state.fluid);
 	yValue = Module.PropsSI(yName,state.first[0],state.first[1],state.second[0],state.second[1],state.fluid);
+
 	// As number
 	if (yValue < yMin){
 	    yMin = yValue;
@@ -392,13 +445,17 @@ function plotStates(){
 	if (yValue > yMax){
 	    yMax = yValue;
 	}
+
 	// As string
 	xValue = xName === "D" ? 1/xValue : xValue;
 	yValue = yValue;
+
 	let point = {x: xValue, y:yValue};
 	data.push(point);
+	
 	exportData+=`${point.x}\t${point.y}\n`;
     }
+
     // Saturation
     let liqData=[];
     let vapData=[];
@@ -408,6 +465,7 @@ function plotStates(){
 	delta = (yMin*1.1-yMin*0.9)/count;
 	yMin = 0.9*yMin;
     }
+
     let exportVap = `\nSat. vap.\n${xAxis}\t${yAxis}\n`;
     exportData+=`\nSat. liq.\n${xAxis}\t${yAxis}\n`;
     let ySat,xSat;
@@ -421,6 +479,7 @@ function plotStates(){
 	    liqData.push(pointLiq);
 	    exportData+=`${pointLiq.x}\t${pointLiq.y}\n`;
 	}
+
 	// Sat vap.
 	xSat = Module.PropsSI(xName,yName,ySat,"Q",1,fluid);
 	if (xSat !== Infinity){
@@ -431,6 +490,7 @@ function plotStates(){
 	}
     }
     exportData += exportVap;
+
     let dataPoints = { datasets:[
 	{
 	    label:"States",
@@ -459,6 +519,7 @@ function plotStates(){
 	    fill:false
 	}]
 		     };
+    
     // Process
     let isoLines = ["P","S","T","H","D"]; // T can't be first
     let isoData = []
@@ -472,6 +533,7 @@ function plotStates(){
 		if (prop === yName || prop===xName){
 		    break;
 		}
+
 		// Check mixtures
 		if (prop === "T" || prop === "P"){
 		    // Check if the state is a mixture and the next state is not
@@ -495,7 +557,8 @@ function plotStates(){
 			isoData.push(point);
 			exportData+=`${point.x}\t${point.y}\n`;
 		    }
-		}   
+		}
+		    
 		if (type.value==="Ph"){
 		    let yBegin = data[i].y;
 		    let yEnd = data[i+1].y;
@@ -536,8 +599,10 @@ function plotStates(){
 	pointRadius:0
     }
     dataPoints.datasets.push(isoDataPlot);
+    
     // Draw plot - could be a function;
     createPlot(dataPoints,xAxis,yAxis);
+
     // Show
     solBox.style.display="none";
     let plotDrawBox = document.querySelector(".plotDrawBox");
