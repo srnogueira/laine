@@ -16,7 +16,7 @@ self.addEventListener('install', (e) => {
 	'./scripts/ui.js',
 	'./scripts/third-party/',
 	'./scripts/third-party/coolprop.js',
-	'./scripts/third-party/coolprop.wasm',
+	'./scripts/third-party/coolprop.wasm'
     ])),
   );
 });
