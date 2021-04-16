@@ -19,8 +19,10 @@ input, select{
 }
 header h1{
     margin: 0;
-    font-size: 24pt;
+    font-size: 30pt;
     padding-left:5px;
+    font-weight:normal;
+    line-height:30pt;
 }
 /* Menus */
 #laineMenu{
@@ -67,7 +69,7 @@ button:focus{
     background-color: white;    
     padding: 5px;
     border-radius:5px;
-    margin:5px 15px 0px 0px;
+    margin:5px 0px 0px 0px;
     box-shadow: inset 0px 5px 0px  #C93843;
     max-width:100%;
 }
@@ -211,6 +213,7 @@ footer p{
 }
 .sideBar{
     display:grid;
+    grid-gap:5px;
     grid-template-columns:auto auto;
 }
 /* Responsive */

@@ -264,8 +264,9 @@ function dropdownHover(button){
 // Dropdown - click effect
 function dropdownClick(button){
     const content = button.nextElementSibling;
+    const display = content.style.display // Store
     clearAll(true); // has to include everybody (including other hovers)
-    if (content.style.display !== "grid"){
+    if (display !== "grid"){
 	content.style.display="grid";
     }
     else{
