@@ -1,9 +1,9 @@
 // REPORTS
+'use strict';
 const outDiv = document.querySelector(".out"); // Solution element
 const mathDiv = document.querySelector(".mathDiv"); // Report element
 function writeEqs(inputText){
     // Function : Write equations for reports
-    'use strict';
     const lines = inputText.split('\n');
     // Clear and start
     mathDiv.innerHTML="";
@@ -42,7 +42,6 @@ function writeEqs(inputText){
 }
 function displayResults(fast){
     // show function
-    'use strict';
     outDiv.innerText="";  // clear space
     const solutions = Object.entries(parser.getAll());
     const solutionsLength = solutions.length;
@@ -63,21 +62,21 @@ function displayResults(fast){
 function displayError(e){
     //FUNCTION: display error messages
     errorGrid.innerText = "";
-    let type = document.createElement("p");
+    let type = document.createElement("span");
     type.innerHTML = "<b>Type</b>";
-    let typeDesc = document.createElement("p");
+    let typeDesc = document.createElement("span");
     typeDesc.innerText = e.name;
-    let where = document.createElement("p");
+    let where = document.createElement("span");
     where.innerHTML = "<b>Where?</b>";
-    let whereDesc = document.createElement("p");
+    let whereDesc = document.createElement("span");
     whereDesc.innerText = e.lineNumber;
-    let message = document.createElement("p");
+    let message = document.createElement("span");
     message.innerHTML = "<b>What?</b>";
-    let messageDesc = document.createElement("p");
+    let messageDesc = document.createElement("span");
     messageDesc.innerText = e.message;
-    let help = document.createElement("p");
+    let help = document.createElement("span");
     help.innerHTML = "<b>Help</b>";
-    let helpDesc = document.createElement("p");
+    let helpDesc = document.createElement("span");
     helpDesc.innerText = e.help;
     // Include elements
     const all = [type,typeDesc,message,messageDesc,where,whereDesc,help,helpDesc]
@@ -85,12 +84,11 @@ function displayError(e){
 	errorGrid.appendChild(elem);
     }
     // Display box
-    errorBox.style.display = "inline-block";
+    errorBox.style.display = "block";
     editor.refresh();
 }
 function writeAns(solution,fast){
     // Function: write answers in the results box
-    'use strict';
     let key = solution[0];
     let value = solution[1];
     let msg;
@@ -136,7 +134,6 @@ function writeAns(solution,fast){
 }
 function formatMathJax(line){
     // Function: make some corrections in the MathJax style
-    'use strict';
     // Add double equals '=='
     const sides=line.split('=');
     line=sides[0]+'=='+sides[1];
@@ -187,10 +184,7 @@ function formatMathJax(line){
 }
 function laine(isfast){
     // Function: calls solver for buttons and create a error message if necessary
-    'use strict';
-    document.querySelector(".about").style.display="none";
-    errorBox.style.display = "";
-    solBox.style.display = "";
+    clearAll();
     const lines = editor.getValue();
     if (!isfast){
 	writeEqs(lines);
@@ -210,16 +204,150 @@ function laine(isfast){
 }
 // EDITOR
 // Adding effects with changes
-let editorDiv = document.querySelector(".CodeMirror")
-const solBox = document.querySelector(".solBox");
+const editorDiv = document.querySelector(".CodeMirror")
+const solBox = document.getElementById("solBox");
 const errorGrid = document.querySelector(".errorGrid");
-const errorBox = document.querySelector(".errorBox");
+const errorBox = document.getElementById("errorBox");
+const contentParametric = document.getElementById("contentParametric");
+const contentPropPlot = document.getElementById("contentPropPlot");
 editor.on("change",function(){
     textBox.value=editor.getValue();
-    solBox.style.display="";
-    errorBox.style.display="";
+    if (contentParametric.style.display === "block" || contentPropPlot.style.display === "block"){
+	clearAll();
+    }
+    else{
+	clearAll(true);
+    }
 });
-// Button name : Mobile vs. Desktop
+// Clear all
+const genericDropbox = document.querySelectorAll(".dropdownContent");
+const genericMenus = document.querySelectorAll(".hiddenMenu");
+function clearAll(exception){
+    // Clear generic classes
+    for (let generic of genericDropbox){
+	generic.style.display="none";
+    }
+    if (!exception){
+	for (let generic of genericMenus){
+	    generic.style.display="none";
+	}
+    }
+    // Toggle Report button - leave it if is a double click
+    if (mathDiv.style.display==="block" && exception !== "report"){
+	mathDiv.style.display="";
+	solBox.style.display="";
+	editorDiv.style.display="block";
+	reportButton.innerText=window.innerWidth < 600 ? "Report" : "Report (F4)";
+    }
+    editor.refresh();
+};
+// Remove menus
+// editor is defined on editor.js
+editor.on("click",function(){clearAll(true)});
+const inter = document.querySelector(".interface");
+inter.onclick = function(){clearAll(true)}; // works
+// HIDDEN MENUS
+// Dropdown - hover effect
+function dropdownHover(button){
+    const content = button.nextElementSibling;
+    button.onmouseover = function(){
+	if (window.innerWidth >= 600){
+	    content.style.display="grid";
+	}
+    };
+    const menu = button.parentNode;
+    menu.onmouseleave = function(){
+	content.style.display="none"
+	document.activeElement.blur();
+    }
+}
+// Dropdown - click effect
+function dropdownClick(button){
+    const content = button.nextElementSibling;
+    clearAll(true); // has to include everybody (including other hovers)
+    if (content.style.display !== "grid"){
+	content.style.display="grid";
+    }
+    else{
+	content.style.display="none";
+	document.activeElement.blur();
+    }
+}
+// Apply to buttons
+const dropButtons = document.querySelectorAll(".dropdownButton");
+for (let button of dropButtons){
+    dropdownHover(button);
+    button.onclick = ()=>dropdownClick(button);
+}
+// SUBMENUS
+function hiddenMenu(openId,contentId,closeId){
+    const open = document.getElementById(openId);
+    const content = document.getElementById(contentId);
+    const close = document.getElementById(closeId);
+    open.onclick = function() {
+	clearAll();
+	content.style.display = "block";
+	editor.refresh();
+    };
+    close.onclick = function() {
+	content.style.display = "none";
+	editor.refresh();
+    }
+};
+// Hidden menus
+hiddenMenu("openPropsSI","contentPropsSI","closePropsSI");
+hiddenMenu("openHAPropsSI","contentHAPropsSI","closeHAPropsSI");
+hiddenMenu("openNasa","contentNasa","closeNasa");
+hiddenMenu("openLk","contentLk","closeLk");
+hiddenMenu("openParametric","contentParametric","closeParametric");
+// Dynamic content
+const plotMenuButton = document.getElementById("openParametric")
+plotMenuButton.onclick = function(){
+    clearAll();
+    laineProblem = plot_check();
+    if (laineProblem !== false){
+	document.getElementById("contentParametric").style.display = "block";
+    }
+};
+hiddenMenu("openPropPlot","contentPropPlot","closePropPlot");
+// Dynamic content
+const propPlotMenuButton = document.getElementById("openPropPlot")
+propPlotMenuButton.onclick = function(){
+    clearAll();
+    if (checkStates()){
+	document.getElementById("contentPropPlot").style.display = "block";
+    }
+};
+// PLOT BUTTON
+const plotButton  = document.querySelector(".plotDraw");
+plotButton.onclick = function(){
+    clearAll(true);
+    laine_plot();
+    document.getElementById("plotDrawBox").style.display="block";
+    editor.refresh();
+};
+const propPlotButton = document.querySelector(".propPlotDraw")
+propPlotButton.onclick = function(){
+    clearAll(true);
+    plotStates();
+    document.getElementById("plotDrawBox").style.display="block";
+    editor.refresh();
+}
+// CLOSE BUTTON
+function hideGrandParentDiv(button){
+    const grandparent = button.parentNode.parentNode;
+    button.onclick = function(){
+	grandparent.style.display="none";
+	editor.refresh();
+    }
+}
+// Apply
+const closeButtons = document.querySelectorAll(".hiddenMenuClose");
+for (let button of closeButtons){
+    hideGrandParentDiv(button);
+}
+// SOLVER AND REPORT
+// Button name
 const solveButton = document.querySelector(".solve");
 const reportButton = document.querySelector(".report");
 function changeTextButtons() {
@@ -233,145 +361,11 @@ function changeTextButtons() {
     }
 };
 window.onresize = changeTextButtons;
-// toggle menus
-function toggle(className){
-    let x = document.querySelector(className);
-    x.style.display = x.style.display === "" ? "block" : "";
-};
-function clearAll(exception){
-    const classes = [".fileBox",".functionBox",".propsBox",".HApropsBox",".nasaBox",".lkBox",".plotBox",".propPlotBox",".plotMenuBox",".errorBox"];
-    // Clear all - leave exception
-    for (let i=0;i<classes.length;i++){
-	if (classes[i] !== exception){
-	    document.querySelector(classes[i]).style.display="";
-	}
-    }
-    // Toggle Report button - leave it if is a double click
-    if ((reportButton.innerText === "Edit (F4)" || reportButton.innerText === "Edit") && exception !== "report" && exception !== ".errorBox"){
-	mathDiv.style.display="";
-	solBox.style.display="";
-	editorDiv.style.display="block";
-	reportButton.innerText=window.innerWidth < 600 ? "Report" : "Report (F4)";
-	editor.refresh();
-    }
-};
-// Remove menus
-// editor is defined on editor.js
-editor.on("focus",function(){clearAll(".errorBox")});
-editor.on("click",function(){clearAll(".errorBox")});
-const inter = document.querySelector(".interface");
-inter.onclick = function(){clearAll(".errorBox")}; // works
-// Dropdown menus
-function dropdownMenu(buttonClass,boxClass,dropdownClass){
-    const button = document.querySelector(buttonClass);
-    const box = document.querySelector(boxClass);
-    button.onclick = function(){
-	clearAll(boxClass);
-	toggle(boxClass);
-    };
-    const dropdown = document.querySelector(dropdownClass);
-    button.onmouseover = function(){
-	if (window.innerWidth >= 600){
-	    box.style.display="block";
-	}
-    };
-    dropdown.onmouseleave = () => box.style.display="";
-}
-// File dropdown menu
-dropdownMenu(".file",".fileBox",".fileDropdown");
-// Function button
-dropdownMenu(".function",".functionBox",".functionDropdown");
-// Plots menu
-dropdownMenu(".plotMenu",".plotMenuBox",".plotDropdown");
-//SubMenus
-function subMenus(buttonClass,boxClass,cancelClass){
-    const button = document.querySelector(buttonClass)
-    button.onclick = function() {
-	clearAll();
-	toggle(boxClass);
-	editor.refresh();
-    };
-    const cancelButton = document.querySelector(cancelClass)
-    cancelButton.onclick = function() {
-	toggle(boxClass);
-	editor.refresh();
-    }
-};
-// PropsSI
-subMenus(".props",".propsBox",".propsCancel");
-// HAPropsSI
-subMenus(".HAprops",".HApropsBox",".HApropsCancel");
-// NasaSI
-subMenus(".nasa",".nasaBox",".nasaCancel");
-// Lee-Kesler
-subMenus(".lk",".lkBox",".lkCancel");
-// Parametric analysis
-const plotMenuButton = document.querySelector(".plot")
-plotMenuButton.onclick = function(){
-    clearAll();
-    // Global var laineProblem
-    laineProblem = plot_check();
-    if (laineProblem !== false){
-	toggle(".plotBox");
-    }
-    else{
-	solBox.style.display = "";
-    }
-};
-const plotCancelButton = document.querySelector(".plotCancel")
-plotCancelButton.onclick = function(){toggle(".plotBox")};
-const plotButton  = document.querySelector(".plotDraw");
-plotButton.onclick = function(){
-    laine_plot();
-    toggle(".plotBox");
-    editor.refresh();
-};
-// Property plot
-const propPlotMenuButton = document.querySelector(".propPlot")
-propPlotMenuButton.onclick = function(){
-    clearAll();
-    if (checkStates()){
-	toggle(".propPlotBox");
-    }
-};
-const propPlotCancelButton = document.querySelector(".propPlotCancel")
-propPlotCancelButton.onclick = function(){toggle(".propPlotBox")};
-const propPlotButton = document.querySelector(".propPlotDraw")
-propPlotButton.onclick = function(){
-    clearAll();
-    plotStates();
-}
-// Close buttons
-const closeSolutionButton  = document.querySelector(".closeSolution");
-closeSolutionButton.onclick = function(){
-    solBox.style.display = "";
-    editor.refresh();
-};
-const closePlotButton  = document.querySelector(".closePlot");
-closePlotButton.onclick = function(){
-    let draw = document.querySelector(".plotDrawBox");
-    draw.style.display = "";
-    editor.refresh();
-};
-const closeErrorButton  = document.querySelector(".closeError");
-closeErrorButton.onclick = function(){
-    let draw = document.querySelector(".errorBox");
-    draw.style.display = "";
-    editor.refresh();
-};
-const closeAboutButton  = document.querySelector(".closeAbout");
-closeAboutButton.onclick = function(){
-    let draw = document.querySelector(".about");
-    console.log(draw);
-    draw.style.display = "none";
-    editor.refresh();
-};
 // Solver interface
-function report() {
-    if (mathDiv.style.display === "" || mathDiv.style.display === "none"){
+reportButton.onclick = function() {
+    if (mathDiv.style.display === "none" || mathDiv.style.display === ""){
 	clearAll("report");
-	let check = laine(false);
-	if (check){
+	if (laine(false)){
 	    reportButton.innerText = window.innerWidth < 600 ? "Edit" : "Edit (F4)";
 	}
     }
@@ -379,7 +373,6 @@ function report() {
 	clearAll();
     }
 }
-reportButton.onclick = report;
 solveButton.onclick = function(){
     clearAll();
     laine(true);
@@ -412,7 +405,7 @@ function writePropsSI(){
     const text = `property=PropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${fluidName}')`;
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    clearAll();
+    clearAll(true);
 }
 const PropsSIButton = document.querySelector(".butPropsSI");
 PropsSIButton.onclick = writePropsSI;
@@ -432,7 +425,7 @@ function writeHAPropsSI(){
     const text = `property=HAPropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${input3Name}',${value3.value})`;
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    clearAll();
+    clearAll(true);
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
@@ -446,7 +439,7 @@ function writeNasa(){
     const text=`property=NasaSI('${propName}',${temp.value},'${specie.value}')`;
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    clearAll();
+    clearAll(true);
 }
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
@@ -468,7 +461,7 @@ function writelk(){
     }
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
-    clearAll();
+    clearAll(true);
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
@@ -477,11 +470,9 @@ leeKeslerButton.onclick = writelk;
 function newFile() {
     // Textbox defined in editor.js
     let confirmation = confirm("Are you sure?");
-    let fileName = document.getElementById("inputFileNameToSaveAs")
     if (confirmation){
 	textBox.value = "";
 	editor.getDoc().setValue(textBox.value);
-	fileName.value="";
     }
     clearAll();
 };
@@ -496,13 +487,7 @@ function saveFile() {
     let textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
     let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);  
     let downloadLink = document.createElement("a");
-    const filename = document.getElementById("inputFileNameToSaveAs").value;
-    if (filename===""){
-	downloadLink.download="laineSave.txt";
-    }
-    else{ 
-	downloadLink.download = filename+".txt";
-    }
+    downloadLink.download="laineSave.txt";
     downloadLink.innerHTML = "Download File";
     downloadLink.href = textToSaveAsURL;
     downloadLink.onclick = destroyClickedElement;
@@ -516,7 +501,6 @@ function exportDataFile() {
     let textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
     let textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);  
     let downloadLink = document.createElement("a");
-    let filename = document.getElementById("inputFileNameToSaveAs").value;
     downloadLink.download="laineData.txt";
     downloadLink.innerHTML = "Download File";
     downloadLink.href = textToSaveAsURL;
@@ -542,7 +526,6 @@ function changeText() {
 	let textFromFileLoaded = fileLoadedEvent.target.result;
 	editor.getDoc().setValue(textFromFileLoaded);	
     };
-    document.getElementById("inputFileNameToSaveAs").value = fileToLoad.name.slice(0,-4);
     fileReader.readAsText(fileToLoad, "UTF-8");
 };
 fileInput.addEventListener("change", function(){

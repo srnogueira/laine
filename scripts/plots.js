@@ -65,6 +65,7 @@ function createPlot(dataObject,xName,yName){
     }
     div.appendChild(canvas);
     let ctx = canvas.getContext("2d");
+    let legend = dataObject.datasets.length > 1 ? true : false;
     let myLineChart = new Chart(ctx, {
 	type: 'line',
 	data:dataObject,
@@ -76,7 +77,7 @@ function createPlot(dataObject,xName,yName){
 	    },
 	    maintainAspectRatio:false,
 	    legend: {
-		display:false,
+		display:legend,
 	    },
 	    scales: {
 		xAxes: [{
@@ -99,8 +100,6 @@ function createPlot(dataObject,xName,yName){
 	}
     });
     myLineChart.update();
-    let plotDrawBox = document.querySelector(".plotDrawBox");
-    plotDrawBox.style.display="block";
 }
 function laine_plot(){
     // Function: Create a plot
@@ -275,11 +274,9 @@ function updateNumber(){
 function addState(){
     // Function: creates a new state entry (change it to grids);
     // Create elements
-    let stateRow = document.createElement("tr")
-    let stateNumber = document.createElement("td")
-    let stateChoice = document.createElement("td")
+    let stateRow = document.createElement("div")
+    let stateNumber = document.createElement("span")
     let stateSelect = document.createElement("select")
-    let stateDelete = document.createElement("td")
     let stateButton = document.createElement("button")
     // Number
     stateNumber.textContent = "("+tableSize+")";
@@ -293,13 +290,11 @@ function addState(){
 	option.text = stateOptions[i][0];
 	stateSelect.add(option);
     }
-    stateChoice.appendChild(stateSelect);
-    stateRow.appendChild(stateChoice);
+    stateRow.appendChild(stateSelect);
     // Button
     stateButton.textContent = 'Delete';
     stateButton.style.padding = '5px';
-    stateDelete.appendChild(stateButton);
-    stateRow.appendChild(stateDelete);
+    stateRow.appendChild(stateButton);
     // Table
     stateTable.appendChild(stateRow);
     stateButton.onclick = function() {
@@ -379,7 +374,7 @@ function plotStates(){
     exportData=`States\n${xAxis}\t${yAxis}\n`;
     let xValue,yValue;
     for (let i=0;i<list.length;i++){
-	const stateID = list[i].children[1].children[0].value;
+	const stateID = list[i].children[1].value;
 	const state = stateOptions[stateID][1];
 	stateList.push(state);
 	fluid = state.fluid;
@@ -540,7 +535,5 @@ function plotStates(){
     createPlot(dataPoints,xAxis,yAxis);
     // Show
     solBox.style.display="none";
-    let plotDrawBox = document.querySelector(".plotDrawBox");
-    plotDrawBox.style.display="block";
     console.log("Plot time:",performance.now()-t1,"ms")
 }
