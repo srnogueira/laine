@@ -32,23 +32,27 @@ function writeEqs(inputText){
 	    }
 	}
 	else{
-	    // Disables markdown format if there is an equation
+	    // Applies markdown format
+	    // Search math inside (only equation blocks)
 	    let text;
-	    let flag=false;
-	    const dels = [new RegExp('\\$\\$'),new RegExp('\\\\\\('),new RegExp('\\\\\\[')];
-	    for (let del of dels){
-		console.log(del);
-		console.log(lines[i].match(del));
-		if (lines[i].match(del)){
-		    flag = true;
-		    break;
+	    let index=lines[i].indexOf("$$");
+	    let indexEnd=1;
+	    while (index !== -1){
+		// Include pre-text
+		text=lines[i].slice(indexEnd,index);
+		if (text.trim() !== ""){
+		    mathDiv.innerHTML+=converter.makeHtml(text);
 		}
+		// Include equation
+		indexEnd=lines[i].indexOf("$$",index+1);
+		indexEnd+=2; // include $$
+		mathDiv.innerHTML+=lines[i].slice(index,indexEnd);
+		index=lines[i].indexOf("$$",indexEnd); // check if has another equation
 	    }
-	    if (flag){
-		mathDiv.innerHTML+=`<p>${lines[i].slice(1)}</p>`;
-	    }
-	    else{
-		mathDiv.innerHTML+=converter.makeHtml(lines[i].slice(1));
+	    // Include end or line
+	    text=lines[i].slice(indexEnd,lines[i].length);
+	    if (text.trim() !== ""){
+		mathDiv.innerHTML+=converter.makeHtml(text);
 	    }
 	}
     }    
