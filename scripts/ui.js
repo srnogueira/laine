@@ -172,14 +172,14 @@ function formatMathJax(line){
 	}
     }
     // Change greek variables names into symbols (not optimized)
-    const greek = ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa','lambda','mu','nu','xi','omicron','pi','rho','sigma','tau','upsilon','phi','chi','psi','omega','Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu','Nu','Xi','Omicron','Pi','Rho','Sigma','Tau','Upsilon','Phi','Chi','Psi','Omega'];
+    const greek = ['$alpha','$beta','$gamma','$delta','$epsilon','$zeta','$eta','$theta','$iota','$kappa','$lambda','$mu','$nu','$xi','$omicron','$pi','$rho','$sigma','$tau','$upsilon','$phi','$chi','$psi','$omega','$Alpha','$Beta','$Gamma','$Delta','$Epsilon','$Zeta','$Eta','$Theta','$Iota','$Kappa','$Lambda','$Mu','$Nu','$Xi','$Omicron','$Pi','$Rho','$Sigma','$Tau','$Upsilon','$Phi','$Chi','$Psi','$Omega'];
     for(let letter of greek){
 	if (line.includes(letter)){
 	    const pieces=line.split(letter);
 	    line = pieces[0];
 	    const piecesLength = pieces.length;
 	    for (let j =1; j<piecesLength; j++){
-		line+=`${letter} ${pieces[j]}`; // just add a space
+		line+=`${letter.slice(1)} ${pieces[j]}`; // just add a space
 	    }
 	}
     }
