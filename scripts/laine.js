@@ -98,13 +98,6 @@ function laineSolver(text,laineOptions) {
 	    }
 	}
     }
-    for (let equation of equations){
-	console.log(equation);
-    }
-    for (let subs of subsEquations){
-	console.log(subs);
-    }
-    
     equations.sort((a,b) => a.vars.length - b.vars.length);  // sorting
     // SOLVE 1D-2D PROBLEMS
     equations = solve1D2D(equations,laineOptions);

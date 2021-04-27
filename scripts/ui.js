@@ -27,7 +27,14 @@ function writeEqs(inputText){
 		    comment+=sep[j];
 		}
 		let para=document.createElement('p');
-		para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
+		console.log(sep[0]);
+		try{
+		    para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
+		}
+		catch(e){
+		    //console.error(e);
+		    para.textContent="$$"+sep[0]+comment+"}$$";
+		}
 		mathDiv.appendChild(para);
 	    }
 	}
@@ -37,8 +44,6 @@ function writeEqs(inputText){
 	    let flag=false;
 	    const dels = [new RegExp('\\$\\$'),new RegExp('\\\\\\('),new RegExp('\\\\\\[')];
 	    for (let del of dels){
-		console.log(del);
-		console.log(lines[i].match(del));
 		if (lines[i].match(del)){
 		    flag = true;
 		    break;
@@ -119,7 +124,6 @@ function writeAns(solution,fast){
 	}
 	text+='}';
     }
-    console.log(text);
     // Render
     if(fast){
 	let para = outDiv.insertRow(-1);
