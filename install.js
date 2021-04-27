@@ -1,6 +1,7 @@
+// Caches the files for installation
 self.addEventListener('install', (e) => {
   e.waitUntil(
-      caches.open('fox-store').then((cache) => cache.addAll([
+      caches.open('laine-store').then((cache) => cache.addAll([
 	  './',
 	  './index.html',
 	  './img/laine.png',
@@ -16,7 +17,6 @@ self.addEventListener('install', (e) => {
     ])),
   );
 });
-
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((response) => response || fetch(e.request)),

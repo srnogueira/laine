@@ -6,7 +6,7 @@ html {
 }
 input, select{
     font-family: 'Quicksand', sans-serif;    /* Required */
-    padding: 5px 0px 5px 0px;
+    padding: 5px 0px 5px 5px;
     border: 1px solid #cdc7c2;
     background-color: white;
     border-radius:4px;

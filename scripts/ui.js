@@ -1,52 +1,69 @@
-// REPORTS
 'use strict';
-const outDiv = document.querySelector(".out"); // Solution element
-const mathDiv = document.querySelector(".mathDiv"); // Report element
+
+// SHOW SOLUTIONS, EQUATIONS AND ERRORS
+// Solution and report divs
+const outDiv = document.querySelector(".out");
+const mathDiv = document.querySelector(".mathDiv");
+
 function writeEqs(inputText){
     // Function : Write equations for reports
     const lines = inputText.split('\n');
+    const linesLength = lines.length;
     // Clear and start
     mathDiv.innerHTML="";
-    let title=document.createElement('h2');
-    let text;
-    const linesLength = lines.length;
+    let converter = new showdown.Converter();
     for (let i=0; i<linesLength ; i++){
 	// Check if is an equation or comment
-	if (!lines[i].endsWith('?')){
-	    if (checkLine(lines[i].trim(),i)){
-		// Check if is there is more than one equation
-		const aux = lines[i].split(';');
-		for (let subline of aux){
-		    // Separate side comments
-		    const sep = subline.split('#');
-		    // Join comments
-		    let comment=' \\text{';
-		    const sepLength = sep.length
-		    for(let i=1;i<sep.length;i++){
-			comment+=sep[i];
-		    }
-		    let para=document.createElement('p');
-		    para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
-		    mathDiv.appendChild(para);
+	if (checkLine(lines[i].trim(),i)){
+	    // Check if is there is more than one equation
+	    const aux = lines[i].split(';');
+	    for (let subline of aux){
+		// Separate side comments
+		const sep = subline.split('#');
+		// Long space and join comments
+		let comment='\\;\\text{';
+		const sepLength = sep.length
+		for(let j=1;j<sep.length;j++){
+		    comment+=sep[j];
 		}
+		let para=document.createElement('p');
+		para.textContent="$$"+formatMathJax(sep[0])+comment+"}$$";
+		mathDiv.appendChild(para);
 	    }
-	    else{
-		// Applies markdown format
-		let converter = new showdown.Converter();
-		text=lines[i].slice(1,lines[i].length);
-		let para = converter.makeHtml(text);
-		mathDiv.innerHTML+=para;
+	}
+	else{
+	    // Applies markdown format
+	    // Search math inside (only equation blocks)
+	    let text;
+	    let index=lines[i].indexOf("$$");
+	    let indexEnd=1;
+	    while (index !== -1){
+		// Include pre-text
+		text=lines[i].slice(indexEnd,index);
+		if (text.trim() !== ""){
+		    mathDiv.innerHTML+=converter.makeHtml(text);
+		}
+		// Include equation
+		indexEnd=lines[i].indexOf("$$",index+1);
+		indexEnd+=2; // include $$
+		mathDiv.innerHTML+=lines[i].slice(index,indexEnd);
+		index=lines[i].indexOf("$$",indexEnd); // check if has another equation
+	    }
+	    // Include end or line
+	    text=lines[i].slice(indexEnd,lines[i].length);
+	    if (text.trim() !== ""){
+		mathDiv.innerHTML+=converter.makeHtml(text);
 	    }
 	}
     }    
 }
+
 function displayResults(fast){
-    // show function
+    // Function: write answers
     outDiv.innerText="";  // clear space
     const solutions = Object.entries(parser.getAll());
-    const solutionsLength = solutions.length;
-    for (let i=0;i<solutionsLength;i++){
-	writeAns(solutions[i],fast);
+    for (let solution of solutions){
+	writeAns(solution,fast);
     }
     if (fast) {
 	mathDiv.style.display="none";
@@ -59,48 +76,39 @@ function displayResults(fast){
     }
     solBox.style.display="grid";
 }
+
 function displayError(e){
-    //FUNCTION: display error messages
+    // Function: display error messages
     errorGrid.innerText = "";
-    let type = document.createElement("span");
-    type.innerHTML = "<b>Type</b>";
-    let typeDesc = document.createElement("span");
-    typeDesc.innerText = e.name;
-    let where = document.createElement("span");
-    where.innerHTML = "<b>Where?</b>";
-    let whereDesc = document.createElement("span");
-    whereDesc.innerText = e.lineNumber;
-    let message = document.createElement("span");
-    message.innerHTML = "<b>What?</b>";
-    let messageDesc = document.createElement("span");
-    messageDesc.innerText = e.message;
-    let help = document.createElement("span");
-    help.innerHTML = "<b>Help</b>";
-    let helpDesc = document.createElement("span");
-    helpDesc.innerText = e.help;
+    const texts = ["<b>Type</b>",e.name,
+		   "<b>Where?</b>",e.lineNumber,
+		   "<b>What?</b>",e.message,
+		   "<b>Help</b>",e.help];
     // Include elements
-    const all = [type,typeDesc,message,messageDesc,where,whereDesc,help,helpDesc]
-    for (let elem of all){
+    for (let text of texts){
+	let elem = document.createElement("span");
+	elem.innerHTML = text;
 	errorGrid.appendChild(elem);
     }
     // Display box
     errorBox.style.display = "block";
     editor.refresh();
 }
+
 function writeAns(solution,fast){
     // Function: write answers in the results box
     let key = solution[0];
     let value = solution[1];
-    let msg;
-    switch (typeof(value)){
-    case "number":
+    let msg, text;
+    // Convert
+    if (typeof(value) === "number"){
     	value = value.toPrecision(5);
-	break;
-    case "function":
+	text = value.toString();
+    }
+    else if(typeof(value) === "function"){
 	return null;
     }
-    let text;
-    if (typeof(value)==="object"){
+    else if (typeof(value)==="object"){
 	value = Object.entries(value);
 	text="{";
 	const valueLength=value.length;
@@ -115,9 +123,8 @@ function writeAns(solution,fast){
 	}
 	text+='}';
     }
-    else{
-	text = value.toString();
-    }
+    console.log(text);
+    // Render
     if(fast){
 	let para = outDiv.insertRow(-1);
 	let varCell = para.insertCell(0);
@@ -132,6 +139,7 @@ function writeAns(solution,fast){
 	outDiv.appendChild(para);
     }
 }
+
 function formatMathJax(line){
     // Function: make some corrections in the MathJax style
     // Add double equals '=='
@@ -168,20 +176,21 @@ function formatMathJax(line){
 	}
     }
     // Change greek variables names into symbols (not optimized)
-    const greek = ['$alpha','$beta','$gamma','$delta','$epsilon','$zeta','$eta','$theta','$iota','$kappa','$lambda','$mu','$nu','$xi','$omicron','$pi','$rho','$sigma','$tau','$upsilon','$phi','$chi','$psi','$omega','$Alpha','$Beta','$Gamma','$Delta','$Epsilon','$Zeta','$Eta','$Theta','$Iota','$Kappa','$Lambda','$Mu','$Nu','$Xi','$Omicron','$Pi','$Rho','$Sigma','$Tau','$Upsilon','$Phi','$Chi','$Psi','$Omega'];
+    const greek = ['alpha','beta','gamma','delta','epsilon','zeta','eta','theta','iota','kappa','lambda','mu','nu','xi','omicron','pi','rho','sigma','tau','upsilon','phi','chi','psi','omega','Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu','Nu','Xi','Omicron','Pi','Rho','Sigma','Tau','Upsilon','Phi','Chi','Psi','Omega'];
     for(let letter of greek){
 	if (line.includes(letter)){
 	    const pieces=line.split(letter);
 	    line = pieces[0];
 	    const piecesLength = pieces.length;
 	    for (let j =1; j<piecesLength; j++){
-		line+=`${letter.slice(1)} ${pieces[j]}`; // just add a space
+		line+=`${letter} ${pieces[j]}`; // just add a space
 	    }
 	}
     }
     // Return parse to Tex
     return math.parse(line).toTex({parenthesis: 'auto'});
 }
+
 function laine(isfast){
     // Function: calls solver for buttons and create a error message if necessary
     clearAll();
@@ -202,6 +211,7 @@ function laine(isfast){
 	return false;
     }
 }
+
 // EDITOR
 // Adding effects with changes
 const editorDiv = document.querySelector(".CodeMirror")
@@ -213,10 +223,10 @@ const contentPropPlot = document.getElementById("contentPropPlot");
 editor.on("change",function(){
     textBox.value=editor.getValue();
     if (contentParametric.style.display === "block" || contentPropPlot.style.display === "block"){
-	clearAll();
+	clearAll(true);
     }
     else{
-	clearAll(true);
+	clearAll();
     }
 });
 // Clear all
@@ -243,9 +253,9 @@ function clearAll(exception){
 };
 // Remove menus
 // editor is defined on editor.js
-editor.on("click",function(){clearAll(true)});
+editor.on("click",function(){clearAll("report")});
 const inter = document.querySelector(".interface");
-inter.onclick = function(){clearAll(true)}; // works
+inter.onclick = function(){clearAll("report")}; // works
 // HIDDEN MENUS
 // Dropdown - hover effect
 function dropdownHover(button){
@@ -393,6 +403,7 @@ document.onkeydown=shortcut;
 // Write functions
 // PropsSI
 function writePropsSI(){
+    // Data
     const fluid = document.querySelector(".FluidName");
     const property = document.querySelector(".Property");
     const input1 = document.querySelector(".Input1");
@@ -403,7 +414,21 @@ function writePropsSI(){
     const propName = property.options[property.selectedIndex].value;
     const input1Name = input1.options[input1.selectedIndex].value;
     const input2Name = input2.options[input2.selectedIndex].value;
-    const text = `property=PropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${fluidName}')`;
+    // Check if is trivial
+    const trivials = ["acentric","M","PCRIT","TCRIT","RHOCRIT","RHOMOLAR_CRITICAL"];
+    let flag,text;
+    for (let trivial of trivials){
+	if (propName == trivial){
+	    flag = true;
+	    break;
+	}
+    }
+    if (flag){
+	text = `property=Props1SI('${propName}','${fluidName}')`;
+    }
+    else{
+	text = `property=PropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${fluidName}')`;
+    }
     textBox.value+="\n"+text;
     editor.getDoc().setValue(textBox.value);
     clearAll(true);

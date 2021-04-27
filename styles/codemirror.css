@@ -1,5 +1,4 @@
 /* BASICS */
-
 .CodeMirror {
     /* Set height, width, borders, and global font properties here */
     font-size: 12pt;
@@ -15,7 +14,6 @@
 }
 
 /* PADDING */
-
 .CodeMirror-lines {
   padding: 4px 0; /* Vertical padding around content */
 }
@@ -23,13 +21,11 @@
 .CodeMirror pre.CodeMirror-line-like {
   padding: 0 4px; /* Horizontal padding of content */
 }
-
 .CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler {
   background-color: white; /* The little square between H and V scrollbars */
 }
 
 /* GUTTER */
-
 .CodeMirror-gutters {
   border-right: 1px solid #ddd;
   background-color: #f7f7f7;
@@ -43,12 +39,10 @@
   color: #6b6b6b;
   white-space: nowrap;
 }
-
 .CodeMirror-guttermarker { color: black; }
 .CodeMirror-guttermarker-subtle { color: #999; }
 
 /* CURSOR */
-
 .CodeMirror-cursor {
   border-left: 1px solid black;
   border-right: none;
@@ -98,9 +92,7 @@
 
 /* Can style cursor different in overwrite (non-insert) mode */
 .CodeMirror-overwrite .CodeMirror-cursor {}
-
 .cm-tab { display: inline-block; text-decoration: inherit; }
-
 .CodeMirror-rulers {
   position: absolute;
   left: 0; right: 0; top: -50px; bottom: 0;
@@ -113,7 +105,6 @@
 }
 
 /* DEFAULT THEME */
-
 .cm-s-default .cm-header {color: blue;}
 .cm-s-default .cm-quote {color: #090;}
 .cm-negative {color: #d44;}
@@ -122,7 +113,6 @@
 .cm-em {font-style: italic;}
 .cm-link {text-decoration: underline;}
 .cm-strikethrough {text-decoration: line-through;}
-
 .cm-s-default .cm-keyword {color: #708;}
 .cm-s-default .cm-atom {color: #219;}
 .cm-s-default .cm-number {color: #164;}
@@ -144,24 +134,19 @@
 .cm-s-default .cm-attribute {color: #00c;}
 .cm-s-default .cm-hr {color: #999;}
 .cm-s-default .cm-link {color: #00c;}
-
 .cm-s-default .cm-error {color: #f00;}
 .cm-invalidchar {color: #f00;}
-
 .CodeMirror-composing { border-bottom: 2px solid; }
 
 /* Default styles for common addons */
-
 div.CodeMirror span.CodeMirror-matchingbracket {color: #0b0;}
 div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
 .CodeMirror-matchingtag { background: rgba(255, 150, 0, .3); }
 .CodeMirror-activeline-background {background: #e8f2ff;}
 
 /* STOP */
-
 /* The rest of this file contains styles related to the mechanics of
    the editor. You probably shouldn't touch them. */
-
 .CodeMirror {
   position: relative;
   overflow: hidden;
@@ -208,7 +193,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
 .CodeMirror-gutter-filler {
   left: 0; bottom: 0;
 }
-
 .CodeMirror-gutters {
   position: absolute; left: 0; top: 0;
   min-height: 100%;
@@ -239,7 +223,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
 }
 .CodeMirror-gutter-wrapper ::selection { background-color: transparent }
 .CodeMirror-gutter-wrapper ::-moz-selection { background-color: transparent }
-
 .CodeMirror-lines {
   cursor: text;
   min-height: 1px; /* prevents collapsing before first draw */
@@ -270,27 +253,21 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
   white-space: pre-wrap;
   word-break: normal;
 }
-
 .CodeMirror-linebackground {
   position: absolute;
   left: 0; right: 0; top: 0; bottom: 0;
   z-index: 0;
 }
-
 .CodeMirror-linewidget {
   position: relative;
   z-index: 2;
   padding: 0.1px; /* Force widget margins to stay inside of the container */
 }
-
 .CodeMirror-widget {}
-
 .CodeMirror-rtl pre { direction: rtl; }
-
 .CodeMirror-code {
   outline: none;
 }
-
 /* Force content-box sizing for the elements where we expect it */
 .CodeMirror-scroll,
 .CodeMirror-sizer,
@@ -300,7 +277,6 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
   -moz-box-sizing: content-box;
   box-sizing: content-box;
 }
-
 .CodeMirror-measure {
   position: absolute;
   width: 100%;
@@ -308,13 +284,11 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #a22;}
   overflow: hidden;
   visibility: hidden;
 }
-
 .CodeMirror-cursor {
   position: absolute;
   pointer-events: none;
 }
 .CodeMirror-measure pre { position: static; }
-
 div.CodeMirror-cursors {
   visibility: hidden;
   position: relative;
@@ -323,34 +297,27 @@ div.CodeMirror-cursors {
 div.CodeMirror-dragcursors {
   visibility: visible;
 }
-
 .CodeMirror-focused div.CodeMirror-cursors {
   visibility: visible;
 }
-
 .CodeMirror-selected { background: #d9d9d9; }
 .CodeMirror-focused .CodeMirror-selected { background: #d7d4f0; }
 .CodeMirror-crosshair { cursor: crosshair; }
 .CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background: #d7d4f0; }
 .CodeMirror-line::-moz-selection, .CodeMirror-line > span::-moz-selection, .CodeMirror-line > span > span::-moz-selection { background: #d7d4f0; }
-
 .cm-searching {
   background-color: #ffa;
   background-color: rgba(255, 255, 0, .4);
 }
-
 /* Used to force a border model for a node */
 .cm-force-border { padding-right: .1px; }
-
 @media print {
   /* Hide the cursor when printing */
   .CodeMirror div.CodeMirror-cursors {
     visibility: hidden;
   }
 }
-
 /* See issue #2901 */
 .cm-tab-wrap-hack:after { content: ''; }
-
 /* Help users use markselection to safely style text background */
 span.CodeMirror-selectedtext { background: none; }

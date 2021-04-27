@@ -1,9 +1,10 @@
 'use strict';
 // Create a parser object as global object
 const parser=math.parser();
+
 // LAINE
 function laineSolver(text,laineOptions) {
-    // Description : Solves equations from a non-linear system (text) with certain options (laineOptions)
+    // Description : Solves equations from a non-linear system
     // SETUP
     const t1 = performance.now();
     // No options included
@@ -13,6 +14,7 @@ function laineSolver(text,laineOptions) {
     if (laineOptions.solveFor === undefined){
 	parser.clear();
     }
+    
     // PARSE LINES
     let lines=text.split("\n");  // break text into lines
     let equations;
@@ -20,6 +22,7 @@ function laineSolver(text,laineOptions) {
     let subsEquationsNames = new Set();
     equations =cleanLines(lines,laineOptions);
     let originalSize = equations.length;
+
     // REDUCE COMPLEXITY
     if (!laineOptions.solveFor){
 	let check = []; // to check duplicates
@@ -95,6 +98,13 @@ function laineSolver(text,laineOptions) {
 	    }
 	}
     }
+    for (let equation of equations){
+	console.log(equation);
+    }
+    for (let subs of subsEquations){
+	console.log(subs);
+    }
+    
     equations.sort((a,b) => a.vars.length - b.vars.length);  // sorting
     // SOLVE 1D-2D PROBLEMS
     equations = solve1D2D(equations,laineOptions);
@@ -397,6 +407,7 @@ function cleanLines(lines,options){
 			    // Remove object from parser scope (avoid errors)
 			    const lhs = sides[0].trim();
 			    parser.remove(lhs);
+			    throw new Error('Dummy error'); // jump to catch
 			}
 		    }
 		    catch(e){

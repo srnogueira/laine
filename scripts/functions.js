@@ -557,7 +557,10 @@ math.import(
 	// PropsSI
 	PropsSI:function (n,x,xx,y,yy,f){
 	    return Module.PropsSI(n,x,xx,y,yy,f)
-	},    
+	},
+	Props1SI:function (n,f){
+	    return Module.Props1SI(n,f)
+	},
 	// HAPropsSI
 	HAPropsSI:function (n,x,xx,y,yy,z,zz){
 	    return Module.HAPropsSI(n,x,xx,y,yy,z,zz)
