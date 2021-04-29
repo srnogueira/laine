@@ -1,0 +1,20 @@
+{
+  "name": "laine",
+  "version": "1.0.0",
+  "description": "a simple equation solver with thermodynamic properties",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srnogueira/laine.git"
+  },
+  "author": "Rafael Nogueira Nakashima",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/srnogueira/laine/issues"
+  },
+  "homepage": "https://github.com/srnogueira/laine#readme",
+  "devDependencies": {}
+}
