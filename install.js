@@ -2,18 +2,18 @@
 self.addEventListener('install', (e) => {
   e.waitUntil(
       caches.open('laine-store').then((cache) => cache.addAll([
-	  './',
-	  './index.html',
-	  './img/laine.png',
-	  './styles/style.css',
-	  './styles/codemirror.css',
-	  './scripts/functions.js',
-	  './scripts/laine.js',
-	  './scripts/editor.js',
-	  './scripts/plots.js',
-	  './scripts/ui.js',
-	  './scripts/third-party/coolprop.js',
-	  './scripts/third-party/coolprop.wasm'
+		'./',
+		'./index.html',
+		'./img/laine.png',
+		'./styles/style.css',
+		'./styles/codemirror.css',
+		'./scripts/functions.js',
+		'./scripts/laine.js',
+		'./scripts/editor.js',
+		'./scripts/plots.js',
+		'./scripts/ui.js',
+		'./scripts/third-party/coolprop.js',
+		'./scripts/third-party/coolprop.wasm'
     ])),
   );
 });
