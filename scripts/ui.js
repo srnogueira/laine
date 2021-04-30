@@ -1,16 +1,16 @@
 "use strict";
-/*global CodeMirror, showdown, MathJax, math */
 
+// LINTER
+// Imported from third-party
+/*global CodeMirror, showdown, MathJax, math */
 // Imported from laine.js
 /*global checkLine, parser, laineSolver */
-
 // Imported from plots.js
 /*global plot_check, checkStates, laine_plot, plotStates, exportData */
-
 // Exported to html
 /*exported saveFile, exportDataFile, loadFileAsText */
 
-// Creating the editor
+// EDITOR
 let textBox = document.querySelector(".box");
 const editor = CodeMirror.fromTextArea(textBox, {
   scrollbarStyle: "null",
@@ -50,8 +50,7 @@ function writeEqs(inputText) {
         console.log(sep[0]);
         try {
           para.textContent = "$$" + formatMathJax(sep[0]) + comment + "}$$";
-        } catch (e) {
-          //console.error(e);
+        } catch {
           para.textContent = "$$" + sep[0] + comment + "}$$";
         }
         mathDiv.appendChild(para);
@@ -289,50 +288,56 @@ const editorDiv = document.querySelector(".CodeMirror");
 const solBox = document.getElementById("solBox");
 const errorGrid = document.querySelector(".errorGrid");
 const errorBox = document.getElementById("errorBox");
-const contentParametric = document.getElementById("contentParametric");
-const contentPropPlot = document.getElementById("contentPropPlot");
-editor.on("change", function () {
-  textBox.value = editor.getValue();
-  if (
-    contentParametric.style.display === "block" ||
-    contentPropPlot.style.display === "block"
-  ) {
-    clearAll(true);
-  } else {
-    clearAll();
-  }
-});
-// Clear all
-const genericDropbox = document.querySelectorAll(".dropdownContent");
-const genericMenus = document.querySelectorAll(".hiddenMenu");
-function clearAll(exception) {
-  // Clear generic classes
+const plotPropBox = document.getElementById("contentParametric");
+const parametricBox = document.getElementById("contentPropPlot");
+
+// Close menus and windows
+function clearDropdown(exceptionID){
+  const genericDropbox = document.querySelectorAll(".dropdownContent");
   for (let generic of genericDropbox) {
-    generic.style.display = "none";
-  }
-  if (!exception) {
-    for (let generic of genericMenus) {
+    if (exceptionID !== generic.id )
       generic.style.display = "none";
-    }
   }
-  // Toggle Report button - leave it if is a double click
-  if (mathDiv.style.display === "block" && exception !== "report") {
-    mathDiv.style.display = "";
-    solBox.style.display = "";
+}
+function clearHiddenMenus(exceptionID){
+  const genericMenus = document.querySelectorAll(".hiddenMenu");
+  for (let generic of genericMenus) {
+    if (exceptionID !== generic.id)
+      generic.style.display = "none";
+  }
+}
+function clearReportView(){
+  if (mathDiv.style.display === "block") {
+    mathDiv.style.display = "none";
+    solBox.style.display = "none";
     editorDiv.style.display = "block";
     reportButton.innerText = window.innerWidth < 600 ? "Report" : "Report (F4)";
   }
   editor.refresh();
 }
+function clearAll(exceptionID) {
+  clearDropdown(exceptionID);
+  clearHiddenMenus(exceptionID);
+  clearReportView();
+}
 // Remove menus
 // editor is defined on editor.js
 editor.on("click", function () {
-  clearAll("report");
+  clearDropdown();
 });
-const inter = document.querySelector(".interface");
-inter.onclick = function () {
-  clearAll("report");
-}; // works
+editor.on("focus", function () {
+  clearDropdown();
+});
+editor.on("change", function () {
+  textBox.value = editor.getValue();
+  solBox.style.display="none"
+  plotPropBox.style.display="none"
+  parametricBox.style.display="none"
+});
+document.querySelector(".interface").onclick = function () {
+  clearDropdown();
+};
+
 // HIDDEN MENUS
 // Dropdown - hover effect
 function dropdownHover(button) {
@@ -352,7 +357,7 @@ function dropdownHover(button) {
 function dropdownClick(button) {
   const content = button.nextElementSibling;
   const display = content.style.display; // Store
-  clearAll(true); // has to include everybody (including other hovers)
+  clearDropdown();
   if (display !== "grid") {
     content.style.display = "grid";
   } else {
@@ -372,7 +377,7 @@ function hiddenMenu(openId, contentId, closeId) {
   const content = document.getElementById(contentId);
   const close = document.getElementById(closeId);
   open.onclick = function () {
-    clearAll();
+    clearDropdown();
     content.style.display = "block";
     editor.refresh();
   };
@@ -386,40 +391,43 @@ hiddenMenu("openPropsSI", "contentPropsSI", "closePropsSI");
 hiddenMenu("openHAPropsSI", "contentHAPropsSI", "closeHAPropsSI");
 hiddenMenu("openNasa", "contentNasa", "closeNasa");
 hiddenMenu("openLk", "contentLk", "closeLk");
+
 hiddenMenu("openParametric", "contentParametric", "closeParametric");
-// Dynamic content
 const plotMenuButton = document.getElementById("openParametric");
 plotMenuButton.onclick = function () {
-  clearAll();
+  clearDropdown();
   let check = plot_check();
   if (check !== false) {
     document.getElementById("contentParametric").style.display = "block";
   }
 };
+
 hiddenMenu("openPropPlot", "contentPropPlot", "closePropPlot");
-// Dynamic content
 const propPlotMenuButton = document.getElementById("openPropPlot");
 propPlotMenuButton.onclick = function () {
-  clearAll();
+  clearDropdown();
   if (checkStates()) {
     document.getElementById("contentPropPlot").style.display = "block";
   }
 };
+
 // PLOT BUTTON
 const plotButton = document.querySelector(".plotDraw");
 plotButton.onclick = function () {
-  clearAll(true);
+  clearDropdown();
   laine_plot();
   document.getElementById("plotDrawBox").style.display = "block";
   editor.refresh();
 };
+
 const propPlotButton = document.querySelector(".propPlotDraw");
 propPlotButton.onclick = function () {
-  clearAll(true);
+  clearDropdown();
   plotStates();
   document.getElementById("plotDrawBox").style.display = "block";
   editor.refresh();
 };
+
 // CLOSE BUTTON
 function hideGrandParentDiv(button) {
   const grandparent = button.parentNode.parentNode;
@@ -433,6 +441,7 @@ const closeButtons = document.querySelectorAll(".hiddenMenuClose");
 for (let button of closeButtons) {
   hideGrandParentDiv(button);
 }
+
 // SOLVER AND REPORT
 // Button name
 const solveButton = document.querySelector(".solve");
@@ -451,8 +460,9 @@ function changeTextButtons() {
 window.onresize = changeTextButtons;
 // Solver interface
 reportButton.onclick = function () {
-  if (mathDiv.style.display === "none" || mathDiv.style.display === "") {
-    clearAll("report");
+  if (mathDiv.style.display === "none") {
+    clearDropdown();
+    clearHiddenMenus();
     if (laine(false)) {
       reportButton.innerText = window.innerWidth < 600 ? "Edit" : "Edit (F4)";
     }
@@ -512,7 +522,7 @@ function writePropsSI() {
   }
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
-  clearAll(true);
+  clearDropdown();
 }
 const PropsSIButton = document.querySelector(".butPropsSI");
 PropsSIButton.onclick = writePropsSI;
@@ -532,7 +542,6 @@ function writeHAPropsSI() {
   const text = `property=HAPropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${input3Name}',${value3.value})`;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
-  clearAll(true);
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
@@ -545,7 +554,6 @@ function writeNasa() {
   const text = `property=NasaSI('${propName}',${temp.value},'${specie.value}')`;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
-  clearAll(true);
 }
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
@@ -565,7 +573,6 @@ function writelk() {
   }
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
-  clearAll(true);
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
@@ -578,7 +585,7 @@ function newFile() {
     textBox.value = "";
     editor.getDoc().setValue(textBox.value);
   }
-  clearAll();
+  clearDropdown();
 }
 const newButton = document.querySelector(".new");
 newButton.onclick = newFile;
@@ -598,7 +605,7 @@ function saveFile() {
   downloadLink.style.display = "";
   document.body.appendChild(downloadLink);
   downloadLink.click();
-  clearAll();
+  clearDropdown();
 }
 function exportDataFile() {
   let textToSave = exportData;

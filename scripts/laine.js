@@ -1,5 +1,7 @@
 "use strict";
+// IMPORTED VARIABLES
 /*global math*/
+// EXPORTED VARIABLES
 /*exported laineSolver*/
 
 // Create a parser object as global object
