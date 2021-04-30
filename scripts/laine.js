@@ -1,8 +1,10 @@
 "use strict";
-// IMPORTED VARIABLES
+// imported from third-party
 /*global math*/
-// EXPORTED VARIABLES
-/*exported laineSolver*/
+// exported for ui.js
+/*exported laineSolver, parser*/
+// exported for plots.js
+/*exported laineSolver, laineError, parser*/
 
 // Create a parser object as global object
 const parser = math.parser();

@@ -3,10 +3,12 @@
 // LINTER
 // Imported from third-party
 /*global CodeMirror, showdown, MathJax, math */
+
 // Imported from laine.js
 /*global checkLine, parser, laineSolver */
 // Imported from plots.js
-/*global plot_check, checkStates, laine_plot, plotStates, exportData */
+/*global plot_check, laine_plot, plotStates, exportData, getStates */
+
 // Exported to html
 /*exported saveFile, exportDataFile, loadFileAsText */
 
@@ -20,6 +22,7 @@ const editor = CodeMirror.fromTextArea(textBox, {
   inputStyle: "textarea",
   mode: "laine",
 });
+
 
 // SHOW SOLUTIONS, EQUATIONS AND ERRORS
 // Solution and report divs
@@ -47,7 +50,6 @@ function writeEqs(inputText) {
           comment += sep[j];
         }
         let para = document.createElement("p");
-        console.log(sep[0]);
         try {
           para.textContent = "$$" + formatMathJax(sep[0]) + comment + "}$$";
         } catch {
@@ -292,21 +294,19 @@ const plotPropBox = document.getElementById("contentParametric");
 const parametricBox = document.getElementById("contentPropPlot");
 
 // Close menus and windows
-function clearDropdown(exceptionID){
+function clearDropdown(exceptionID) {
   const genericDropbox = document.querySelectorAll(".dropdownContent");
   for (let generic of genericDropbox) {
-    if (exceptionID !== generic.id )
-      generic.style.display = "none";
+    if (exceptionID !== generic.id) generic.style.display = "none";
   }
 }
-function clearHiddenMenus(exceptionID){
+function clearHiddenMenus(exceptionID) {
   const genericMenus = document.querySelectorAll(".hiddenMenu");
   for (let generic of genericMenus) {
-    if (exceptionID !== generic.id)
-      generic.style.display = "none";
+    if (exceptionID !== generic.id) generic.style.display = "none";
   }
 }
-function clearReportView(){
+function clearReportView() {
   if (mathDiv.style.display === "block") {
     mathDiv.style.display = "none";
     solBox.style.display = "none";
@@ -330,9 +330,9 @@ editor.on("focus", function () {
 });
 editor.on("change", function () {
   textBox.value = editor.getValue();
-  solBox.style.display="none"
-  plotPropBox.style.display="none"
-  parametricBox.style.display="none"
+  solBox.style.display = "none";
+  plotPropBox.style.display = "none";
+  parametricBox.style.display = "none";
 });
 document.querySelector(".interface").onclick = function () {
   clearDropdown();
@@ -396,17 +396,40 @@ hiddenMenu("openParametric", "contentParametric", "closeParametric");
 const plotMenuButton = document.getElementById("openParametric");
 plotMenuButton.onclick = function () {
   clearDropdown();
-  let check = plot_check();
-  if (check !== false) {
-    document.getElementById("contentParametric").style.display = "block";
+  let problem;
+  try {
+    problem = plot_check(editor.getValue());
+  } catch (e) {
+    displayError(e);
+    return false;
   }
+  // If is the first run, just create a menu
+  let xSelect = document.querySelector(".plotX");
+  let ySelect = document.querySelector(".plotY");
+  xSelect.options.length = 0;
+  ySelect.options.length = 0;
+  for (let i = 0; i < problem.names.length; i++) {
+    let optX = document.createElement("option");
+    let optY = document.createElement("option");
+    optX.value = problem.names[i];
+    optX.text = problem.names[i];
+    optY.value = problem.names[i];
+    optY.text = problem.names[i];
+    xSelect.add(optX);
+    ySelect.add(optY);
+  }
+  document.getElementById("contentParametric").style.display = "block";
 };
 
 hiddenMenu("openPropPlot", "contentPropPlot", "closePropPlot");
 const propPlotMenuButton = document.getElementById("openPropPlot");
 propPlotMenuButton.onclick = function () {
   clearDropdown();
-  if (checkStates()) {
+  // Erase
+  stateTable.innerHTML = "";
+  tableSize = 1;
+  let check = checkStates(editor.getValue());
+  if (check) {
     document.getElementById("contentPropPlot").style.display = "block";
   }
 };
@@ -415,7 +438,26 @@ propPlotMenuButton.onclick = function () {
 const plotButton = document.querySelector(".plotDraw");
 plotButton.onclick = function () {
   clearDropdown();
-  laine_plot();
+  let div = document.getElementById("canvasDiv");
+  div.innerText = "";
+
+  let options = {
+    x: document.querySelector(".plotX").value,
+    y: document.querySelector(".plotY").value,
+    from: document.querySelector(".plotXfrom").value,
+    to: document.querySelector(".plotXto").value,
+    points: document.querySelector(".plotNpoints").value
+  };
+
+  let canvas;
+  let text=editor.getValue();
+  try{
+    canvas = laine_plot(text,options);
+  }
+  catch(e){
+    displayError(e);
+  }
+  div.appendChild(canvas);
   document.getElementById("plotDrawBox").style.display = "block";
   editor.refresh();
 };
@@ -423,10 +465,125 @@ plotButton.onclick = function () {
 const propPlotButton = document.querySelector(".propPlotDraw");
 propPlotButton.onclick = function () {
   clearDropdown();
-  plotStates();
+  let div = document.getElementById("canvasDiv");
+  div.innerText = "";
+  let canvas;
+  try{
+    canvas = plotStates(stateTable.children,stateOptions);
+  }
+  catch(e){
+    displayError(e)
+  }
+  div.appendChild(canvas);
   document.getElementById("plotDrawBox").style.display = "block";
   editor.refresh();
 };
+
+const stateTable = document.querySelector(".stateTable");
+let tableSize = 1;
+let stateOptions; // Global variable for states
+
+function updateNumber() {
+  // Function: Update state numbers
+  for (let i = 0; i < stateTable.children.length; i++) {
+    let row = stateTable.children[i];
+    let number = i + 1;
+    row.children[0].innerHTML = "(" + number + ")";
+  }
+  return false;
+}
+function addState() {
+  // Function: creates a new state entry (change it to grids);
+  // Create elements
+  let stateRow = document.createElement("div");
+  let stateNumber = document.createElement("span");
+  let stateSelect = document.createElement("select");
+  let stateButton = document.createElement("button");
+  // Number
+  stateNumber.textContent = "(" + tableSize + ")";
+  tableSize += 1;
+  stateRow.appendChild(stateNumber);
+  // Options
+  stateSelect.options.length = 0;
+  for (let i = 0; i < stateOptions.length; i++) {
+    let option = document.createElement("option");
+    option.value = i;
+    option.text = stateOptions[i][0];
+    stateSelect.add(option);
+  }
+  stateRow.appendChild(stateSelect);
+  // Button
+  stateButton.textContent = "Delete";
+  stateButton.style.padding = "5px";
+  stateRow.appendChild(stateButton);
+  // Table
+  stateTable.appendChild(stateRow);
+  stateButton.onclick = function () {
+    stateTable.removeChild(stateRow);
+    tableSize -= 1;
+    updateNumber();
+  };
+  // Editor
+  editor.refresh();
+}
+const addStateButton = document.querySelector(".plotAddState");
+addStateButton.onclick = addState;
+
+function checkStates(text) {
+  // Function : Creates the property plot menu
+
+  try {
+    laineSolver(text);
+  } catch (e) {
+    //console.error(e);
+    displayError(e);
+    return false;
+  }
+  // Parse PropsSI calls into states
+  let states = getStates(text);
+  // Create the menu
+  let optionText;
+  let fluids = [];
+  let options = [];
+  let optionsEntry = []; // Necessary to verify
+  let fluidsSelect = document.querySelector(".propPlotFluid");
+  fluidsSelect.options.length = 0;
+  for (let i = 0; i < states.length; i++) {
+    // Fluids
+    if (!fluids.includes(states[i].fluid)) {
+      fluids.push(states[i].fluid);
+      let fluidOpt = document.createElement("option");
+      fluidOpt.value = states[i].fluid;
+      fluidOpt.text = states[i].fluid;
+      fluidsSelect.add(fluidOpt);
+    }
+    // States
+    if (states[i].Q === -1) {
+      optionText =
+        "T: " +
+        states[i].T.toPrecision(5) +
+        " [K] ; P: " +
+        states[i].P.toPrecision(5) +
+        " [Pa]";
+    } else {
+      optionText =
+        "T: " +
+        states[i].T.toPrecision(5) +
+        " [K] ; P: " +
+        states[i].P.toPrecision(5) +
+        " [Pa] ; Q:" +
+        states[i].Q.toPrecision(5);
+    }
+    if (!optionsEntry.includes(optionText)) {
+      optionsEntry.push(optionText);
+      options.push([optionText, states[i]]);
+    }
+  }
+  // Update global variable
+  stateOptions = options;
+  return true;
+}
+
 
 // CLOSE BUTTON
 function hideGrandParentDiv(button) {

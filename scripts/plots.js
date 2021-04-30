@@ -3,24 +3,20 @@
 /*global Module Chart */
 
 // Globals from laine.js
-/*global laineSolver, displayError, laineError, parser, editor*/
+/*global laineSolver, laineError, parser*/
+
 
 // Exported for ui.js
-/*exported exportData, plot_check, laine_plot, checkStates, plotStates */
+/*exported getStates, exportData, plot_check, laine_plot, checkStates, plotStates */
 
-// PARAMETRIC ANALYSIS
 // Data for download
 let exportData;
-function plot_check() {
+
+function plot_check(text) {
   // Function: Create a plot menu and save problem for latter
   // Check if the problem has 1 degree of freedom
   let problem;
-  try {
-    problem = laineSolver(editor.getValue(), { returnProblem: true });
-  } catch (e) {
-    displayError(e);
-    return false;
-  }
+  problem = laineSolver(text, { returnProblem: true });
   if (!problem || problem.names.length === 0) {
     let error = new laineError(
       "No degree of freedom",
@@ -28,43 +24,25 @@ function plot_check() {
       "All lines",
       "Try to remove an equation which constrains the problem"
     );
-    displayError(error);
-    return false;
+    throw error;
   }
   const degrees = problem.names.length - problem.equations.length;
   if (degrees > 1) {
-    let errorText = new laineError(
+    let error = new laineError(
       `${degrees} degrees of freedom`,
       "Parametric analysis requires a problem with just one degree of freedom",
       "All lines",
       `Try to include ${degrees - 1} equation(s)`
     );
-    displayError(errorText);
-    return false;
-  }
-  // If is the first run, just create a menu
-  let xSelect = document.querySelector(".plotX");
-  let ySelect = document.querySelector(".plotY");
-  xSelect.options.length = 0;
-  ySelect.options.length = 0;
-  for (let i = 0; i < problem.names.length; i++) {
-    let optX = document.createElement("option");
-    let optY = document.createElement("option");
-    optX.value = problem.names[i];
-    optX.text = problem.names[i];
-    optY.value = problem.names[i];
-    optY.text = problem.names[i];
-    xSelect.add(optX);
-    ySelect.add(optY);
+    throw error;
   }
   return problem;
 }
+
 function createPlot(dataObject, xName, yName) {
   /*
       Creates a plot
-    */
-  let div = document.getElementById("canvasDiv");
-  div.innerText = "";
+  */
   let canvas = document.createElement("canvas");
   if (window.innerWidth < 400) {
     canvas.height = window.innerWidth * 0.8;
@@ -73,7 +51,6 @@ function createPlot(dataObject, xName, yName) {
     canvas.height = "400";
     canvas.width = "400";
   }
-  div.appendChild(canvas);
   let ctx = canvas.getContext("2d");
   let legend = dataObject.datasets.length > 1 ? true : false;
   let myLineChart = new Chart(ctx, {
@@ -114,19 +91,21 @@ function createPlot(dataObject, xName, yName) {
     },
   });
   myLineChart.update();
+  return canvas;
 }
-function laine_plot() {
+function laine_plot(text,options) {
   // Function: Create a plot
   const t1 = performance.now();
-  let problem = plot_check();
+  let problem = plot_check(text);
   // Second run: solve the problem for multiple values
-  let xName = document.querySelector(".plotX").value;
-  let yName = document.querySelector(".plotY").value;
-  let from = document.querySelector(".plotXfrom").value;
-  let to = document.querySelector(".plotXto").value;
+  let xName = options.x;
+  let yName = options.y;
+  let from = options.from; 
+  let to = options.to;
+  const Npoints = options.points ;
+  
   from = parser.evaluate(from);
   to = parser.evaluate(to);
-  const Npoints = document.querySelector(".plotNpoints").value;
   const delta = (to - from) / (Npoints - 1);
   let data = [];
   exportData = `${xName}\t${yName}\n`;
@@ -181,7 +160,7 @@ function laine_plot() {
       `x = ${errors.join(",\nx = ")}`,
       "Verify if the problem is correct and change the x range"
     );
-    displayError(error);
+    throw error;
   }
   // Draw plot -- could be a function
   const dataObject = {
@@ -194,11 +173,12 @@ function laine_plot() {
       },
     ],
   };
-  createPlot(dataObject, xName, yName);
+  let canvas = createPlot(dataObject, xName, yName);
   const t2 = performance.now();
   console.log("Plot time:", t2 - t1, "ms");
-  return false;
+  return canvas;
 }
+
 // PROPERTY PLOTS
 function State(text) {
   const pieces = text.split(",");
@@ -259,30 +239,13 @@ function State(text) {
     this.fluid
   );
 }
-// Grab the table to add more states
-const stateTable = document.querySelector(".stateTable");
-let tableSize = 1;
-let stateOptions; // Global variable for states
-function checkStates() {
-  // Function : Creates the property plot menu
-  // Erase
-  stateTable.innerHTML = "";
-  tableSize = 1;
 
-  const text = editor.getValue();
-  try {
-    laineSolver(text);
-  } catch (e) {
-    //console.error(e);
-    displayError(e);
-    return false;
-  }
+function getStates(text){
+  let states = [];
   // Grab text and match PropsSI calls
   const regexComment = /#.*/g; // removes comments
   const regex = /PropsSI\(.*(?=\))/g; // captures PropsSI(...
   const found = text.replace(regexComment, "").match(regex);
-  // Parse PropsSI calls into states
-  let states = [];
   if (found) {
     for (let i = 0; i < found.length; i++) {
       states.push(new State(found[i]));
@@ -294,94 +257,12 @@ function checkStates() {
       "All lines",
       "Include a state by calling the PropsSI function for any property"
     );
-    displayError(e);
-    return false;
+    throw e;
   }
-  // Create the menu
-  let optionText;
-  let fluids = [];
-  let options = [];
-  let optionsEntry = []; // Necessary to verify
-  let fluidsSelect = document.querySelector(".propPlotFluid");
-  fluidsSelect.options.length = 0;
-  for (let i = 0; i < states.length; i++) {
-    // Fluids
-    if (!fluids.includes(states[i].fluid)) {
-      fluids.push(states[i].fluid);
-      let fluidOpt = document.createElement("option");
-      fluidOpt.value = states[i].fluid;
-      fluidOpt.text = states[i].fluid;
-      fluidsSelect.add(fluidOpt);
-    }
-    // States
-    if (states[i].Q === -1) {
-      optionText =
-        "T: " +
-        states[i].T.toPrecision(5) +
-        " [K] ; P: " +
-        states[i].P.toPrecision(5) +
-        " [Pa]";
-    } else {
-      optionText =
-        "T: " +
-        states[i].T.toPrecision(5) +
-        " [K] ; P: " +
-        states[i].P.toPrecision(5) +
-        " [Pa] ; Q:" +
-        states[i].Q.toPrecision(5);
-    }
-    if (!optionsEntry.includes(optionText)) {
-      optionsEntry.push(optionText);
-      options.push([optionText, states[i]]);
-    }
-  }
-  // Update global variable
-  stateOptions = options;
-  return true;
+  return states;
 }
-function updateNumber() {
-  // Function: Update state numbers
-  for (let i = 0; i < stateTable.children.length; i++) {
-    let row = stateTable.children[i];
-    let number = i + 1;
-    row.children[0].innerHTML = "(" + number + ")";
-  }
-  return false;
-}
-function addState() {
-  // Function: creates a new state entry (change it to grids);
-  // Create elements
-  let stateRow = document.createElement("div");
-  let stateNumber = document.createElement("span");
-  let stateSelect = document.createElement("select");
-  let stateButton = document.createElement("button");
-  // Number
-  stateNumber.textContent = "(" + tableSize + ")";
-  tableSize += 1;
-  stateRow.appendChild(stateNumber);
-  // Options
-  stateSelect.options.length = 0;
-  for (let i = 0; i < stateOptions.length; i++) {
-    let option = document.createElement("option");
-    option.value = i;
-    option.text = stateOptions[i][0];
-    stateSelect.add(option);
-  }
-  stateRow.appendChild(stateSelect);
-  // Button
-  stateButton.textContent = "Delete";
-  stateButton.style.padding = "5px";
-  stateRow.appendChild(stateButton);
-  // Table
-  stateTable.appendChild(stateRow);
-  stateButton.onclick = function () {
-    stateTable.removeChild(stateRow);
-    tableSize -= 1;
-    updateNumber();
-  };
-  // Editor
-  editor.refresh();
-}
+// Grab the table to add more states
+
 function addIso(
   data,
   coord,
@@ -432,9 +313,7 @@ function addIso(
   }
   return data;
 }
-const addStateButton = document.querySelector(".plotAddState");
-addStateButton.onclick = addState;
-function plotStates() {
+function plotStates(list,stateOptions) {
   // Function: Create the plot
   // Axis definition
   const t1 = performance.now();
@@ -463,7 +342,6 @@ function plotStates() {
   }
   // Points definition
   let data = [];
-  let list = stateTable.children;
   let yMin = Infinity;
   let yMax = 0;
   let fluid;
@@ -685,9 +563,10 @@ function plotStates() {
   };
   dataPoints.datasets.push(isoDataPlot);
   // Draw plot - could be a function;
-  createPlot(dataPoints, xAxis, yAxis);
+  let canvas = createPlot(dataPoints, xAxis, yAxis);
   // Show
   let solutionDiv = document.getElementById("solBox");
   solutionDiv.style.display = "none";
   console.log("Plot time:", performance.now() - t1, "ms");
+  return canvas;
 }
