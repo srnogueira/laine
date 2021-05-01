@@ -4,6 +4,80 @@
 /*global Module, math*/ // from scripts
 
 /*
+  A simple root finding algorithm
+*/
+
+/**
+ * A generic root-finding algorithm
+ * @param {function} fun - function to find roots
+ * @param {number} guess0 - a guess for the root
+ */
+function rootFind(fun, guess0) {
+  // Setup default conditions
+  let guess = [guess0, 0];
+  let ans = [fun(guess0), 0];
+  // Root-finding loop
+  let count = 0;
+  let tol = 1e-6;
+  let maxCount = 50;
+  let maxDivisions = 20;
+  let deriv, count2, factor, change;
+  do {
+    // Determine derivative
+    deriv = numericDerivative(fun, ans[0], guess[0]);
+    // Second loop - Line search
+    count2 = 0;
+    factor = 2;
+    do {
+      factor /= 2; // Try again with smaller step
+      // Test new guess
+      change = (ans[0] / deriv) * factor;
+      guess[1] = guess[0] - change;
+      ans[1] = fun(guess[1]);
+      // Max iterations condition
+      count2++;
+      if (count2 > maxDivisions) {
+        break; // Prevent infinity loops
+      }
+    } while (Math.abs(ans[1]) > Math.abs(ans[0]));
+    ans[0] = ans[1];
+    guess[0] = guess[1];
+
+    // Max iterations conditions
+    count++;
+    if (count > maxCount) {
+      throw Error("Max. number of iterations");
+    }
+  } while (Math.abs(ans[0]) > tol && Math.abs(change) > tol);
+  return guess[0];
+}
+
+/**
+ * Calculates derivative using previous calculations
+ * @param {function} fun - function to calculate derivative
+ * @param {number} f - answer of function for x
+ * @param {number} x - a value for function which were already calculated
+ * @returns number
+ */
+function numericDerivative(fun, f, x) {
+  const absDelta = 1e-4;
+  const relDelta = 1e-4; // Change to avoid zeros
+  let xNear, fNear, dfdx;
+
+  // Check if x is zero
+  xNear = x * (1 + relDelta);
+  if (xNear - x === 0) {
+    xNear = x + absDelta;
+  }
+
+  // Calculate derivative
+  fNear = fun(xNear);
+  dfdx = (fNear - f) / (xNear - x);
+
+  return dfdx;
+}
+
+/*
   Nasa Glenn properties
 */
 /**
@@ -220,17 +294,27 @@ function defaultDatabase() {
 
   speciesNasa.H2 = new NasaData(
     [
-      [0.0, 0.0, 2.5, 0.0, 0.0, 0.0, 0.0, 2.547370801e4, -4.46682853e-1],
       [
-        6.07877425e1,
-        -1.819354417e-1,
-        2.500211817,
-        -1.226512864e-7,
-        3.73287633e-11,
-        -5.68774456e-15,
-        3.410210197e-19,
-        2.547486398e4,
-        -4.48191777e-1,
+        4.07832321e4,
+        -8.00918604e2,
+        8.21470201,
+        -1.269714457e-2,
+        1.753605076e-5,
+        -1.20286027e-8,
+        3.36809349e-12,
+        2.682484665e3,
+        -3.043788844e1,
+      ],
+      [
+        5.60812801e5,
+        -8.37150474e2,
+        2.975364532,
+        1.252249124e-3,
+        -3.74071619e-7,
+        5.9366252e-11,
+        -3.6069941e-15,
+        5.33982441e3,
+        -2.202774769,
       ],
     ],
     [200, 1e3, 6e3],
@@ -536,7 +620,7 @@ function defaultDatabase() {
     72.14878
   );
 
-  speciesNasa.C5H12 = new NasaData(
+  speciesNasa.C6H14 = new NasaData(
     [
       [
         -5.8159267e5,
@@ -691,24 +775,99 @@ function defaultDatabase() {
     [273.15, 373.1507, 600],
     18.01528
   );
+  return speciesNasa;
 }
 let speciesNasa = defaultDatabase();
+
+/**
+ * Specific molar enthalpy - Nasa Glenn
+ * @param {number} T - Temperature
+ * @param {number[]} a - Coefficients for T and substance
+ * @returns number
+ */
+function nasaH(T, a) {
+  const R = 8.31451;
+  let h =
+    R *
+    T *
+    (-a[0] / (T * T) +
+      (a[1] * Math.log(T)) / T +
+      a[2] +
+      (a[3] * T) / 2 +
+      (a[4] * (T * T)) / 3 +
+      (a[5] * (T * T * T)) / 4 +
+      (a[6] * (T * T * T * T)) / 5 +
+      a[7] / T);
+  return h;
+}
+
+/**
+ * Specific molar entropy - Nasa Glenn
+ * @param {number} T - Temperature
+ * @param {number[]} a - Coefficients for T and substance
+ * @returns number
+ */
+function nasaS(T, a) {
+  const R = 8.31451;
+  let s =
+    R *
+    (-a[0] / (T * T) / 2 +
+      -a[1] / T +
+      a[2] * Math.log(T) +
+      a[3] * T +
+      (a[4] * (T * T)) / 2 +
+      (a[5] * (T * T * T)) / 3 +
+      (a[6] * (T * T * T * T)) / 4 +
+      a[8]);
+  return s;
+}
+
+/**
+ * Specific heat capacity at constant pressure - Nasa Glenn
+ * @param {number} T - Temperature
+ * @param {number[]} a - Coefficients for T and substance
+ * @returns number
+ */
+function nasaCp(T, a) {
+  const R = 8.31451;
+  let cp =
+    R *
+    (a[0] / (T * T) +
+      a[1] / T +
+      a[2] +
+      a[3] * T +
+      a[4] * T * T +
+      a[5] * T * T * T +
+      a[6] * T * T * T * T);
+  return cp;
+}
 
 /**
  * Nasa Gleen functions for temperature
  * @param {string} prop - output property (e.g., MW, H0molar,etc.)
  * @param {number} T - temperature in Kelvin
- * @param {string} specie - name of the specie in the database
+ * @param {string} subs - name of the substance in the database
  * @returns number
  */
-function nasaFun(prop, T, specie) {
+function nasaFun(prop, xType, x, subs) {
   // Constants
-  const R = 8.31451;
-  const MW = speciesNasa[specie];
-  let ans, a;
+  const MW = speciesNasa[subs].MW;
+  let a;
+
+  let T;
+  if (xType !== "T") {
+    // Find T
+    let fun = (i) => nasaFun(xType, "T", i, subs) - x;
+    T = rootFind(fun, 500.0); // This guess may not be the better
+    if (prop === "T") {
+      return T;
+    }
+  } else {
+    T = x;
+  }
 
   try {
-    a = speciesNasa[specie].getCoefs(T);
+    a = speciesNasa[subs].getCoefs(T);
   } catch {
     return NaN;
   }
@@ -718,64 +877,28 @@ function nasaFun(prop, T, specie) {
       return MW / 1e3;
 
     case "H0molar":
-      ans =
-        R *
-        T *
-        (-a[0] / (T * T) +
-          (a[1] * Math.log(T)) / T +
-          a[2] +
-          (a[3] * T) / 2 +
-          (a[4] * (T * T)) / 3 +
-          (a[5] * (T * T * T)) / 4 +
-          (a[6] * (T * T * T * T)) / 5 +
-          a[7] / T);
-      return ans;
+      return nasaH(T, a);
 
     case "S0molar":
-      ans =
-        R *
-        (-a[0] / (T * T) / 2 -
-          a[1] / T +
-          a[2] * Math.log(T) +
-          a[3] * T +
-          (a[4] * (T * T)) / 2 +
-          (a[5] * (T * T * T)) / 3 +
-          (a[6] * (T * T * T * T)) / 4 +
-          a[8]);
-      return ans;
+      return nasaS(T, a);
 
     case "Cp0molar":
-      ans =
-        R *
-        (a[0] / (T * T) +
-          a[1] / T +
-          a[2] +
-          a[3] * T +
-          a[4] * T * T +
-          a[5] * T * T * T +
-          a[6] * T * T * T * T);
-      return ans;
+      return nasaCp(T, a);
 
     case "H0":
-      return (nasaFun("H0molar", T, specie) / MW) * 1e3;
+      return (nasaH(T, a) / MW) * 1e3;
 
     case "S0":
-      return (nasaFun("S0molar", T, specie) / MW) * 1e3;
+      return (nasaS(T, a) / MW) * 1e3;
 
     case "Cp0":
-      return (nasaFun("Cp0molar", T, specie) / MW) * 1e3;
+      return (nasaCp(T, a) / MW) * 1e3;
 
     case "G0molar":
-      return nasaFun("H0molar", T, specie) - T * nasaFun("S0molar", T, specie);
+      return nasaH(T, a) - T * nasaS(T, a);
 
     case "G0":
-      return (nasaFun("G0molar", T, specie) / MW) * 1e3;
-
-    case "F0molar":
-      return nasaFun("U0molar", T, specie) - T * nasaFun("S0molar", T, specie);
-
-    case "F0":
-      return (nasaFun("F0molar", T, specie) / MW) * 1e3;
+      return ((nasaH(T, a) - T * nasaS(T, a)) / MW) * 1e3;
 
     default:
       throw "Undefined property";
@@ -827,7 +950,7 @@ function Pr_sat(Tr) {
  * @param {number} Vr - Reduced volume
  * @returns number
  */
-function Z_Vr(Tr, Vr) {
+function Z_TrVr(Tr, Vr) {
   // Constants
   const lk = lkConstants();
 
@@ -850,99 +973,15 @@ function Z_Vr(Tr, Vr) {
 }
 
 /**
- * Derivative of Z for V
- * @param {number} Tr - Reduced temperature
- * @param {number} Pr - Reduced pressure
- * @param {number} f - Z for x
- * @param {number} x - Reduced volume
- * @returns number
- */
-function dZdV(Tr, Pr, f, x) {
-  const absDelta = 1e-4;
-  const relDelta = 1e-4; // Change to avoid zeros
-  let xNear, fNear, dfdx;
-
-  // Check if x is zero
-  if (x === 0) {
-    xNear = x + absDelta;
-  } else {
-    xNear = x * (1 + relDelta);
-  }
-
-  // Calculate derivative
-  fNear = Z_Vr(Tr, xNear) - (Pr * xNear) / Tr;
-  dfdx = (fNear - f) / (xNear - x);
-
-  return dfdx;
-}
-
-/**
- * Compressibility factor for Tr and Pr
- * @param {number} Tr - Reduced temperature
- * @param {number} Pr - Reduced pressure
- * @returns number
- */
-function Z_Pr(Tr, Pr) {
-  // Calculate the saturated pressure and find a suitable guess
-  let Psat = Pr_sat(Tr);
-  let first_guess;
-  if (Pr <= Psat) {
-    first_guess = Tr / Pr;
-  } else {
-    first_guess = 0.1;
-  }
-
-  // Setup default conditions
-  let ans = [1, 2];
-  let guess = [first_guess, 1];
-
-  // First eval
-  ans[0] = Z_Vr(Tr, guess[0]) - (Pr * guess[0]) / Tr;
-
-  // Root-finding loop
-  let count = 0;
-  let deriv, count2, factor;
-  do {
-    // Determine derivative
-    deriv = dZdV(Tr, Pr, ans[0], guess[0]);
-    // Second loop - Line search
-    count2 = 0;
-    factor = 2;
-    do {
-      factor /= 2; // Try again with smaller step
-      // Test new guess
-      guess[1] = guess[0] - (ans[0] / deriv) * factor;
-      ans[1] = Z_Vr(Tr, guess[1]) - (Pr * guess[1]) / Tr;
-
-      // Max iterations condition
-      count2++;
-      if (count2 > 20) {
-        break; // Prevent infinity loops
-      }
-    } while (Math.abs(ans[1]) > Math.abs(ans[0]));
-    ans[0] = ans[1];
-    guess[0] = guess[1];
-
-    // Max iterations conditions
-    count++;
-    if (count > 30) {
-      throw Error("Z_Pr: Max. number of iterations");
-    }
-  } while (Math.abs(ans[0]) > 1e-6);
-
-  return Z_Vr(Tr, guess[0]);
-}
-
-/**
  * Enthalpy of departure for Tr and Vr
  * @param {number} Tr - Reduced pressure
  * @param {number} Vr - Reduced volume
  * @returns number
  */
-function deltaH_Vr(Tr, Vr) {
+function deltaH_TrVr(Tr, Vr) {
   // Constants
   const lk = lkConstants();
-  const Z = Z_Vr(Tr, Vr);
+  const Z = Z_TrVr(Tr, Vr);
   const E =
     (lk.c[3] / (2 * Tr * Tr * Tr * lk.gamma)) *
     (lk.beta +
@@ -961,27 +1000,15 @@ function deltaH_Vr(Tr, Vr) {
 }
 
 /**
- * Enthalpy of departure for Tr and Pr
- * @param {number} Tr - Reduced temperature
- * @param {number} Pr - Reduced pressure
- * @returns number
- */
-function deltaH_Pr(Tr, Pr) {
-  const Z = Z_Pr(Tr, Pr);
-  const Vr = (Z * Tr) / Pr;
-  return deltaH_Vr(Tr, Vr);
-}
-
-/**
  * Entropy of departure for Tr and Vr
  * @param {number} Tr - Reduced temperature
  * @param {number} Vr - Reduced volume
  * @returns number
  */
-function deltaSt_Vr(Tr, Vr) {
+function deltaSt_TrVr(Tr, Vr) {
   // Constants
   const lk = lkConstants();
-  const Z = Z_Vr(Tr, Vr);
+  const Z = Z_TrVr(Tr, Vr);
   const E =
     (lk.c[3] / (2 * Tr * Tr * Tr * lk.gamma)) *
     (lk.beta +
@@ -998,56 +1025,111 @@ function deltaSt_Vr(Tr, Vr) {
 }
 
 /**
- * Entropy of departure for Tr and Pr
- * @param {nummer} Tr - Reduced temperature
- * @param {number} Pr - Reduced pressure
+ * Calculates a Z for Tr,Vr,Pr or Q pairs
+ * @param {string} xType - Input x type
+ * @param {number} x - Value of input x
+ * @param {string} yType - Input y type
+ * @param {number} y - Value of input y
  * @returns number
  */
-function deltaSt_Pr(Tr, Pr) {
-  const Z = Z_Pr(Tr, Pr);
-  const Vr = (Z * Tr) / Pr;
-  return deltaSt_Vr(Tr, Vr);
-}
-
-/**
- * Wrapper for the Lee-Kesler functions
- * @param {number} prop - Property name
- * @param {number} Tr - Reduced temperature
- * @param {number|char} inputX - Reduced pressure, 'f' or 'g' (saturated)
- * @returns number
- */
-function lkFun(prop, Tr, inputX) {
-  // Check limits and change saturation points
-  if (Tr < 0.3 || Tr > 4) {
-    throw Error("Out of range");
-  }
-
-  if (typeof inputX === "number") {
-    if (inputX < 0.01 || inputX > 10) {
-      throw Error("Out of range");
-    }
-  } else {
-    if (inputX === "f") {
-      inputX = Pr_sat(Tr) + 1e-5;
-    } else if (inputX === "g") {
-      inputX = Pr_sat(Tr);
-    } else {
-      throw Error("Out of range");
+function lkWrapper(prop, xType, x, yType, y) {
+  // Type of inputs
+  let Tr, Vr, Pr, Q, ans;
+  let types = [xType, yType];
+  let values = [x, y];
+  for (let i = 0; i < 2; i++) {
+    switch (types[i]) {
+      case "Tr":
+        Tr = values[i];
+        break;
+      case "Pr":
+        Pr = values[i];
+        break;
+      case "Vr":
+        Vr = values[i];
+        break;
+      case "Q":
+        Q = values[i];
+        break;
+      default:
+        throw Error("Invalid parameter on function Z");
     }
   }
 
+  // Find property function which uses Tr and Vr
+  let propFun;
   switch (prop) {
     case "Z":
-      return Z_Pr(Tr, inputX);
+      propFun = Z_TrVr;
+      break;
     case "dh":
-      return deltaH_Pr(Tr, inputX);
+      propFun = deltaH_TrVr;
+      break;
     case "dst":
-      return deltaSt_Pr(Tr, inputX);
-    case "Prsat":
-      return Pr_sat(Tr);
+      propFun = deltaSt_TrVr;
+      break;
+    case "Pr":
+      propFun = (Tr, Vr) => (Z_TrVr(Tr, Vr) * Tr) / Vr;
+      break;
+    case "Vr":
+      return Vr;
+    case "Tr":
+      return Tr;
     default:
-      throw Error("Unknown property");
+      throw Error("Property not found");
   }
+
+  // Calculate property
+  let fun;
+  if (Tr !== undefined) {
+    // Domain 0.3<Tr<4
+    if (Vr) {
+      ans = propFun(Tr, Vr);
+    } else if (Pr !== undefined) {
+      // Z(Tr,Vr)-Pr*Vr/Tr = 0
+      fun = (x) => Z_TrVr(Tr, x) - (Pr * x) / Tr;
+      let Psat = Pr_sat(Tr);
+      let first_guess;
+      if (Pr <= Psat) {
+        first_guess = Tr / Pr;
+      } else {
+        first_guess = 0.1;
+      }
+      Vr = rootFind(fun, first_guess);
+      ans = propFun(Tr, Vr);
+    } else if (Q !== undefined) {
+      Pr = Pr_sat(Tr);
+      if (Q === 1) {
+        ans = lkWrapper(prop, "Tr", Tr, "Pr", Pr);
+      } else if (Q === 0) {
+        ans = lkWrapper(prop, "Tr", Tr, "Pr", Pr + 1e-5);
+      } else {
+        ans =
+          lkWrapper(prop, "Tr", Tr, "Pr", Pr) * Q +
+          lkWrapper(prop, "Tr", Tr, "Pr", Pr + 1e-5) * (1 - Q);
+      }
+    }
+  } else if (Pr !== undefined) {
+    // Domain 0.01<Pr<10
+    if (Vr !== undefined) {
+      // Zr(x,Vr) - Pr*Vr/x = 0
+      fun = (x) => Z_TrVr(x, Vr) - (Pr * Vr) / x;
+      Tr = rootFind(fun, 1.0); // Not tested
+      ans = propFun(Tr, Vr);
+    } else if (Q !== undefined) {
+      fun = (x) => Pr_sat(x) - Pr;
+      Tr = rootFind(fun, 1.0); // Not tested
+      ans = lkWrapper(prop, "Tr", Tr, "Q", Q);
+    }
+  } else if (Vr !== undefined) {
+    if (Q !== undefined) {
+      // f(Tr,Q) - sat(Tr)*Vr/Tr = 0
+      fun = (x) => lkWrapper("Z", "Tr", x, "Q", Q) - (Pr_sat(x) * Vr) / x;
+      Tr = rootFind(fun, 1.0);
+      ans = lkWrapper(Tr, Vr);
+    }
+  }
+  return ans;
 }
 
 /*
@@ -1057,22 +1139,22 @@ function lkFun(prop, Tr, inputX) {
 //  Import functions to math.js parser
 math.import({
   // PropsSI
-  PropsSI: function (n, x, xx, y, yy, f) {
-    return Module.PropsSI(n, x, xx, y, yy, f);
+  PropsSI: function (prop, xType, x, yType, y, subs) {
+    return Module.PropsSI(prop, xType, x, yType, y, subs);
   },
-  Props1SI: function (n, f) {
-    return Module.Props1SI(n, f);
+  Props1SI: function (prop, subs) {
+    return Module.Props1SI(prop, subs);
   },
   // HAPropsSI
-  HAPropsSI: function (n, x, xx, y, yy, z, zz) {
-    return Module.HAPropsSI(n, x, xx, y, yy, z, zz);
+  HAPropsSI: function (prop, xType, x, yType, y, zType, z) {
+    return Module.HAPropsSI(prop, xType, x, yType, y, zType, z);
   },
   // Nasa Glenn
-  NasaSI: function (prop, T, specie) {
-    return nasaFun(prop, T, specie);
+  NasaSI: function (prop, xType, x, subs) {
+    return nasaFun(prop, xType, x, subs);
   },
   // LeeKesler
-  LeeKesler: function (prop, Tr, inputX) {
-    return lkFun(prop, Tr, inputX);
+  LeeKesler: function (prop, xType, x, yType, y) {
+    return lkWrapper(prop, xType, x, yType, y);
   },
 });

@@ -438,6 +438,7 @@ propPlotMenuButton.onclick = function () {
 const plotButton = document.querySelector(".plotDraw");
 plotButton.onclick = function () {
   clearDropdown();
+  clearHiddenMenus("contentParametric");
   let div = document.getElementById("canvasDiv");
   div.innerText = "";
 
@@ -453,18 +454,20 @@ plotButton.onclick = function () {
   let text=editor.getValue();
   try{
     canvas = laine_plot(text,options);
+    div.appendChild(canvas);
+    document.getElementById("plotDrawBox").style.display = "block";
   }
   catch(e){
     displayError(e);
+    document.getElementById("plotDrawBox").style.display = "none";
   }
-  div.appendChild(canvas);
-  document.getElementById("plotDrawBox").style.display = "block";
   editor.refresh();
 };
 
 const propPlotButton = document.querySelector(".propPlotDraw");
 propPlotButton.onclick = function () {
   clearDropdown();
+  clearHiddenMenus("contentPropPlot");
   let div = document.getElementById("canvasDiv");
   div.innerText = "";
   let canvas;
@@ -704,11 +707,12 @@ const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
 // Nasa Glenn
 function writeNasa() {
-  const property = document.querySelector(".nasaProp");
-  const specie = document.querySelector(".nasaSpecie");
-  const temp = document.querySelector(".nasaT");
-  const propName = property.options[property.selectedIndex].value;
-  const text = `property=NasaSI('${propName}',${temp.value},'${specie.value}')`;
+  const property = document.querySelector(".nasaProp").value;
+  const specie = document.querySelector(".nasaSpecie").value;
+  const inputType = document.querySelector(".nasaInputType").value;
+  const input = document.querySelector(".nasaInput").value
+
+  const text = `property=NasaSI('${property}','${inputType}',${input},'${specie}')`;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
@@ -716,18 +720,12 @@ const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
 // Lee - Kesler
 function writelk() {
-  const property = document.querySelector(".lkProp");
-  const temp = document.querySelector(".lkT");
-  const press = document.querySelector(".lkP");
-  const propName = property.options[property.selectedIndex].value;
-  let text;
-  if (propName === "Prsat") {
-    text = `property=LeeKesler('${propName}',${temp.value},'f')`;
-  } else if (press.value === "f" || press.value === "g") {
-    text = `property=LeeKesler('${propName}',${temp.value},'${press.value}')`;
-  } else {
-    text = `property=LeeKesler('${propName}',${temp.value},${press.value})`;
-  }
+  const property = document.querySelector(".lkProp").value;
+  const input1 = document.querySelector(".lkInput1").value;
+  const inputType1 = document.querySelector(".lkInputType1").value;
+  const input2 = document.querySelector(".lkInput2").value;
+  const inputType2 = document.querySelector(".lkInputType2").value;
+  let text = `property=LeeKesler('${property}','${inputType1}',${input1},'${inputType2}',${input2})`;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
