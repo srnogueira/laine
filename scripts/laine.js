@@ -1,140 +1,99 @@
 "use strict";
-// imported from third-party
+/*
+  imports
+*/
+// from scripts
 /*global math*/
-// exported for ui.js
-/*exported laineSolver, parser*/
-// exported for plots.js
+
+/*
+  exports
+*/
+// for plots.js
 /*exported laineSolver, laineError, parser*/
+
+// for ui.js
+/*exported laineSolver, parser*/
 
 // Create a parser object as global object
 const parser = math.parser();
 
-// LAINE
+/**
+ * The main solver for non-linear equation systems
+ * @param {string} text - Equations in text
+ * @param {object} laineOptions - Object with solver options
+ * @returns bool|Problem
+ */
 function laineSolver(text, laineOptions) {
-  // Description : Solves equations from a non-linear system
-  // SETUP
   const t1 = performance.now();
-  // No options included
+
+  // Check options and create it if necessary
   laineOptions = laineOptions === undefined ? {} : laineOptions;
   laineOptions.userGuess =
     laineOptions.userGuess === undefined ? {} : laineOptions.userGuess;
+
   // Clear parser and errors
   if (laineOptions.solveFor === undefined) {
     parser.clear();
   }
 
-  // PARSE LINES
-  let lines = text.split("\n"); // break text into lines
-  let equations;
-  let subsEquations = [];
-  let subsEquationsNames = new Set();
-  equations = cleanLines(lines, laineOptions);
-  let originalSize = equations.length;
+  // Parse lines
+  let equations = cleanLines(text, laineOptions);
 
-  // REDUCE COMPLEXITY
-  if (!laineOptions.solveFor) {
-    let check = []; // to check duplicates
-    // get algebraic substitutions
-    let scope = parser.getAll();
-    for (let i = 0; i < equations.length; i++) {
-      check.push(equations[i].text);
-      equations[i].updateComputedVars();
-      let name = equations[i].lhs.trim();
-      if (
-        equations[i].simple &&
-        scope[name] === undefined &&
-        !subsEquationsNames.has(name)
-      ) {
-        subsEquations.push(equations[i]);
-        subsEquationsNames.add(name);
-        equations.splice(i, 1);
-        i--;
-      }
-    }
-    // Check if has duplicates
-    check = new Set(check);
-    if (check.size !== originalSize) {
-      // Find the copies
-      let copies = new Set();
-      for (let i = 0; i < equations.length; i++) {
-        for (let j = 0; j < equations.length; j++) {
-          if (i !== j && equations[i].text == equations[j].text) {
-            copies.add(equations[i].number);
-            copies.add(equations[j].number);
-          }
-        }
-      }
-      throw new laineError(
-        "Duplicated equation",
-        `The problem has multiple copies of a same equation`,
-        `Line(s) ${[...copies].join(", ")}`,
-        "Remove the copies"
-      );
-    }
-    // subtstitute between substitutions
-    if (subsEquations.length > 0) {
-      let changeLine = true;
-      let maxTimes = 0;
-      substitutions: while (changeLine) {
-        for (let i = 0; i < subsEquations.length; i++) {
-          changeLine = false;
-          let name = subsEquations[i].vars;
-          for (let k = 0; k < name.length; k++) {
-            for (let j = 0; j < subsEquations.length; j++) {
-              if (j === i) {
-                continue;
-              }
-              if (name[k] === subsEquations[j].lhs) {
-                subsEquations[i].update(name[k], subsEquations[j].rhs);
-                changeLine = true;
-              }
-            }
-          }
-          // Check max number of substitutions
-          if (changeLine) {
-            maxTimes++;
-          }
-          if (maxTimes === subsEquations.length - 1) {
-            break substitutions;
-          }
-        }
-      }
-      // Substitute in equations
-      for (let subsEquation of subsEquations) {
-        let subs = subsEquation.lhs.trim();
-        for (let equation of equations) {
-          for (let name of equation.vars) {
-            if (name === subs) {
-              equation.update(name, subsEquation.rhs);
-            }
-          }
-        }
-      }
-    }
-  }
-  equations.sort((a, b) => a.vars.length - b.vars.length); // sorting
-  // SOLVE 1D-2D PROBLEMS
+  // Check duplicates
+  checkDuplicates(equations);
+
+  // Reduce problem size and split equations in two types
+  let subsEquations = algebraicSubs(equations);
+
+  // Sort equations
+  equations.sort((a, b) => a.vars.length - b.vars.length);
+
+  // Solve 1-2D problems in equations
   equations = solve1D2D(equations, laineOptions);
-  if (!equations) {
-    return false;
+  // Short-circut if only the solution of one variable is important
+  if (laineOptions.solveFor !== undefined) {
+    if (parser.get(laineOptions.solveFor) !== undefined) {
+      return false;
+    }
   }
+
+  // Solves multi-D problems in equations
   if (equations.length > 0) {
     equations = solveND(equations, laineOptions);
   }
-  if (!equations) {
-    return false;
+  // Short-circut if only the solution of one variable is important
+  if (laineOptions.solveFor !== undefined) {
+    if (parser.get(laineOptions.solveFor) !== undefined) {
+      return false;
+    }
   }
-  // SOLVE SUBSTITUTIONS
+
+  // Sort substitutions
   subsEquations.sort((a, b) => a.vars.length - b.vars.length); // sorting
-  laineOptions.simples = true; // activate simple evaluation
+  // Activate simple evaluation mode - It will try to evaluated first, usually works and is faster
+  laineOptions.simples = true;
+
+  // Solves 1-2D problems in substitutions
   subsEquations = solve1D2D(subsEquations, laineOptions);
-  if (!subsEquations) {
-    return false;
+  // Short-circut if only the solution of one variable is important
+  if (laineOptions.solveFor !== undefined) {
+    if (parser.get(laineOptions.solveFor) !== undefined) {
+      return false;
+    }
   }
+
+  // Solved n-D problems in substitutions
   if (subsEquations.length > 0) {
     subsEquations = solveND(subsEquations, laineOptions);
   }
-  // DELIVER A PROBLEM (IF REQUESTED)
+  // Short-circut if only the solution of one variable is important
+  if (laineOptions.solveFor !== undefined) {
+    if (parser.get(laineOptions.solveFor) !== undefined) {
+      return false;
+    }
+  }
+
+  // Delivers a problem if requested
   if (laineOptions.returnProblem) {
     for (let subEquation of subsEquations) {
       subEquation.updateComputedVars();
@@ -146,27 +105,416 @@ function laineSolver(text, laineOptions) {
     problem.options = laineOptions.userGuess;
     return problem;
   }
-  if (!subsEquations) {
-    return false;
-  }
+
   const t2 = performance.now();
   console.log("evaluation time:", t2 - t1, "ms");
+  return false;
 }
-//  AUXILIARY FUNCTIONS
-function laineError(name, message, numb, help) {
-  /*
-      Function: create error object
-    */
-  this.name = name;
-  this.message = message;
-  this.lineNumber = numb;
-  this.help = help;
+
+/**
+ * Error object
+ * @class
+ */
+class laineError {
+  /**
+   * Create a error object
+   * @param {string} name - Error name
+   * @param {string} message - Error description
+   * @param {number} numb - Line number
+   * @param {string} help - Help text
+   */
+  constructor(name, message, numb, help) {
+    this.name = name;
+    this.message = message;
+    this.lineNumber = numb;
+    this.help = help;
+  }
 }
+
+/*
+  Parsing functions
+*/
+
+/**
+ * Parses the equation text into an array of equations objects
+ * @param {string} lines - Equations text
+ * @param {object} options - Options to parser
+ * @returns Equations[]
+ */
+function cleanLines(text, options) {
+  let lines = text.split("\n");
+  let equations = [];
+  for (let i = 0; i < lines.length; i++) {
+    lines[i] = lines[i].trim();
+    // Check if is an equation
+    if (checkLine(lines[i], i + 1)) {
+      // Break multi-lines
+      const aux = lines[i].split(";");
+      for (let subLine of aux) {
+        // Check each subline
+        subLine = subLine.trim();
+        if (checkLine(subLine, i + 1)) {
+          // Break into sides
+          let sides = subLine.split("=");
+          // Check if is a guess
+          if (subLine.endsWith("?")) {
+            // Check if line is valid
+            let value;
+            sides[1] = sides[1].trim().slice(0, -1);
+            try {
+              value = math.evaluate(sides[1]);
+            } catch (e) {
+              throw new laineError(
+                "Guess syntax",
+                "Guesses should follow this syntax: variable = value ?",
+                `Line ${i + 1}`,
+                "Change the guess to a valid input or remove it"
+              );
+            }
+            let name = sides[0].trim();
+            options.userGuess[name] = value;
+            continue;
+          }
+          // Check if is a single variable
+          if (singleVar(sides[0], sides[1])) {
+            // Check if is already computed
+            if (parser.get(sides[0].trim()) !== undefined) {
+              // Try to evaluate
+              try {
+                parser.evaluate(subLine);
+                throw new laineError(
+                  "Redefined variable",
+                  `Variable ${sides[0].trim()} has been redefined`,
+                  `Line ${i + 1}`,
+                  `Remove or correct line ${i + 1}`
+                );
+              } catch (e) {
+                if (e.name === "Redefined variable") {
+                  throw e;
+                }
+              }
+            }
+            // Check if is a function erasing a variable
+            if (sides[0].endsWith(")")) {
+              let name = sides[0].split("(");
+              if (parser.get(name[0].trim()) !== undefined) {
+                throw new laineError(
+                  "Redefined variable with a function",
+                  `Variable ${name[0].trim()} has been redefined with a function`,
+                  `Line ${i + 1}`,
+                  `Remove or correct line ${i + 1}`
+                );
+              }
+            }
+            // Try to simply evaluate the expression;
+            try {
+              const ans = parser.evaluate(subLine);
+              // Check if the parser did not mistaked as "unit"
+              if (ans.type === "Unit") {
+                // Remove object from parser scope
+                const lhs = sides[0].trim();
+                parser.remove(lhs);
+                throw new Error("dummy"); // jump to catch
+              }
+            } catch {
+              // Try to create a equation object
+              try {
+                equations.push(new Equation(subLine, i + 1));
+              } catch (e) {
+                throw new laineError(
+                  "Parsing error",
+                  `laine could not parse the equation in line ${i + 1}`,
+                  `Line ${i + 1}`,
+                  e.message
+                );
+              }
+            }
+          } else {
+            // Create an equation
+            try {
+              equations.push(new Equation(subLine, i + 1));
+            } catch (e) {
+              //console.error(e);
+              throw new laineError(
+                "Parsing error",
+                `laine could not parse the equation in line ${i + 1}`,
+                `Line ${i + 1}`,
+                e.message
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+  return equations;
+}
+
+/**
+ * Test if a line is an equation, blank or comment
+ * @param {string} line - An line of text
+ * @param {number} number - The line number
+ * @returns bool
+ */
+function checkLine(line, number) {
+  // Function: checks if the line is an equation
+  if (line === "" || line.startsWith("#")) {
+    return false;
+  }
+  const form = /=/;
+  if (!form.test(line)) {
+    throw new laineError(
+      "Not an equation, comment or blank",
+      `Line ${number} is not a valid line in laine`,
+      `Line ${number}`,
+      "Verify if there is something missing or strange in this line"
+    );
+  }
+  return true;
+}
+
+/**
+ * Find duplicated lines/equations
+ * @param {string[]} lines - Array of lines of text
+ * @param {Equation[]} equations - Array of equations objects
+ */
+function checkDuplicates(equations) {
+  // Number of equations
+  let uniqueEq = new Set();
+  for (let equation of equations) {
+    uniqueEq.add(equation);
+  }
+  if (uniqueEq.size !== equations.length) {
+    // Find the copies
+    let copies = new Set();
+    for (let i = 0; i < equations.length; i++) {
+      for (let j = 0; j < equations.length; j++) {
+        if (i !== j && equations[i].text() == equations[j].text()) {
+          copies.add(equations[i].number);
+          copies.add(equations[j].number);
+        }
+      }
+    }
+    throw new laineError(
+      "Duplicated equation",
+      `The problem has multiple copies of a same equation`,
+      `Line(s) ${[...copies].join(", ")}`,
+      "Remove the copies"
+    );
+  }
+}
+
+/**
+ * Equation object
+ * @class
+ */
+class Equation {
+  /**
+   * Constructor for the Equation object
+   * @param {string} line - Equation line as text
+   * @param {number} number - Line number
+   */
+  constructor(line, number) {
+    let equationText = line.split("#")[0];
+    // line number
+    this.number = number;
+    // Equation sides
+    let sides = equationText.split("=");
+    this.lhs = sides[0].trim();
+    this.rhs = sides[1].trim();
+    // Is a simple equation? * Not a method because the function is used elsewhere
+    this.simple = singleVar(this.lhs, this.rhs);
+    // Store vars names * Not included as a method because is time consuming
+    this.vars = varsName(`${this.lhs}-(${this.rhs})`);
+  }
+
+  /**
+   * Delivers the expression = 0
+   * @returns string
+   */
+  text() {
+    return `${this.lhs}-(${this.rhs})`;
+  }
+
+  /**
+   * Updates a variable to a number
+   * @param {string} name - Var name
+   * @param {number} value - Var value
+   */
+  update(name, value) {
+    // Function: apply algebraic substituitions in a Equation
+    if (name !== undefined && value !== undefined) {
+      const regex = new RegExp("\\b" + name + "\\b", "g");
+      const newText = `(${value.toString()})`;
+      this.lhs = this.lhs.replace(regex, newText);
+      this.rhs = this.rhs.replace(regex, newText);
+    }
+    this.vars = varsName(`${this.lhs}-(${this.rhs})`);
+  }
+
+  /**
+   * Updates the variables to numbers if they were already computed in the parser
+   */
+  updateComputedVars() {
+    const scope = parser.getAll();
+    const names = this.vars;
+    let namesLength = names.length;
+    // Remove if computed;
+    for (let i = 0; i < namesLength; i++) {
+      if (scope[names[i]] !== undefined) {
+        names.splice(i, 1);
+        i--;
+        namesLength--;
+      }
+    }
+  }
+}
+
+/**
+ * Verifies if the equation is "simple" (var = expression)
+ * @param {string} lhs - Left hand side of the equation
+ * @param {string} rhs - Right hand side of the equation
+ * @returns bool
+ */
+function singleVar(lhs, rhs) {
+  const numb = /\d/;
+  const op = /(\*|\/|\+|-|\^)/;
+  // Check if has a number or operation
+  if (numb.test(lhs[0]) || op.test(lhs)) {
+    return false;
+  }
+  let name = new RegExp(lhs.trim() + "[s|(\\*|\\+|\\-|\\/)]");
+  // Now check if there the same variable is not on the other side
+  if (name.test(rhs)) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+/**
+ * Get all variables names in an line text
+ * @param {string} line - text with the equation line
+ * @returns string[]
+ */
+function varsName(line) {
+  // Parse string
+  const node = math.parse(line);
+  // Scope
+  const scope = parser.getAll();
+  // Filter symbol nodes
+  const symbolNodes = node.filter((node) => node.isSymbolNode);
+  // Filter function nodes
+  const functionNodes = node.filter((node) => node.type === "FunctionNode");
+  // Store unique symbols that are not functions
+  let symbols = [];
+  checkFunction: for (let symbolNode of symbolNodes) {
+    // Pass if is already included
+    if (symbols.includes(symbolNode.name)) {
+      continue checkFunction;
+    }
+    // Test if is already parsed/solved
+    let test = scope[symbolNode.name];
+    if (typeof test === "number" || typeof test === "function") {
+      continue checkFunction;
+    }
+    // Test if is a function name
+    for (let functionNode of functionNodes) {
+      if (symbolNode.name === functionNode.name) {
+        continue checkFunction;
+      }
+    }
+    // Include otherwise
+    symbols.push(symbolNode.name);
+  }
+  return symbols;
+}
+
+/*
+  Algebraic substitution
+*/
+
+/**
+ * Find substitutions and split them from the original equations array
+ * Substitutions are applied to substitions and to equations
+ * @param {Equations[]} equations - Array of equations objects
+ * @returns Equations[]
+ */
+function algebraicSubs(equations) {
+  let subsEquations = [];
+  let subsEquationsNames = new Set();
+  const scope = parser.getAll();
+  // Get algebraic substitutions
+  for (let i = 0; i < equations.length; i++) {
+    equations[i].updateComputedVars();
+    let name = equations[i].lhs.trim();
+    if (
+      equations[i].simple &&
+      scope[name] === undefined &&
+      !subsEquationsNames.has(name)
+    ) {
+      subsEquations.push(equations[i]);
+      subsEquationsNames.add(name);
+      equations.splice(i, 1);
+      i--;
+    }
+  }
+  // Subtstitute between substitutions (actually very important)
+  if (subsEquations.length > 0) {
+    let changeLine = true;
+    let maxTimes = 0;
+    substitutions: while (changeLine) {
+      for (let i = 0; i < subsEquations.length; i++) {
+        changeLine = false;
+        let name = subsEquations[i].vars;
+        for (let k = 0; k < name.length; k++) {
+          for (let j = 0; j < subsEquations.length; j++) {
+            if (j === i) {
+              continue;
+            }
+            if (name[k] === subsEquations[j].lhs) {
+              subsEquations[i].update(name[k], subsEquations[j].rhs);
+              changeLine = true;
+            }
+          }
+        }
+        // Check max number of substitutions
+        if (changeLine) {
+          maxTimes++;
+        }
+        if (maxTimes === subsEquations.length - 1) {
+          break substitutions;
+        }
+      }
+    }
+    // Substitute in equations
+    for (let subsEquation of subsEquations) {
+      let subs = subsEquation.lhs.trim();
+      for (let equation of equations) {
+        for (let name of equation.vars) {
+          if (name === subs) {
+            equation.update(name, subsEquation.rhs);
+          }
+        }
+      }
+    }
+  }
+  return subsEquations;
+}
+
+/*
+  Solver sequences
+*/
+
+/**
+ * Solves the one dimensional and two dimensional problems
+ * @param {Equation[]} equations - Array of equations
+ * @param {object} laineOptions - Options object
+ * @returns Equation[]
+ */
 function solve1D2D(equations, laineOptions) {
-  // SOLVE 1D AND 2D PROBLEMS
-  let name;
+  let name, scope;
   let t1 = performance.now();
-  let scope;
   loop1D_2D: while (equations.length > 0) {
     // Avoid long loops
     if (performance.now() - t1 > 3e3) {
@@ -180,10 +528,10 @@ function solve1D2D(equations, laineOptions) {
     // In Plots : break loop if y is already computed
     if (laineOptions.solveFor !== undefined) {
       if (parser.get(laineOptions.solveFor) !== undefined) {
-        return false;
+        return [];
       }
     }
-    // Get number of variables : (0) just remove ; (1) 1D solve; (2) 2D solve
+    // Get number of variables : (0) error ; (1) 1D solve; (2) 2D solve
     name = equations[0].vars;
     if (name.length === 0) {
       throw new laineError(
@@ -205,7 +553,6 @@ function solve1D2D(equations, laineOptions) {
           //console.error(e);
         }
       }
-      // SOLVE 1D PROBLEM
       // Try to solve the 1D problem
       let problem1D = new Problem([equations[0]]);
       if (parser.get(problem1D.names[0]) !== undefined) {
@@ -235,6 +582,7 @@ function solve1D2D(equations, laineOptions) {
         }
       }
       equations.sort((a, b) => a.vars.length - b.vars.length);
+      // If no variables were removed than:
       if (!loop1D) {
         if (equations[0].vars.length !== 1) {
           // TRY TO FIND 2D PROBLEMS AND SOLVE
@@ -287,8 +635,14 @@ function solve1D2D(equations, laineOptions) {
   }
   return equations;
 }
+
+/**
+ * Solves multidimensional problems in blocks
+ * @param {Equations[]} equations - Array of equations objects
+ * @param {object} laineOptions - solver options
+ * @returns Equations[]
+ */
 function solveND(equations, laineOptions) {
-  // SEPARATE BLOCKS
   // OBS: this method does not guarantee a block with minimal size
   while (equations.length !== 0) {
     let vars = new Set(equations[0].vars);
@@ -318,6 +672,7 @@ function solveND(equations, laineOptions) {
     let problem = new Problem(block);
     // Check the problem is correct
     if (block.length !== problem.names.length) {
+      // Returns an error or an array of Equations if requested (Plots)
       if (!laineOptions.returnProblem) {
         let help;
         let df = problem.names.length - block.length;
@@ -344,7 +699,7 @@ function solveND(equations, laineOptions) {
     // In Plots : break loop if y is already computed
     if (laineOptions.solveFor !== undefined) {
       if (parser.get(laineOptions.solveFor) !== undefined) {
-        return false;
+        return [];
       }
     }
     // Loop with updated values if there is more equations to solve
@@ -354,301 +709,66 @@ function solveND(equations, laineOptions) {
       }
     }
   }
-  return true;
+  return [];
 }
-//  PARSING LINES INTO EQUATIONS
-function cleanLines(lines, options) {
-  // Function: Pre-parse lines into equations
-  let equations = [];
-  const linesLength = lines.length;
-  for (let i = 0; i < linesLength; i++) {
-    // Remove spaces
-    lines[i] = lines[i].trim();
-    // Check if is an equation
-    if (checkLine(lines[i], i + 1)) {
-      // Check if multi equation
-      const aux = lines[i].split(";");
-      // Store equations
-      for (let subLine of aux) {
-        let sides = subLine.split("=");
-        // Check if is a guess
-        if (subLine.endsWith("?")) {
-          subLine = subLine.slice(0, -1);
-          if (checkLine(subLine, i + 1)) {
-            let value;
-            sides[1] = sides[1].trim().slice(0, -1);
-            try {
-              value = math.evaluate(sides[1]);
-            } catch (e) {
-              // console.log(e);
-              throw new laineError(
-                "Guess syntax",
-                "Guesses should follow this syntax: variable = value ?",
-                `Line ${i + 1}`,
-                "Change the guess to a valid input or remove it"
-              );
-            }
-            let name = sides[0].trim();
-            options.userGuess[name] = value;
-          }
-          continue;
-        }
-        // If the equations is 'var = something', chances are that we can simply evaluate the expression;
-        if (singleVar(sides[0])) {
-          // Check if is already computed
-          if (parser.get(sides[0].trim()) !== undefined) {
-            // Try to evaluate
-            try {
-              parser.evaluate(subLine);
-              throw new laineError(
-                "Redefined variable",
-                `Variable ${sides[0].trim()} has been redefined`,
-                `Line ${i + 1}`,
-                `Remove or correct line ${i + 1}`
-              );
-            } catch (e) {
-              if (e.name == "Redefined variable") {
-                throw e;
-              }
-            }
-          }
-          // Check if is function erasing a variable
-          if (sides[0].endsWith(")")) {
-            let name = sides[0].split("(");
-            if (parser.get(name[0].trim()) !== undefined) {
-              throw new laineError(
-                "Redefined variable with a function",
-                `Variable ${name[0].trim()} has been redefined with a function`,
-                `Line ${i + 1}`,
-                `Remove or correct line ${i + 1}`
-              );
-            }
-          }
-          try {
-            // Store constants and user-defined functions
-            const ans = parser.evaluate(subLine);
-            if (ans.type === "Unit") {
-              // Remove object from parser scope (avoid errors)
-              const lhs = sides[0].trim();
-              parser.remove(lhs);
-              throw new Error("Dummy error"); // jump to catch
-            }
-          } catch (e) {
-            //console.error(e);
-            // Try to create a equation object
-            try {
-              equations.push(new Equation(subLine, i + 1));
-            } catch (e) {
-              //console.error(e);
-              throw new laineError(
-                "Parsing error",
-                `laine could not parse the equation in line ${i + 1}`,
-                `Line ${i + 1}`,
-                e.message
-              );
-            }
-          }
+
+/**
+ * Problem object
+ * @class
+ */
+class Problem {
+  /**
+   * Creates a problem based on a series of equations
+   * @param {Equations[]} equations - Array of equations
+   */
+  constructor(equations) {
+    this.compiled = [];
+    this.equations = equations;
+    this.names = [];
+    this.numbers = [];
+    this.jacAux = [];
+    // Here we try to prepare somethings to make our solution faster.
+    for (let i = 0; i < equations.length; i++) {
+      // It is faster to compile only in the Problem
+      this.compiled[i] = math.compile(equations[i].text());
+      this.numbers[i] = equations[i].number;
+      this.jacAux.push([]);
+      // Store variables names and the variables in each line
+      for (let symbol of equations[i].vars) {
+        if (!this.names.includes(symbol)) {
+          this.names.push(symbol);
+          this.jacAux[i].push(this.names.length - 1);
         } else {
-          // Try to create a equation object
-          try {
-            equations.push(new Equation(subLine, i + 1));
-          } catch (e) {
-            //console.error(e);
-            throw new laineError(
-              "Parsing error",
-              `laine could not parse the equation in line ${i + 1}`,
-              `Line ${i + 1}`,
-              e.message
-            );
+          for (let z = 0; z < this.names.length; z++) {
+            if (this.names[z] === symbol) {
+              this.jacAux[i].push(z);
+              break;
+            }
           }
         }
       }
+      this.jacAux[i].sort();
     }
+    this.scope = parser.getAll(); // parser is a global var
   }
-  return equations;
-}
-function checkLine(line, number) {
-  // Function: checks if the line is an equation
-  if (line === "" || line.startsWith("#")) {
-    return false;
-  }
-  const form = /=/; // OBS: could be improved for '=(blank)' or '(blank)='
-  if (!form.test(line)) {
-    throw new laineError(
-      "Not an equation, comment or blank",
-      `Line ${number} is not a valid line in laine`,
-      `Line ${number}`,
-      "Verify if there is something missing or strange in this line"
-    );
-  }
-  return true;
-}
-// EQUATION OBJECT
-function Equation(line, number) {
-  // Function: constructor for equation object
-  // Original text
-  let equationText = line.split("#")[0];
-  // line number
-  this.number = number;
-  // Equation sides
-  let sides = equationText.split("=");
-  this.lhs = sides[0].trim();
-  this.rhs = sides[1].trim();
-  // is a simple equation?
-  this.simple = singleVar(this.lhs, this.rhs);
-  // expression = 0
-  this.text = `${this.lhs}-(${this.rhs})`;
-  // store vars
-  this.vars = varsName(this.text);
-  // update equation
-  this.updateComputedVars = updateComputedVars;
-  this.update = updateEquation;
-}
-function singleVar(lhs, rhs) {
-  // Function: check if the left-hand side (lhs) of an equation is a single variable
-  const numb = /\d/;
-  const op = /(\*|\/|\+|-|\^)/;
-  // Check if sole side
-  if (numb.test(lhs[0]) || op.test(lhs)) {
-    return false;
-  }
-  let name = new RegExp(lhs.trim() + "[s|(\\*|\\+|\\-|\\/)]");
-  // Now check if there the same variable is not on the other side
-  if (name.test(rhs)) {
-    return false;
-  } else {
-    return true;
-  }
-}
-function varsName(line) {
-  // Function: get all variables names of a line text
-  // Parse string
-  const node = math.parse(line);
-  // Scope
-  const scope = parser.getAll();
-  // Filter symbol nodes
-  const symbolNodes = node.filter((node) => node.isSymbolNode);
-  // Filter function nodes
-  const functionNodes = node.filter((node) => node.type === "FunctionNode");
-  // Store unique symbols that are not functions
-  let symbols = [];
-  checkFunction: for (let symbolNode of symbolNodes) {
-    // Pass if is already included
-    if (symbols.includes(symbolNode.name)) {
-      continue checkFunction;
-    }
-    // Test if is already parsed/solved
-    let test = scope[symbolNode.name];
-    if (typeof test === "number" || typeof test === "function") {
-      continue checkFunction;
-    }
-    // Test if is a function name
-    for (let functionNode of functionNodes) {
-      if (symbolNode.name === functionNode.name) {
-        continue checkFunction;
-      }
-    }
-    // Include otherwise
-    symbols.push(symbolNode.name);
-  }
-  return symbols;
-}
-function updateEquation(name, value) {
-  // Function: apply algebraic substituitions in a Equation
-  if (name !== undefined && value !== undefined) {
-    this.lhs = updateText(this.lhs, name, value);
-    this.rhs = updateText(this.rhs, name, value);
-    this.text = `${this.lhs}-(${this.rhs})`;
-  }
-  this.vars = varsName(this.text);
-}
-function updateText(text, name, value) {
-  // Function: make algebraic substitutions in a expression
-  const regex = new RegExp("\\b" + name + "\\b", "g");
-  const newText = `(${value.toString()})`;
-  return text.replace(regex, newText);
-}
-function updateComputedVars() {
-  // Function: update number of variables based on the parser scope
-  const scope = parser.getAll();
-  const names = this.vars;
-  let namesLength = names.length;
-  // Remove if computed;
-  for (let i = 0; i < namesLength; i++) {
-    if (scope[names[i]] !== undefined) {
-      names.splice(i, 1);
-      i--;
-      namesLength--;
-    }
-  }
-}
-//PROBLEM OBJECT
-function Problem(equations) {
-  // Function: create the problem object
-  // Separate information
-  let compiled = [];
-  let numbers = [];
-  let names = [];
-  let jacAux = [];
-  const equationsLength = equations.length;
-  for (let i = 0; i < equationsLength; i++) {
-    compiled[i] = math.compile(equations[i].text); // it is actualy faster to compile only in the Problem
-    numbers[i] = equations[i].number;
-    const lineVars = equations[i].vars;
-    jacAux.push([]);
-    // Store variables names and the variables in each line
-    for (let symbol of lineVars) {
-      if (!names.includes(symbol)) {
-        names.push(symbol);
-        jacAux[i].push(names.length - 1);
-      } else {
-        const namesLength = names.length;
-        for (let z = 0; z < namesLength; z++) {
-          if (names[z] === symbol) {
-            jacAux[i].push(z);
-            break;
-          }
-        }
-      }
-    }
-    jacAux[i].sort();
-  }
-  this.compiled = compiled;
-  this.equations = equations;
-  this.names = names;
-  this.scope = parser.getAll(); // parser is a global var
-  this.numbers = numbers;
-  this.jacAux = jacAux;
-  this.solve = solveProblem;
-}
-function solveProblem(options) {
-  // Automate the problem solving
-  // Number of vars
-  const dimension = this.equations.length;
-  let returned;
-  let count = 0;
-  let solved = false;
-  const tStart = performance.now();
-  const maxTimes = dimension > 1 ? 20 : 5;
-  while (!solved) {
-    try {
+
+  /**
+   * Solves the problem using numerical methods
+   * @param {object} options - Solver options
+   * @returns bool
+   */
+  solve(options) {
+    const tStart = performance.now();
+    let count = 0;
+    const dimension = this.equations.length;
+    const maxTimes = dimension > 1 ? 20 : 5;
+    while (performance.now() - tStart < 2e3 || count < maxTimes) {
       count++;
-      returned = solver(this, options);
-      solved = true;
-    } catch (e) {
-      //console.error(e); // for debug
-      if (performance.now() - tStart > 2e3 || count >= maxTimes) {
-        throw new laineError(
-          "Difficult problem or there are no real solutions",
-          "laine could not find a feasible solution",
-          `Lines ${this.numbers.join(", ")}`,
-          `1. Check if the problem is correct and there are real solutions \n\n 2. Try to provide a guess for one (or more) of these variables:\n${this.names.join(
-            ", "
-          )}\n Input a guess by using a question mark (?):\n variable = value ?\n\n 3. Contact the developer`
-        );
-      } else {
+      try {
+        return solver(this, options);
+      } catch {
+        // Seems random, but it tries to cover all possibilities
         if (dimension === 1) {
-          // Binary search or negative guesses
           count = options.savedSolution !== undefined ? 0 : count;
           options.savedSolution = undefined;
           options.excludedList = count === 1 ? true : false;
@@ -669,15 +789,24 @@ function solveProblem(options) {
         }
       }
     }
-  }
-  if (options.returnValue) {
-    return returned;
-  } else {
-    return true;
+    // Out of while loop is an error
+    throw new laineError(
+      "Difficult problem or there are no real solutions",
+      "laine could not find a feasible solution",
+      `Lines ${this.numbers.join(", ")}`,
+      `1. Check if the problem is correct and there are real solutions \n\n 2. Try to provide a guess for one (or more) of these variables:\n${this.names.join(
+        ", "
+      )}\n Input a guess by using a question mark (?):\n variable = value ?\n\n 3. Contact the developer`
+    );
   }
 }
+
+/**
+ * Creates a default option object for solve function
+ * @param {object} laineOptions - laine options
+ * @returns object
+ */
 function solveOptions(laineOptions) {
-  // Creates a default option object for solve function
   return {
     negative: false,
     binary: false,
@@ -688,25 +817,64 @@ function solveOptions(laineOptions) {
     excludedList: false,
   };
 }
-// AUTOMATE GUESS SEARCH
-function Guess(array, error) {
-  // A guess object
-  this.value = array;
-  this.error = error;
+
+/*
+  Guess search
+*/
+
+/**
+ * Gets a default array of guesses
+ * @param {object} options - solver options
+ * @returns number[]
+ */
+function getGuessList(options) {
+  let guessList = options.excludedList
+    ? [0, 1e-4, 1e-2, 1, 100, 1e4, 1e6]
+    : [0, 1e-5, 1e-3, 0.1, 10, 150, 1e3, 1e5];
+  // 150 was included because in some cases the temperature range is quite short (120-300K)
+  if (options.negative) {
+    for (let i = 0; i < guessList.length; i++) {
+      guessList[i] *= -1;
+    }
+  }
+  return guessList;
 }
+
+/**
+ * A guess object
+ * @class
+ */
+class Guess {
+  /**
+   * Creates a guess object
+   * @param {number[]} array - Array of guess values
+   * @param {number} error - Error for "expression(guess) = 0"
+   */
+  constructor(array, error) {
+    this.value = array;
+    this.error = error;
+  }
+}
+
+/**
+ * Returns an array of guesses
+ * @param {Problem} problem - A problem object
+ * @param {object} options - Solver optiosn
+ * @returns Guess[]
+ */
 function find_guess(problem, options) {
-  // Function: Find a suitable first guess for multivariable expressions
   // Binary search - for one variable
   if (options.binary) {
     return binary_search(problem);
   }
-  // Negative or positive guesses
+
+  // Get guess list
   let guessList = getGuessList(options);
-  const guessListLength = guessList.length;
+  let guesses = [];
+
   // Check if problem has two variables (better guesses):
   if (problem.names.length === 2 && options.pairSearch) {
     // Recursive search
-    let guessOptions = [];
     options.pairSearch = false;
     for (let name of problem.names) {
       for (let guess of guessList) {
@@ -714,16 +882,15 @@ function find_guess(problem, options) {
         try {
           let result = find_guess(problem, options);
           if (result !== undefined && result.length !== 0) {
-            guessOptions.push(result[0]);
+            guesses.push(result[0]);
           }
-        } catch (e) {
-          //console.error(e);
+        } catch {
           continue;
         }
       }
       delete options.userGuess[name.trim()];
     }
-    if (guessOptions.length === 0) {
+    if (guesses.length === 0) {
       throw laineError(
         "Guess error [internal]",
         "Pair seach could not find a guess",
@@ -731,66 +898,69 @@ function find_guess(problem, options) {
       );
     }
     options.pairSearch = true;
-    guessOptions.sort((a, b) => a.error - b.error);
-    return guessOptions;
-  } else {
-    // Check a good guess (at least two times)
-    let error;
-    const names = problem.names;
-    const compiled = problem.compiled;
-    let scope = problem.scope;
-    let guesses = [];
-    // Calculate for each guess
-    equationLoop: for (let i = 0; i < guessListLength; i++) {
-      let varsList = []; // not ideal, but fast
-      // Update guess
-      for (let name of names) {
-        let value;
-        if (options.userGuess[name] !== undefined) {
-          value = options.userGuess[name];
-        } else {
-          value = guessList[i] * (1 + Math.random());
-        }
-        scope[name] = value;
-        varsList.push(value);
-      }
-      // Calculate
-      error = 0;
-      for (let compiledEq of compiled) {
-        try {
-          const aux = compiledEq.evaluate(scope);
-          if (Math.abs(aux) !== Infinity && !isNaN(aux)) {
-            error += Math.abs(aux);
-          } else {
-            continue equationLoop;
-          }
-        } catch (e) {
-          //console.error(e);
-          continue equationLoop; // does not include
-        }
-      }
-      guesses.push(new Guess(varsList, error));
-    }
-    // Sort
-    if (guesses.length !== 0) {
-      guesses.sort((a, b) => a.error - b.error);
-    } else {
-      throw new laineError(
-        "Guess error [internal]",
-        "Random search could not find a guess",
-        problem.numbers
-      );
-    }
+    guesses.sort((a, b) => a.error - b.error);
     return guesses;
   }
+
+  // Check a good guess
+  let error;
+  const names = problem.names;
+  const compiled = problem.compiled;
+  let scope = problem.scope;
+  // Calculate for each guess
+  equationLoop: for (let i = 0; i < guessList.length; i++) {
+    let varsList = []; // not ideal, but fast
+    // Update guess
+    for (let name of names) {
+      let value;
+      if (options.userGuess[name] !== undefined) {
+        value = options.userGuess[name];
+      } else {
+        value = guessList[i] * (1 + Math.random());
+      }
+      scope[name] = value;
+      varsList.push(value);
+    }
+    // Calculate
+    error = 0;
+    for (let compiledEq of compiled) {
+      try {
+        const aux = compiledEq.evaluate(scope);
+        if (Math.abs(aux) !== Infinity && !isNaN(aux)) {
+          error += Math.abs(aux);
+        } else {
+          continue equationLoop;
+        }
+      } catch {
+        continue equationLoop; // does not include
+      }
+    }
+    guesses.push(new Guess(varsList, error));
+  }
+  // Sort
+  if (guesses.length !== 0) {
+    guesses.sort((a, b) => a.error - b.error);
+  } else {
+    throw new laineError(
+      "Guess error [internal]",
+      "Random search could not find a guess",
+      problem.numbers
+    );
+  }
+  return guesses;
 }
+
+/**
+ * Finds a guess using binary search (modified)
+ * @param {Problem} problem - A problem object
+ * @returns Guess
+ */
 function binary_search(problem) {
-  // Function: find a 1D guess using binary search
   // Inputs
   const name = problem.names[0];
   const compiled = problem.compiled[0];
   let scope = problem.scope;
-  // Define variables : points have to respect the limits of thermodynamic functions
+  // Define variables : points respect the limits of thermodynamic functions
   const points = [
     1e6,
     1e4,
@@ -811,8 +981,7 @@ function binary_search(problem) {
   let sign, limits, mid;
   let ans = [];
   let lower = Infinity;
-  const pointsLength = points.length;
-  for (let i = 0; i < pointsLength; i++) {
+  for (let i = 0; i < points.length; i++) {
     // Try to evaluate guess
     scope[name] = points[i];
     try {
@@ -841,7 +1010,7 @@ function binary_search(problem) {
       lower = absValue;
     }
   }
-  // If no range is found, return a point close to zero
+  // If no range is found, return error
   if (limits === undefined) {
     throw new laineError(
       "Guess error [internal]",
@@ -872,25 +1041,18 @@ function binary_search(problem) {
   }
   return [new Guess([mid], 0)];
 }
-function getGuessList(options) {
-  /*
-      Function : creates the guessList;
-    */
-  let guessList = options.excludedList
-    ? [0, 1e-4, 1e-2, 1, 100, 1e4, 1e6]
-    : [0, 1e-5, 1e-3, 0.1, 10, 150, 1e3, 1e5];
-  // 150 was included because in some cases the temperature range is quite short (120-300K)
-  if (options.negative) {
-    for (let i = 0; i < guessList.length; i++) {
-      guessList[i] *= -1;
-    }
-  }
-  return guessList;
-}
-//  SOLVER
+
+/*
+  Numerical solver
+*/
+
+/**
+ * A Newton-Raphson + Line search algorithm
+ * @param {Problem} problem - A problem object
+ * @param {object} options - Solver options
+ * @returns bool|number
+ */
 function solver(problem, options) {
-  // Function: Multivariable Newton-Raphson + Line search
-  // Initial
   const names = problem.names;
   const namesLength = names.length;
   // First guess and evaluation
@@ -929,24 +1091,8 @@ function solver(problem, options) {
     diff = Math.abs(math.sum(answers));
     count = 0;
     // Newton-Raphson
-    let test = 0;
-    let bad = false;
-    let ta;
     while (count < 200) {
-      // Calculate step
-      if (count > 0 && bad && namesLength > 1) {
-        // Broyden requires more iterations but reduces the time and error* on Jacobian evaluations
-        // However, Broyden does not converge if used too many times, so here it is only used once between Jacobian evaluations.
-        test = math.multiply(answers, math.transpose(dx));
-        test = math.divide(test, math.dot(dx, dx));
-        jac = math.add(jac, test);
-        bad = false;
-      } else {
-        jac = update_jac(problem, guesses, answers, jac); // this could be optimized
-        if (performance.now() - ta > 5) {
-          bad = true;
-        }
-      }
+      jac = update_jac(problem, guesses, answers, jac); // this could be optimized
       jacInv = math.inv(jac);
       dx = math.multiply(jacInv, answers); // this could be optimized
       // Line search loop
@@ -1002,8 +1148,7 @@ function solver(problem, options) {
         } else {
           count++;
         }
-      }
-      else if (guessChange === 0 && diff > tol) {
+      } else if (guessChange === 0 && diff > tol) {
         // Bad start : Initial guess was a failure
         guessOptions.shift();
         countOptions++;
@@ -1044,25 +1189,67 @@ function solver(problem, options) {
     return true;
   }
 }
+
+/**
+ * Updates the value of answers for a new guess
+ * @param {Problem} problem - A problem object
+ * @param {matrix} guesses - a math.js matrix
+ * @param {matrix} answers - Matrix of answers math.js
+ * @returns anwers
+ */
 function calcFun(problem, guesses, answers) {
-  // Function: evaluate problem equations
   let scope = problem.scope;
   const compiled = problem.compiled;
   const names = problem.names;
   // Set all guesses
-  const namesLength = names.length;
-  for (let i = 0; i < namesLength; i++) {
+  for (let i = 0; i < names.length; i++) {
     scope[names[i]] = guesses.get([i, 0]);
   }
   // Calculate all lines
-  const compiledLength = compiled.length;
-  for (let i = 0; i < compiledLength; i++) {
+  for (let i = 0; i < compiled.length; i++) {
     answers.set([i, 0], compiled[i].evaluate(scope));
   }
   return answers;
 }
+
+/**
+ * Updates the values of the jacobian for a new point
+ * @param {Problem} problem - A problem object
+ * @param {matrix} guesses - Math.js matrix
+ * @param {matrix} answers - Math.js matrix
+ * @param {matrix} jac - Math.js matrix
+ * @returns jac
+ */
+function update_jac(problem, guesses, answers, jac) {
+  const compiled = problem.compiled;
+  const names = problem.names;
+  let der, jacAux;
+  for (let i = 0; i < names.length; i++) {
+    jacAux = problem.jacAux[i];
+    for (let j = 0; j < jacAux.length; j++) {
+      der = derivative(
+        problem.scope,
+        compiled[i],
+        names[jacAux[j]],
+        answers.get([i, 0]),
+        guesses.get([jacAux[j], 0])
+      );
+      jac.subset(math.index(i, jacAux[j]), der);
+    }
+  }
+  return jac;
+}
+
+/**
+ * Calculates the numerical derivative
+ * @param {object} scope - Parser scope
+ * @param {object} compiled - A compiled equation
+ * @param {string} name - Var name
+ * @param {number} f - Answer value
+ * @param {number} x - Guess value
+ * @returns number
+ */
 function derivative(scope, compiled, name, f, x) {
-  // Function: calculate numerical derivative
   // Determine x+dx
   const absDelta = 1e-8;
   const relDelta = 1e-6;
@@ -1079,26 +1266,4 @@ function derivative(scope, compiled, name, f, x) {
   // Change value back - parser scope
   scope[name] = x;
   return dfdx;
-}
-function update_jac(problem, guesses, answers, jac) {
-  // Function: Calculate jacobian
-  const compiled = problem.compiled;
-  const names = problem.names;
-  const answersLength = names.length;
-  let der, jacAux;
-  for (let i = 0; i < answersLength; i++) {
-    jacAux = problem.jacAux[i];
-    const jacAuxLength = jacAux.length;
-    for (let j = 0; j < jacAuxLength; j++) {
-      der = derivative(
-        problem.scope,
-        compiled[i],
-        names[jacAux[j]],
-        answers.get([i, 0]),
-        guesses.get([jacAux[j], 0])
-      );
-      jac.subset(math.index(i, jacAux[j]), der);
-    }
-  }
-  return jac;
 }
