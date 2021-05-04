@@ -91,8 +91,10 @@ x*y=3
 # Press Solve to see the results</textarea
           >
           <!-- codemirror javascript -->
+          <!-- loads faster -->
           <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/addon/mode/simple.min.js"></script>
+          <script src="scripts/editor.js"></script>
           <!-- Render results -->
           <div class="mathDiv"></div>
         </div>
@@ -142,10 +144,7 @@ x*y=3
               way. Just input your equations and press <em>Solve (F2)</em> or
               <em>Report (F4)</em>:
             </p>
-            <p>
-              $$\begin{eqnarray}\text{In math: }x^2+x=3 \\ \text{In laine:
-              x^2+x=3}\end{eqnarray}$$
-            </p>
+            <p>$$\text{In math: }x^2+x=3$$ $$\text{In laine: x^2+x=3}$$</p>
             <p>
               You can also use <em>Functions</em> to input thermodynamic
               properties in your problem. For example, the specific enthalpy of
@@ -737,7 +736,9 @@ x*y=3
                 <div class="doubleInput">
                   <input class="nasaInput" placeholder="value" />
                   <select class="nasaInputType">
-                    <option value="T" selected="selected">Temperature (K)</option>
+                    <option value="T" selected="selected">
+                      Temperature (K)
+                    </option>
                     <option value="MW">Molecular mass (kg/mol)</option>
                     <optgroup label="Mass basis">
                       <option value="Cp0">
@@ -798,12 +799,12 @@ x*y=3
                 <span>Input (1):</span>
                 <div class="doubleInput">
                   <select class="lkInputType1">
-                    <option value="Tr" selected="selected">Reduced temperature</option>
+                    <option value="Tr" selected="selected">
+                      Reduced temperature
+                    </option>
                     <option value="Pr">Reduced pressure</option>
                     <option value="Vr">Reduced volume</option>
-                    <option value="Z">
-                      Compressibility factor
-                    </option>
+                    <option value="Z">Compressibility factor</option>
                     <option value="dh">
                       Specific enthalpy departure : (h*-h)/R.Tc
                     </option>
@@ -817,11 +818,11 @@ x*y=3
                 <div class="doubleInput">
                   <select class="lkInputType2">
                     <option value="Tr">Reduced temperature</option>
-                    <option value="Pr" selected="selected">Reduced pressure</option>
-                    <option value="Vr">Reduced volume</option>
-                    <option value="Z">
-                      Compressibility factor
+                    <option value="Pr" selected="selected">
+                      Reduced pressure
                     </option>
+                    <option value="Vr">Reduced volume</option>
+                    <option value="Z">Compressibility factor</option>
                     <option value="dh">
                       Specific enthalpy departure : (h*-h)/R.Tc
                     </option>
@@ -913,8 +914,6 @@ x*y=3
         >
       </p>
     </footer>
-    <!-- codemirror javascript -->
-    <script src="scripts/editor.js"></script>
     <!-- creates editor -->
     <!-- parser javascript -->
     <script

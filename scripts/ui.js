@@ -2,26 +2,17 @@
 
 // LINTER
 // Imported from third-party
-/*global CodeMirror, showdown, MathJax, math */
+/*global showdown, MathJax, math */
 
 // Imported from laine.js
 /*global checkLine, parser, laineSolver */
 // Imported from plots.js
 /*global checkParametric, plotParametric, plotStates, exportData, getStates */
+// Imported from editor.js
+/*global editor, textBox*/
 
 // Exported to html
 /*exported saveFile, exportDataFile, loadFileAsText */
-
-// EDITOR
-let textBox = document.querySelector(".box");
-const editor = CodeMirror.fromTextArea(textBox, {
-  scrollbarStyle: "null",
-  viewportMargin: Infinity,
-  lineNumbers: true,
-  lineWrapping: true,
-  inputStyle: "textarea",
-  mode: "laine",
-});
 
 // SHOW SOLUTIONS, EQUATIONS AND ERRORS
 // Solution and report divs
@@ -570,21 +561,21 @@ function checkStates(text) {
       fluidsSelect.add(fluidOpt);
     }
     // States
-    if (states[i].property("Q") === -1) {
+    if (states[i].Q === -1) {
       optionText =
         "T: " +
-        states[i].property("T").toPrecision(5) +
+        states[i].T.toPrecision(5) +
         " [K] ; P: " +
-        states[i].property("P").toPrecision(5) +
+        states[i].P.toPrecision(5) +
         " [Pa]";
     } else {
       optionText =
         "T: " +
-        states[i].property("T").toPrecision(5) +
+        states[i].T.toPrecision(5) +
         " [K] ; P: " +
-        states[i].property("P").toPrecision(5) +
+        states[i].P.toPrecision(5) +
         " [Pa] ; Q:" +
-        states[i].property("Q").toPrecision(5);
+        states[i].Q.toPrecision(5);
     }
     if (!optionsEntry.includes(optionText)) {
       optionsEntry.push(optionText);
