@@ -31,10 +31,10 @@ function laineSolver(text, laineOptions) {
     laineOptions.userGuess === undefined ? {} : laineOptions.userGuess;
 
   // Clear parser and errors
-  if (!laineOptions.solveFor){
+  if (!laineOptions.solveFor) {
     parser.clear();
   }
-  
+
   // Parse lines
   let equations = cleanLines(text, laineOptions);
 
@@ -762,7 +762,7 @@ class Problem {
     let count = 0;
     const dimension = this.equations.length;
     const maxTimes = dimension > 1 ? 20 : 5;
-    while (performance.now() - tStart < 2e3 || count < maxTimes) {
+    while (performance.now() - tStart < 3e3 && count < maxTimes) {
       count++;
       try {
         return solver(this, options);
@@ -794,9 +794,12 @@ class Problem {
       "Difficult problem or there are no real solutions",
       "laine could not find a feasible solution",
       `Lines ${this.numbers.join(", ")}`,
-      `1. Check if the problem is correct and there are real solutions \n\n 2. Try to provide a guess for one (or more) of these variables:\n${this.names.join(
-        ", "
-      )}\n Input a guess by using a question mark (?):\n variable = value ?\n\n 3. Contact the developer`
+      `1. Check if the problem is correct and there are real solutions <br>`+
+      `2. Try to provide a guess for one (or more) of these variables:<br>`+
+      `<b>${this.names.join(", ")}</b><br>`+
+      `Input a guess by using a question mark (?):<br>`+
+      `<b>variable = value ?</b><br>`+
+      `3. Contact the developer`
     );
   }
 }
