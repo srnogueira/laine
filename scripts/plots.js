@@ -1,48 +1,31 @@
 "use strict";
-// Globals from third-party code
+/*
+  imports
+*/
+// imported from third-party code
 /*global Module Chart */
 
-// Globals from laine.js
+// imported from laine.js
 /*global laineSolver, laineError, parser*/
 
-
-// Exported for ui.js
-/*exported getStates, exportData, plot_check, laine_plot, checkStates, plotStates */
+/*
+  exports
+*/
+// exported for ui.js
+/*exported getStates, exportData, checkParametric, plotParametric, checkStates, plotStates */
 
 // Data for download
 let exportData;
 
-function plot_check(text) {
-  // Function: Create a plot menu and save problem for latter
-  // Check if the problem has 1 degree of freedom
-  let problem;
-  problem = laineSolver(text, { returnProblem: true });
-  if (!problem || problem.names.length === 0) {
-    let error = new laineError(
-      "No degree of freedom",
-      "Parametric analysis requires a problem with one degree of freedom",
-      "All lines",
-      "Try to remove an equation which constrains the problem"
-    );
-    throw error;
-  }
-  const degrees = problem.names.length - problem.equations.length;
-  if (degrees > 1) {
-    let error = new laineError(
-      `${degrees} degrees of freedom`,
-      "Parametric analysis requires a problem with just one degree of freedom",
-      "All lines",
-      `Try to include ${degrees - 1} equation(s)`
-    );
-    throw error;
-  }
-  return problem;
-}
-
+/**
+ * Creates a canvas with the plot
+ * @param {object} dataObject - Data to plot
+ * @param {string} xName - Name of x
+ * @param {string} yName - Name of y
+ * @returns canvas
+ */
 function createPlot(dataObject, xName, yName) {
-  /*
-      Creates a plot
-  */
+  // Creates canvas and change it size
   let canvas = document.createElement("canvas");
   if (window.innerWidth < 400) {
     canvas.height = window.innerWidth * 0.8;
@@ -52,7 +35,9 @@ function createPlot(dataObject, xName, yName) {
     canvas.width = "400";
   }
   let ctx = canvas.getContext("2d");
+  // For property plots use a legend
   let legend = dataObject.datasets.length > 1 ? true : false;
+  // Creates the chart
   let myLineChart = new Chart(ctx, {
     type: "line",
     data: dataObject,
@@ -93,50 +78,99 @@ function createPlot(dataObject, xName, yName) {
   myLineChart.update();
   return canvas;
 }
-function laine_plot(text,options) {
-  // Function: Create a plot
+
+/*
+  Parametric plots - 2D(x vs. y)
+*/
+
+/**
+ * Checks if there is one degree of freedom and returns variables names
+ * @param {string} text - set of equations in text
+ * @returns Set
+ */
+function checkParametric(text) {
+  // Check if the problem has 1 degree of freedom
+  let equations = laineSolver(text, { returnProblem: true });
+
+  // Get names of variables
+  let names = new Set();
+  for (let equation of equations) {
+    for (let name of equation.vars) {
+      names.add(name);
+    }
+  }
+
+  // If there is no degree of freedom
+  if (!equations || names.size === 0) {
+    throw new laineError(
+      "No degree of freedom",
+      "Parametric analysis requires a problem with one degree of freedom",
+      "All lines",
+      "Try to remove an equation which constrains the problem"
+    );
+  }
+
+  // Calculate degree of freedom and verify if is one
+  const degrees = names.size - equations.length;
+  if (degrees > 1) {
+    throw new laineError(
+      `${degrees} degrees of freedom`,
+      "Parametric analysis requires a problem with just one degree of freedom",
+      "All lines",
+      `Try to include ${degrees - 1} equation(s)`
+    );
+  }
+  return names;
+}
+
+/**
+ * Creates a parametric plot
+ * @param {string} text - Text with equations
+ * @param {object} options - Plot options
+ * @returns canvas
+ */
+function plotParametric(text, options) {
   const t1 = performance.now();
-  let problem = plot_check(text);
-  // Second run: solve the problem for multiple values
+  // Get options
   let xName = options.x;
   let yName = options.y;
-  let from = options.from; 
-  let to = options.to;
-  const Npoints = options.points ;
-  
-  from = parser.evaluate(from);
-  to = parser.evaluate(to);
+  let from = parser.evaluate(options.from);
+  let to = parser.evaluate(options.to);
+  const Npoints = options.points;
   const delta = (to - from) / (Npoints - 1);
+  // Create plot data
   let data = [];
   exportData = `${xName}\t${yName}\n`;
   // Store guesses
   let storeSolution = {};
-  let equationLines = "";
-  for (let equation of problem.equations) {
-    equationLines += `${equation.lhs}=${equation.rhs}\n`;
+  // Equations - get text and names
+  let equations = laineSolver(text,{returnProblem:true});
+  let equationsText = "";
+  let names = new Set();
+  for (let equation of equations){
+    equationsText += `${equation.lhs}=${equation.rhs}\n`
+    for (let name of equation.vars){
+      names.add(name);
+    }
   }
-  let guessText = "";
-  for (let userGuess in problem.options) {
-    guessText += `${userGuess}=${problem.options[userGuess]}?\n`;
-  }
+  // Loop solver
   let errors = [];
   for (let i = 0; i < Npoints; i++) {
-    // Try to solve
     let stateVar = `${xName} = ${from + delta * i}\n`;
     try {
       if (i === 0) {
-        laineSolver(stateVar + guessText + equationLines, { solveFor: yName });
+        laineSolver(stateVar + text);
       } else {
-        laineSolver(stateVar + equationLines, {
+        laineSolver(stateVar + equationsText, {
           savedSolution: storeSolution,
           solveFor: yName,
         });
       }
-    } catch (e) {
-      //console.error(e);
+    } catch(e) {
       errors.push(from + delta * i);
       continue;
     }
+
     // Store data
     let point = {
       x: parser.scope[xName],
@@ -145,14 +179,16 @@ function laine_plot(text,options) {
     data.push(point);
     exportData += `${point.x}\t${point.y}\n`;
 
-    // Store solution
-    for (let j = 0; j < problem.names.length; j++) {
-      if (problem.names[j] !== xName) {
-        storeSolution[problem.names[j]] = parser.scope[problem.names[j]];
-      }
-      delete parser.scope[problem.names[j]];
+    // Store solution and delete it from parser
+    storeSolution = parser.getAll();
+
+    // Delete solutions from parser
+    for (let name of names){
+      parser.remove(name);
     }
   }
+
+  // Throw errors
   if (errors.length > 0) {
     let error = new laineError(
       "Incomplete parametric analysis",
@@ -162,7 +198,8 @@ function laine_plot(text,options) {
     );
     throw error;
   }
-  // Draw plot -- could be a function
+
+  // Creates plot canvas
   const dataObject = {
     datasets: [
       {
@@ -179,68 +216,84 @@ function laine_plot(text,options) {
   return canvas;
 }
 
-// PROPERTY PLOTS
-function State(text) {
-  const pieces = text.split(",");
-  // State definition
-  let value;
-  value = parser.evaluate(pieces[2]);
-  this.first = [pieces[1].slice(1, -1), value];
-  value = parser.evaluate(pieces[4]);
-  this.second = [pieces[3].slice(1, -1), value];
-  this.fluid = pieces[5].slice(1, -1);
-  // Temperature
-  this.T = Module.PropsSI(
-    "T",
-    this.first[0],
-    this.first[1],
-    this.second[0],
-    this.second[1],
-    this.fluid
-  );
-  this.P = Module.PropsSI(
-    "P",
-    this.first[0],
-    this.first[1],
-    this.second[0],
-    this.second[1],
-    this.fluid
-  );
-  this.Q = Module.PropsSI(
-    "Q",
-    this.first[0],
-    this.first[1],
-    this.second[0],
-    this.second[1],
-    this.fluid
-  );
-  this.S = Module.PropsSI(
-    "S",
-    this.first[0],
-    this.first[1],
-    this.second[0],
-    this.second[1],
-    this.fluid
-  );
-  this.H = Module.PropsSI(
-    "H",
-    this.first[0],
-    this.first[1],
-    this.second[0],
-    this.second[1],
-    this.fluid
-  );
-  this.D = Module.PropsSI(
-    "D",
-    this.first[0],
-    this.first[1],
-    this.second[0],
-    this.second[1],
-    this.fluid
-  );
+/*
+  Property plots
+*/
+
+/**
+ * State object
+ * @class
+ */
+class State {
+  /**
+   * Stores the important info about the state
+   * @param {string} text - Text inside the PropsSI() function
+   */
+  constructor(text) {
+    const pieces = text.split(",");
+    // State definition
+    this.first = [pieces[1].slice(1, -1), parser.evaluate(pieces[2])];
+    this.second = [pieces[3].slice(1, -1), parser.evaluate(pieces[4])];
+    this.fluid = pieces[5].slice(1, -1);
+    this.memory = {};
+    // Is much faster to just store this values here
+    this.T = Module.PropsSI(
+      "T",
+      this.first[0],
+      this.first[1],
+      this.second[0],
+      this.second[1],
+      this.fluid
+    );
+    this.P = Module.PropsSI(
+      "P",
+      this.first[0],
+      this.first[1],
+      this.second[0],
+      this.second[1],
+      this.fluid
+    );
+    this.H = Module.PropsSI(
+      "H",
+      this.first[0],
+      this.first[1],
+      this.second[0],
+      this.second[1],
+      this.fluid
+    );
+    this.S = Module.PropsSI(
+      "S",
+      this.first[0],
+      this.first[1],
+      this.second[0],
+      this.second[1],
+      this.fluid
+    );
+    this.Q = Module.PropsSI(
+      "Q",
+      this.first[0],
+      this.first[1],
+      this.second[0],
+      this.second[1],
+      this.fluid
+    );
+    this.D = Module.PropsSI(
+      "D",
+      this.first[0],
+      this.first[1],
+      this.second[0],
+      this.second[1],
+      this.fluid
+    );
+  }
 }
 
-function getStates(text){
+/**
+ * Finds and creates an array of states
+ * @param {string} text - input text from user
+ * @returns State[]
+ */
+function getStates(text) {
   let states = [];
   // Grab text and match PropsSI calls
   const regexComment = /#.*/g; // removes comments
@@ -261,64 +314,18 @@ function getStates(text){
   }
   return states;
 }
-// Grab the table to add more states
 
-function addIso(
-  data,
-  coord,
-  propName,
-  propValue,
-  max,
-  min,
-  name,
-  otherName,
-  fluid
-) {
-  // Function: creates a dataset for a isoline
-  const delta = (max - min) / 40;
-  let xValue, yValue, xName, yName;
-  for (let i = 0; i < 41; i++) {
-    if (coord === "x") {
-      xValue = parseFloat(min) + delta * i;
-      xName = name;
-      yName = otherName;
-      yValue = Module.PropsSI(
-        otherName,
-        xName,
-        xValue,
-        propName,
-        propValue,
-        fluid
-      );
-    } else {
-      yValue = parseFloat(min) + delta * i;
-      yName = name;
-      xName = otherName;
-      xValue = Module.PropsSI(
-        otherName,
-        name,
-        yValue,
-        propName,
-        propValue,
-        fluid
-      );
-    }
-    yValue = yName === "D" ? 1 / yValue : yValue;
-    xValue = xName === "D" ? 1 / xValue : xValue;
-    if (xValue !== Infinity && yValue !== Infinity) {
-      let point = { x: xValue, y: yValue };
-      data.push(point);
-      exportData += `${point.x}\t${point.y}\n`;
-    }
-  }
-  return data;
-}
-function plotStates(list,stateOptions) {
-  // Function: Create the plot
-  // Axis definition
+/**
+ * Creates a plot
+ * @param {State[]} stateList - Array of states
+ * @param {string} type - Type of plot
+ * @returns canvas
+ */
+function plotStates(stateList, type) {
   const t1 = performance.now();
+
+  // Axis definition
   let xName, yName, xAxis, yAxis;
-  let type = document.querySelector(".propPlotType");
   if (type.value === "Ts") {
     xName = "S";
     xAxis = "s [J/(kg.K)]";
@@ -340,61 +347,42 @@ function plotStates(list,stateOptions) {
     yName = "T";
     yAxis = "T [K]";
   }
+
   // Points definition
+  exportData = `States\n${xAxis}\t${yAxis}\n`;
   let data = [];
+  let fluid = stateList[0].fluid;
   let yMin = Infinity;
   let yMax = 0;
-  let fluid;
-  let stateList = [];
-  exportData = `States\n${xAxis}\t${yAxis}\n`;
   let xValue, yValue;
-  for (let i = 0; i < list.length; i++) {
-    const stateID = list[i].children[1].value;
-    const state = stateOptions[stateID][1];
-    stateList.push(state);
-    fluid = state.fluid;
-    xValue = Module.PropsSI(
-      xName,
-      state.first[0],
-      state.first[1],
-      state.second[0],
-      state.second[1],
-      state.fluid
-    );
-    yValue = Module.PropsSI(
-      yName,
-      state.first[0],
-      state.first[1],
-      state.second[0],
-      state.second[1],
-      state.fluid
-    );
-    // As number
+  for (let state of stateList) {
+    xValue = state[xName];
+    yValue = state[yName];
     if (yValue < yMin) {
       yMin = yValue;
     }
     if (yValue > yMax) {
       yMax = yValue;
     }
-    // As string
     xValue = xName === "D" ? 1 / xValue : xValue;
     let point = { x: xValue, y: yValue };
     data.push(point);
-    exportData += `${point.x}\t${point.y}\n`;
+    exportData += `${xValue}\t${yValue}\n`;
   }
+
   // Saturation
   let liqData = [];
   let vapData = [];
-  const count = 20;
-  let delta = (yMax - yMin) / count;
+  const nPoints = 20;
+  let delta = (yMax - yMin) / nPoints;
   if (delta === 0) {
-    delta = (yMin * 1.1 - yMin * 0.9) / count;
+    delta = (yMin * 1.1 - yMin * 0.9) / nPoints;
     yMin = 0.9 * yMin;
   }
   let exportVap = `\nSat. vap.\n${xAxis}\t${yAxis}\n`;
   exportData += `\nSat. liq.\n${xAxis}\t${yAxis}\n`;
   let ySat, xSat;
-  for (let i = 0; i < count + 1; i++) {
+  for (let i = 0; i < nPoints + 1; i++) {
     ySat = yMin + delta * i;
     // Liq.
     xSat = Module.PropsSI(xName, yName, ySat, "Q", 0, fluid);
@@ -444,6 +432,7 @@ function plotStates(list,stateOptions) {
       },
     ],
   };
+
   // Process
   let isoLines = ["P", "S", "T", "H", "D"]; // T can't be first
   let isoData = [];
@@ -451,7 +440,7 @@ function plotStates(list,stateOptions) {
   for (let i = 0; i < stateList.length - 1; i++) {
     for (let j = 0; j < isoLines.length; j++) {
       let prop = isoLines[j];
-      if (stateList[i][prop] == stateList[i + 1][prop]) {
+      if (stateList[i][prop] === stateList[i + 1][prop]) {
         isoData.push(data[i]);
         exportData += `${data[i].x}\t${data[i].y}\n`;
         if (prop === yName || prop === xName) {
@@ -462,38 +451,21 @@ function plotStates(list,stateOptions) {
           // Check if the state is a mixture and the next state is not
           let thisState = stateList[i];
           let nextState = stateList[i + 1];
-          if ((thisState.Q !== -1) & (nextState.Q === -1)) {
+          if (
+            thisState["Q"] !== -1 &&
+            nextState["Q"] === -1
+          ) {
             // 2 - gas ; 5 - supercritical gas ; 6 - two phase ; 0 - liquid ; 3 - supercritical liquid
-            let nextPhase = Module.PropsSI(
-              "Phase",
-              nextState.first[0],
-              nextState.first[1],
-              nextState.second[0],
-              nextState.second[1],
-              fluid
-            );
+            let nextPhase = nextState["Phase"];
             let Qpoint;
-            if ((nextPhase === 2) | (nextPhase === 5)) {
+            if (nextPhase === 2 || nextPhase === 5) {
               Qpoint = 1;
-            } else if ((nextPhase === 0) | (nextPhase === 3)) {
+            } else if (nextPhase === 0 || nextPhase === 3) {
               Qpoint = 0;
             }
-            let xValue = Module.PropsSI(
-              xName,
-              "T",
-              thisState.T,
-              "Q",
-              Qpoint,
-              fluid
-            );
-            let yValue = Module.PropsSI(
-              yName,
-              "T",
-              thisState.T,
-              "Q",
-              Qpoint,
-              fluid
-            );
+            let T = thisState["T"];
+            let xValue = Module.PropsSI(xName, "T", T, "Q", Qpoint, fluid);
+            let yValue = Module.PropsSI(yName, "T", T, "Q", Qpoint, fluid);
             yValue = yName === "D" ? 1 / yValue : yValue;
             xValue = xName === "D" ? 1 / xValue : xValue;
             let point = { x: xValue, y: yValue };
@@ -501,13 +473,11 @@ function plotStates(list,stateOptions) {
             exportData += `${point.x}\t${point.y}\n`;
           }
         }
+        // For some reason, CoolProp is really slow for some calls;
+        // Here "Ph" is treated differently to be faster
         if (type.value === "Ph") {
-          let yBegin = data[i].y;
-          let yEnd = data[i + 1].y;
-          if (yName === "D") {
-            yBegin = 1 / yBegin;
-            yEnd = 1 / yEnd;
-          }
+          let yBegin = yName === "D" ? 1 / data[i].y : data[i].y;
+          let yEnd = yName === "D" ? 1 / data[i + 1].y : data[i + 1].y;
           addIso(
             isoData,
             "y",
@@ -521,12 +491,8 @@ function plotStates(list,stateOptions) {
           );
           break;
         } else {
-          let xBegin = data[i].x;
-          let xEnd = data[i + 1].x;
-          if (xName === "D") {
-            xBegin = 1 / xBegin;
-            xEnd = 1 / xEnd;
-          }
+          let xBegin = xName === "D" ? 1 / data[i].x : data[i].x;
+          let xEnd = xName === "D" ? 1 / data[i + 1].x : data[i + 1].x;
           addIso(
             isoData,
             "x",
@@ -541,6 +507,7 @@ function plotStates(list,stateOptions) {
           break;
         }
       }
+      // Not found anything similar between two states
       if (j === isoLines.length - 1) {
         isoData.push(data[i]);
         exportData += `${data[i].x}\t${data[i].y}\n`;
@@ -548,9 +515,13 @@ function plotStates(list,stateOptions) {
     }
   }
   isoData.push(data[stateList.length - 1]);
+
+  // Export data
   exportData += `${data[stateList.length - 1].x}\t${
     data[stateList.length - 1].y
   }\n`;
+
+  // Plot data
   let isoDataPlot = {
     label: "Process",
     lineTension: 0,
@@ -562,11 +533,75 @@ function plotStates(list,stateOptions) {
     pointRadius: 0,
   };
   dataPoints.datasets.push(isoDataPlot);
+
   // Draw plot - could be a function;
   let canvas = createPlot(dataPoints, xAxis, yAxis);
+
   // Show
-  let solutionDiv = document.getElementById("solBox");
-  solutionDiv.style.display = "none";
   console.log("Plot time:", performance.now() - t1, "ms");
   return canvas;
+}
+
+/**
+ * Appends data points of an iso-process
+ * @param {object[]} data Array of point objects
+ * @param {char} coord - The coordinate that it will vary
+ * @param {string} propName - Fixed property name (PropsSI)
+ * @param {number} propValue - Fixed property value
+ * @param {number} max - Max value of coord
+ * @param {number} min - Min value of coord
+ * @param {string} name - Name of x coordinate (property)
+ * @param {string} otherName - Name of the other coordinate
+ * @param {string} fluid - Fluid name
+ * @returns data
+ */
+function addIso(
+  data,
+  coord,
+  propName,
+  propValue,
+  max,
+  min,
+  name,
+  otherName,
+  fluid
+) {
+  // Function: creates a dataset for a isoline
+  const delta = (max - min) / 40;
+  let xValue, yValue, xName, yName;
+  for (let i = 0; i < 41; i++) {
+    if (coord === "x") {
+      xValue = parseFloat(min) + delta * i;
+      xName = name;
+      yName = otherName;
+      yValue = Module.PropsSI(
+        otherName,
+        xName,
+        xValue,
+        propName,
+        propValue,
+        fluid
+      );
+    } else {
+      yValue = parseFloat(min) + delta * i;
+      yName = name;
+      xName = otherName;
+      xValue = Module.PropsSI(
+        otherName,
+        name,
+        yValue,
+        propName,
+        propValue,
+        fluid
+      );
+    }
+    yValue = yName === "D" ? 1 / yValue : yValue;
+    xValue = xName === "D" ? 1 / xValue : xValue;
+    if (xValue !== Infinity && yValue !== Infinity) {
+      let point = { x: xValue, y: yValue };
+      data.push(point);
+      exportData += `${point.x}\t${point.y}\n`;
+    }
+  }
+  return data;
 }

@@ -25,17 +25,16 @@ const parser = math.parser();
  */
 function laineSolver(text, laineOptions) {
   const t1 = performance.now();
-
   // Check options and create it if necessary
   laineOptions = laineOptions === undefined ? {} : laineOptions;
   laineOptions.userGuess =
     laineOptions.userGuess === undefined ? {} : laineOptions.userGuess;
 
   // Clear parser and errors
-  if (laineOptions.solveFor === undefined) {
+  if (!laineOptions.solveFor){
     parser.clear();
   }
-
+  
   // Parse lines
   let equations = cleanLines(text, laineOptions);
 
@@ -43,7 +42,7 @@ function laineSolver(text, laineOptions) {
   checkDuplicates(equations);
 
   // Reduce problem size and split equations in two types
-  let subsEquations = algebraicSubs(equations);
+  let simpleEquations = algebraicSubs(equations);
 
   // Sort equations
   equations.sort((a, b) => a.vars.length - b.vars.length);
@@ -69,12 +68,12 @@ function laineSolver(text, laineOptions) {
   }
 
   // Sort substitutions
-  subsEquations.sort((a, b) => a.vars.length - b.vars.length); // sorting
+  simpleEquations.sort((a, b) => a.vars.length - b.vars.length); // sorting
   // Activate simple evaluation mode - It will try to evaluated first, usually works and is faster
   laineOptions.simples = true;
 
   // Solves 1-2D problems in substitutions
-  subsEquations = solve1D2D(subsEquations, laineOptions);
+  simpleEquations = solve1D2D(simpleEquations, laineOptions);
   // Short-circut if only the solution of one variable is important
   if (laineOptions.solveFor !== undefined) {
     if (parser.get(laineOptions.solveFor) !== undefined) {
@@ -83,8 +82,8 @@ function laineSolver(text, laineOptions) {
   }
 
   // Solved n-D problems in substitutions
-  if (subsEquations.length > 0) {
-    subsEquations = solveND(subsEquations, laineOptions);
+  if (simpleEquations.length > 0) {
+    simpleEquations = solveND(simpleEquations, laineOptions);
   }
   // Short-circut if only the solution of one variable is important
   if (laineOptions.solveFor !== undefined) {
@@ -95,15 +94,16 @@ function laineSolver(text, laineOptions) {
 
   // Delivers a problem if requested
   if (laineOptions.returnProblem) {
-    for (let subEquation of subsEquations) {
-      subEquation.updateComputedVars();
-    }
+    // Update
     for (let equation of equations) {
-      subsEquations.push(equation);
+      equation.updateComputedVars();
     }
-    let problem = new Problem(subsEquations);
-    problem.options = laineOptions.userGuess;
-    return problem;
+    for (let simpleEquation of simpleEquations) {
+      simpleEquation.updateComputedVars();
+    }
+    // Join arrays
+    let allEqs = equations.concat(simpleEquations);
+    return allEqs;
   }
 
   const t2 = performance.now();
@@ -441,8 +441,8 @@ function varsName(line) {
  * @returns Equations[]
  */
 function algebraicSubs(equations) {
-  let subsEquations = [];
-  let subsEquationsNames = new Set();
+  let simpleEquations = [];
+  let simpleEquationsNames = new Set();
   const scope = parser.getAll();
   // Get algebraic substitutions
   for (let i = 0; i < equations.length; i++) {
@@ -451,29 +451,29 @@ function algebraicSubs(equations) {
     if (
       equations[i].simple &&
       scope[name] === undefined &&
-      !subsEquationsNames.has(name)
+      !simpleEquationsNames.has(name)
     ) {
-      subsEquations.push(equations[i]);
-      subsEquationsNames.add(name);
+      simpleEquations.push(equations[i]);
+      simpleEquationsNames.add(name);
       equations.splice(i, 1);
       i--;
     }
   }
   // Subtstitute between substitutions (actually very important)
-  if (subsEquations.length > 0) {
+  if (simpleEquations.length > 0) {
     let changeLine = true;
     let maxTimes = 0;
     substitutions: while (changeLine) {
-      for (let i = 0; i < subsEquations.length; i++) {
+      for (let i = 0; i < simpleEquations.length; i++) {
         changeLine = false;
-        let name = subsEquations[i].vars;
+        let name = simpleEquations[i].vars;
         for (let k = 0; k < name.length; k++) {
-          for (let j = 0; j < subsEquations.length; j++) {
+          for (let j = 0; j < simpleEquations.length; j++) {
             if (j === i) {
               continue;
             }
-            if (name[k] === subsEquations[j].lhs) {
-              subsEquations[i].update(name[k], subsEquations[j].rhs);
+            if (name[k] === simpleEquations[j].lhs) {
+              simpleEquations[i].update(name[k], simpleEquations[j].rhs);
               changeLine = true;
             }
           }
@@ -482,24 +482,24 @@ function algebraicSubs(equations) {
         if (changeLine) {
           maxTimes++;
         }
-        if (maxTimes === subsEquations.length - 1) {
+        if (maxTimes === simpleEquations.length - 1) {
           break substitutions;
         }
       }
     }
     // Substitute in equations
-    for (let subsEquation of subsEquations) {
-      let subs = subsEquation.lhs.trim();
+    for (let simpleEquation of simpleEquations) {
+      let subs = simpleEquation.lhs.trim();
       for (let equation of equations) {
         for (let name of equation.vars) {
           if (name === subs) {
-            equation.update(name, subsEquation.rhs);
+            equation.update(name, simpleEquation.rhs);
           }
         }
       }
     }
   }
-  return subsEquations;
+  return simpleEquations;
 }
 
 /*
@@ -724,7 +724,7 @@ class Problem {
   constructor(equations) {
     this.compiled = [];
     this.equations = equations;
-    this.names = [];
+    this.names = []; // simple to use a set
     this.numbers = [];
     this.jacAux = [];
     // Here we try to prepare somethings to make our solution faster.

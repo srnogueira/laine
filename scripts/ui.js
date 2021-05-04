@@ -7,7 +7,7 @@
 // Imported from laine.js
 /*global checkLine, parser, laineSolver */
 // Imported from plots.js
-/*global plot_check, laine_plot, plotStates, exportData, getStates */
+/*global checkParametric, plotParametric, plotStates, exportData, getStates */
 
 // Exported to html
 /*exported saveFile, exportDataFile, loadFileAsText */
@@ -22,7 +22,6 @@ const editor = CodeMirror.fromTextArea(textBox, {
   inputStyle: "textarea",
   mode: "laine",
 });
-
 
 // SHOW SOLUTIONS, EQUATIONS AND ERRORS
 // Solution and report divs
@@ -396,9 +395,9 @@ hiddenMenu("openParametric", "contentParametric", "closeParametric");
 const plotMenuButton = document.getElementById("openParametric");
 plotMenuButton.onclick = function () {
   clearDropdown();
-  let problem;
+  let names;
   try {
-    problem = plot_check(editor.getValue());
+    names = checkParametric(editor.getValue());
   } catch (e) {
     displayError(e);
     return false;
@@ -408,13 +407,13 @@ plotMenuButton.onclick = function () {
   let ySelect = document.querySelector(".plotY");
   xSelect.options.length = 0;
   ySelect.options.length = 0;
-  for (let i = 0; i < problem.names.length; i++) {
+  for (const name of names) {
     let optX = document.createElement("option");
     let optY = document.createElement("option");
-    optX.value = problem.names[i];
-    optX.text = problem.names[i];
-    optY.value = problem.names[i];
-    optY.text = problem.names[i];
+    optX.value = name;
+    optX.text = name;
+    optY.value = name;
+    optY.text = name;
     xSelect.add(optX);
     ySelect.add(optY);
   }
@@ -447,20 +446,19 @@ plotButton.onclick = function () {
     y: document.querySelector(".plotY").value,
     from: document.querySelector(".plotXfrom").value,
     to: document.querySelector(".plotXto").value,
-    points: document.querySelector(".plotNpoints").value
+    points: document.querySelector(".plotNpoints").value,
   };
 
   let canvas;
-  let text=editor.getValue();
-  try{
-    canvas = laine_plot(text,options);
-    div.appendChild(canvas);
-    document.getElementById("plotDrawBox").style.display = "block";
-  }
-  catch(e){
+  let text = editor.getValue();
+  try {
+    canvas = plotParametric(text, options);
+  } catch (e) {
     displayError(e);
     document.getElementById("plotDrawBox").style.display = "none";
   }
+  div.appendChild(canvas);
+  document.getElementById("plotDrawBox").style.display = "block";
   editor.refresh();
 };
 
@@ -471,14 +469,26 @@ propPlotButton.onclick = function () {
   let div = document.getElementById("canvasDiv");
   div.innerText = "";
   let canvas;
-  try{
-    canvas = plotStates(stateTable.children,stateOptions);
+
+  let stateList = []
+  let list = stateTable.children;
+  for (let i = 0; i < list.length; i++) {
+    const stateID = list[i].children[1].value;
+    const state = stateOptions[stateID][1];
+    stateList.push(state);
   }
-  catch(e){
-    displayError(e)
+
+  let type = document.querySelector(".propPlotType");
+
+  try {
+    canvas = plotStates(stateList, type);
+  } catch (e) {
+    displayError(e);
   }
   div.appendChild(canvas);
   document.getElementById("plotDrawBox").style.display = "block";
+  let solutionDiv = document.getElementById("solBox");
+  solutionDiv.style.display = "none";
   editor.refresh();
 };
 
@@ -534,7 +544,6 @@ addStateButton.onclick = addState;
 
 function checkStates(text) {
   // Function : Creates the property plot menu
-
   try {
     laineSolver(text);
   } catch (e) {
@@ -561,21 +570,21 @@ function checkStates(text) {
       fluidsSelect.add(fluidOpt);
     }
     // States
-    if (states[i].Q === -1) {
+    if (states[i].property("Q") === -1) {
       optionText =
         "T: " +
-        states[i].T.toPrecision(5) +
+        states[i].property("T").toPrecision(5) +
         " [K] ; P: " +
-        states[i].P.toPrecision(5) +
+        states[i].property("P").toPrecision(5) +
         " [Pa]";
     } else {
       optionText =
         "T: " +
-        states[i].T.toPrecision(5) +
+        states[i].property("T").toPrecision(5) +
         " [K] ; P: " +
-        states[i].P.toPrecision(5) +
+        states[i].property("P").toPrecision(5) +
         " [Pa] ; Q:" +
-        states[i].Q.toPrecision(5);
+        states[i].property("Q").toPrecision(5);
     }
     if (!optionsEntry.includes(optionText)) {
       optionsEntry.push(optionText);
@@ -586,7 +595,6 @@ function checkStates(text) {
   stateOptions = options;
   return true;
 }
-
 
 // CLOSE BUTTON
 function hideGrandParentDiv(button) {
@@ -710,7 +718,7 @@ function writeNasa() {
   const property = document.querySelector(".nasaProp").value;
   const specie = document.querySelector(".nasaSpecie").value;
   const inputType = document.querySelector(".nasaInputType").value;
-  const input = document.querySelector(".nasaInput").value
+  const input = document.querySelector(".nasaInput").value;
 
   const text = `property=NasaSI('${property}','${inputType}',${input},'${specie}')`;
   textBox.value += "\n" + text;
