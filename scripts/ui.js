@@ -1,32 +1,78 @@
 "use strict";
 
-// LINTER
-// Imported from third-party
+/*
+  imported
+*/ 
+// from third-party
 /*global showdown, MathJax, math */
 
-// Imported from laine.js
+// from laine.js
 /*global checkLine, parser, laineSolver */
+
 // Imported from plots.js
 /*global checkParametric, plotParametric, plotStates, exportData, getStates */
+
 // Imported from editor.js
 /*global editor, textBox*/
 
-// Exported to html
+/*
+  exported
+*/
+// to html
 /*exported saveFile, exportDataFile, loadFileAsText */
 
-// SHOW SOLUTIONS, EQUATIONS AND ERRORS
-// Solution and report divs
-const outDiv = document.querySelector(".out");
+/*
+  DOM
+*/
+const editorDiv = document.querySelector(".CodeMirror");
+const solBox = document.getElementById("solBox");
+const errorGrid = document.querySelector(".errorGrid");
+const errorBox = document.getElementById("errorBox");
+const plotPropBox = document.getElementById("contentParametric");
+const parametricBox = document.getElementById("contentPropPlot");
 const mathDiv = document.querySelector(".mathDiv");
+const outDiv = document.querySelector(".out");
 
+/*
+  Solver wrapper
+*/
+
+/**
+ * Calls the solver and display results/errors
+ * @param {bool} isfast - If is fast
+ * @returns bool
+ */
+ function laine(isfast) {
+  clearAll();
+  const lines = editor.getValue();
+  if (!isfast) {
+    writeEqs(lines);
+  }
+  try {
+    laineSolver(lines);
+  } catch (e) {
+    displayError(e);
+    return false;
+  }
+  displayResults(isfast);
+  editor.refresh(); // avoid problems with resize
+  return true;
+}
+
+/*
+  Render equations
+*/ 
+
+/**
+ * Formats the equations for MathJax render and using showdown
+ * @param {string} inputText - text with equations
+ */
 function writeEqs(inputText) {
-  // Function : Write equations for reports
   const lines = inputText.split("\n");
-  const linesLength = lines.length;
   // Clear and start
   mathDiv.innerHTML = "";
   let converter = new showdown.Converter();
-  for (let i = 0; i < linesLength; i++) {
+  for (let i = 0; i < lines.length; i++) {
     // Check if is an equation or comment
     if (checkLine(lines[i].trim(), i)) {
       // Check if is there is more than one equation
@@ -70,91 +116,12 @@ function writeEqs(inputText) {
   }
 }
 
-function displayResults(fast) {
-  // Function: write answers
-  outDiv.innerText = ""; // clear space
-  const solutions = Object.entries(parser.getAll());
-  for (let solution of solutions) {
-    writeAns(solution, fast);
-  }
-  if (fast) {
-    mathDiv.style.display = "none";
-    editorDiv.style.display = "block";
-  } else {
-    mathDiv.style.display = "block";
-    editorDiv.style.display = "none";
-    MathJax.typeset();
-  }
-  solBox.style.display = "grid";
-}
-
-function displayError(e) {
-  // Function: display error messages
-  errorGrid.innerText = "";
-  const texts = [
-    "<b>Type</b>",
-    e.name,
-    "<b>Where?</b>",
-    e.lineNumber,
-    "<b>What?</b>",
-    e.message,
-    "<b>Help</b>",
-    e.help,
-  ];
-  // Include elements
-  for (let text of texts) {
-    let elem = document.createElement("span");
-    elem.innerHTML = text;
-    errorGrid.appendChild(elem);
-  }
-  // Display box
-  errorBox.style.display = "block";
-  editor.refresh();
-}
-
-function writeAns(solution, fast) {
-  // Function: write answers in the results box
-  let key = solution[0];
-  let value = solution[1];
-  let msg, text;
-  // Convert
-  if (typeof value === "number") {
-    value = value.toPrecision(5);
-    text = value.toString();
-  } else if (typeof value === "function") {
-    return null;
-  } else if (typeof value === "object") {
-    value = Object.entries(value);
-    text = "{";
-    const valueLength = value.length;
-    for (let i = 0; i < valueLength; i++) {
-      if (typeof value[i][1] === "number") {
-        value[i][1] = value[i][1].toPrecision(5);
-      }
-      text += value[i][0] + " : " + value[i][1];
-      if (i < valueLength - 1) {
-        text += " ,";
-      }
-    }
-    text += "}";
-  }
-  // Render
-  if (fast) {
-    let para = outDiv.insertRow(-1);
-    let varCell = para.insertCell(0);
-    varCell.textContent = key;
-    let valueCell = para.insertCell(1);
-    valueCell.textContent = text;
-  } else {
-    msg = key + " = " + text;
-    let para = document.createElement("p");
-    para.textContent = "$$" + formatMathJax(msg) + "$$";
-    outDiv.appendChild(para);
-  }
-}
-
+/**
+ * Formats an equation into MathJax
+ * @param {string} line - An equation line
+ * @returns string
+ */
 function formatMathJax(line) {
-  // Function: make some corrections in the MathJax style
   // Add double equals '=='
   const sides = line.split("=");
   line = sides[0] + "==" + sides[1];
@@ -163,8 +130,7 @@ function formatMathJax(line) {
   if (line.includes("_")) {
     const pieces = line.split("_");
     line = pieces[0];
-    const piecesLength = pieces.length;
-    for (let i = 1; i < piecesLength; i++) {
+    for (let i = 1; i < pieces.length; i++) {
       const piece = pieces[i];
       line += "[";
       const pieceLength = piece.length;
@@ -244,8 +210,7 @@ function formatMathJax(line) {
     if (line.includes(letter)) {
       const pieces = line.split(letter);
       line = pieces[0];
-      const piecesLength = pieces.length;
-      for (let j = 1; j < piecesLength; j++) {
+      for (let j = 1; j < pieces.length; j++) {
         line += `${letter.slice(1)} ${pieces[j]}`; // just add a space
       }
     }
@@ -254,48 +219,137 @@ function formatMathJax(line) {
   return math.parse(line).toTex({ parenthesis: "auto" });
 }
 
-function laine(isfast) {
-  // Function: calls solver for buttons and create a error message if necessary
-  clearAll();
-  const lines = editor.getValue();
-  if (!isfast) {
-    writeEqs(lines);
+/*
+  Render results
+*/
+
+/**
+ * Creates the answer table
+ * @param {bool} fast - a fast or slow (MathJax) render
+ */
+function displayResults(fast) {
+  outDiv.innerText = ""; // clear space
+  const solutions = Object.entries(parser.getAll());
+  for (let solution of solutions) {
+    writeAns(solution, fast);
   }
-  try {
-    laineSolver(lines);
-    displayResults(isfast);
-    // MathJax equations
-    editor.refresh(); // avoid problems with resize
-    return true;
-  } catch (e) {
-    //console.error(e);
-    displayError(e);
-    return false;
+  if (fast) {
+    mathDiv.style.display = "none";
+    editorDiv.style.display = "block";
+  } else {
+    mathDiv.style.display = "block";
+    editorDiv.style.display = "none";
+    MathJax.typeset();
+  }
+  solBox.style.display = "grid";
+}
+
+/**
+ * Writes the answers in the results box
+ * @param {[string,number|object]} solution - Solution from parser
+ * @param {bool} fast - If the option is fast
+ * @returns 
+ */
+function writeAns(solution, fast) {
+  let key = solution[0];
+  let value = solution[1];
+  let msg, text;
+  // Convert
+  if (typeof value === "number") {
+    value = value.toPrecision(5);
+    text = value.toString();
+  } else if (typeof value === "function") {
+    return null;
+  } else if (typeof value === "object") {
+    value = Object.entries(value);
+    text = "{";
+    const valueLength = value.length;
+    for (let i = 0; i < valueLength; i++) {
+      if (typeof value[i][1] === "number") {
+        value[i][1] = value[i][1].toPrecision(5);
+      }
+      text += value[i][0] + " : " + value[i][1];
+      if (i < valueLength - 1) {
+        text += " ,";
+      }
+    }
+    text += "}";
+  }
+  // Render
+  if (fast) {
+    let para = outDiv.insertRow(-1);
+    let varCell = para.insertCell(0);
+    varCell.textContent = key;
+    let valueCell = para.insertCell(1);
+    valueCell.textContent = text;
+  } else {
+    msg = key + " = " + text;
+    let para = document.createElement("p");
+    para.textContent = "$$" + formatMathJax(msg) + "$$";
+    outDiv.appendChild(para);
   }
 }
 
-// EDITOR
-// Adding effects with changes
-const editorDiv = document.querySelector(".CodeMirror");
-const solBox = document.getElementById("solBox");
-const errorGrid = document.querySelector(".errorGrid");
-const errorBox = document.getElementById("errorBox");
-const plotPropBox = document.getElementById("contentParametric");
-const parametricBox = document.getElementById("contentPropPlot");
+/*
+  Show errors
+*/
 
-// Close menus and windows
+/**
+ * Displays the error for the user
+ * @param {laineError} e - A LaineError object
+ */
+function displayError(e) {
+  errorGrid.innerText = "";
+  const texts = [
+    "<b>Type</b>",
+    e.name,
+    "<b>Where?</b>",
+    e.lineNumber,
+    "<b>What?</b>",
+    e.message,
+    "<b>Help</b>",
+    e.help,
+  ];
+  // Include elements
+  for (let text of texts) {
+    let elem = document.createElement("span");
+    elem.innerHTML = text;
+    errorGrid.appendChild(elem);
+  }
+  // Display box
+  errorBox.style.display = "block";
+  editor.refresh();
+}
+
+/*
+  Clear menus and windows
+*/
+
+/**
+ * Clears the dropdown menus
+ * @param {string} exceptionID - exception ID
+ */
 function clearDropdown(exceptionID) {
   const genericDropbox = document.querySelectorAll(".dropdownContent");
   for (let generic of genericDropbox) {
     if (exceptionID !== generic.id) generic.style.display = "none";
   }
 }
+
+/**
+ * Clears the menus
+ * @param {string} exceptionID - exception id
+ */
 function clearHiddenMenus(exceptionID) {
   const genericMenus = document.querySelectorAll(".hiddenMenu");
   for (let generic of genericMenus) {
     if (exceptionID !== generic.id) generic.style.display = "none";
   }
 }
+
+/**
+ * Clears the report view
+ */
 function clearReportView() {
   if (mathDiv.style.display === "block") {
     mathDiv.style.display = "none";
@@ -305,13 +359,20 @@ function clearReportView() {
   }
   editor.refresh();
 }
+
+/**
+ * Wrapper to clear all windows, dropdown and report
+ * @param {string} exceptionID - Exception ID
+ */
 function clearAll(exceptionID) {
   clearDropdown(exceptionID);
   clearHiddenMenus(exceptionID);
   clearReportView();
 }
-// Remove menus
-// editor is defined on editor.js
+
+// Apply clear functions into elements
+
+// editor
 editor.on("click", function () {
   clearDropdown();
 });
@@ -324,12 +385,20 @@ editor.on("change", function () {
   plotPropBox.style.display = "none";
   parametricBox.style.display = "none";
 });
+
+// interface
 document.querySelector(".interface").onclick = function () {
   clearDropdown();
 };
 
-// HIDDEN MENUS
-// Dropdown - hover effect
+/*
+  Dropdown menus
+*/
+
+/**
+ * Adds a hover effect in a dropdown menu
+ * @param {element} button - A button element
+ */
 function dropdownHover(button) {
   const content = button.nextElementSibling;
   button.onmouseover = function () {
@@ -343,7 +412,11 @@ function dropdownHover(button) {
     document.activeElement.blur();
   };
 }
-// Dropdown - click effect
+
+/**
+ * Adds a click effect in a dropdown menu
+ * @param {element} button - A button element
+ */
 function dropdownClick(button) {
   const content = button.nextElementSibling;
   const display = content.style.display; // Store
@@ -355,13 +428,24 @@ function dropdownClick(button) {
     document.activeElement.blur();
   }
 }
-// Apply to buttons
+
+// Apply functions to all dropdown buttons
 const dropButtons = document.querySelectorAll(".dropdownButton");
 for (let button of dropButtons) {
   dropdownHover(button);
   button.onclick = () => dropdownClick(button);
 }
-// SUBMENUS
+
+/*
+  Hidden menus
+*/
+
+/**
+ * Adds open, close effects to a hidden menu
+ * @param {string} openId - Button id to open menu
+ * @param {string} contentId - id for the content in the menu
+ * @param {string} closeId - id for the button to close the menu
+ */
 function hiddenMenu(openId, contentId, closeId) {
   const open = document.getElementById(openId);
   const content = document.getElementById(contentId);
@@ -376,16 +460,19 @@ function hiddenMenu(openId, contentId, closeId) {
     editor.refresh();
   };
 }
-// Hidden menus
+
+// Applies function to hidden menus 
 hiddenMenu("openPropsSI", "contentPropsSI", "closePropsSI");
 hiddenMenu("openHAPropsSI", "contentHAPropsSI", "closeHAPropsSI");
 hiddenMenu("openNasa", "contentNasa", "closeNasa");
 hiddenMenu("openLk", "contentLk", "closeLk");
 
+// Parametric menu (needs special function)
 hiddenMenu("openParametric", "contentParametric", "closeParametric");
 const plotMenuButton = document.getElementById("openParametric");
 plotMenuButton.onclick = function () {
   clearDropdown();
+  // Get names from problem
   let names;
   try {
     names = checkParametric(editor.getValue());
@@ -393,11 +480,12 @@ plotMenuButton.onclick = function () {
     displayError(e);
     return false;
   }
-  // If is the first run, just create a menu
+  // Clear selections (x and y)
   let xSelect = document.querySelector(".plotX");
   let ySelect = document.querySelector(".plotY");
   xSelect.options.length = 0;
   ySelect.options.length = 0;
+  // Include options
   for (const name of names) {
     let optX = document.createElement("option");
     let optY = document.createElement("option");
@@ -408,137 +496,44 @@ plotMenuButton.onclick = function () {
     xSelect.add(optX);
     ySelect.add(optY);
   }
+  // Show menu
   document.getElementById("contentParametric").style.display = "block";
 };
 
+// Property plot (also needs special functions)
 hiddenMenu("openPropPlot", "contentPropPlot", "closePropPlot");
 const propPlotMenuButton = document.getElementById("openPropPlot");
 propPlotMenuButton.onclick = function () {
   clearDropdown();
-  // Erase
+  // Erase state table
   stateTable.innerHTML = "";
   tableSize = 1;
+  // Update state options
   let check = checkStates(editor.getValue());
+  // Show menu
   if (check) {
     document.getElementById("contentPropPlot").style.display = "block";
   }
 };
 
-// PLOT BUTTON
-const plotButton = document.querySelector(".plotDraw");
-plotButton.onclick = function () {
-  clearDropdown();
-  clearHiddenMenus("contentParametric");
-  let div = document.getElementById("canvasDiv");
-  div.innerText = "";
+/*
+  Special functions for Property plots
+*/
 
-  let options = {
-    x: document.querySelector(".plotX").value,
-    y: document.querySelector(".plotY").value,
-    from: document.querySelector(".plotXfrom").value,
-    to: document.querySelector(".plotXto").value,
-    points: document.querySelector(".plotNpoints").value,
-  };
-
-  let canvas;
-  let text = editor.getValue();
-  try {
-    canvas = plotParametric(text, options);
-  } catch (e) {
-    displayError(e);
-    document.getElementById("plotDrawBox").style.display = "none";
-  }
-  div.appendChild(canvas);
-  document.getElementById("plotDrawBox").style.display = "block";
-  editor.refresh();
-};
-
-const propPlotButton = document.querySelector(".propPlotDraw");
-propPlotButton.onclick = function () {
-  clearDropdown();
-  clearHiddenMenus("contentPropPlot");
-  let div = document.getElementById("canvasDiv");
-  div.innerText = "";
-  let canvas;
-
-  let stateList = []
-  let list = stateTable.children;
-  for (let i = 0; i < list.length; i++) {
-    const stateID = list[i].children[1].value;
-    const state = stateOptions[stateID][1];
-    stateList.push(state);
-  }
-
-  let type = document.querySelector(".propPlotType");
-
-  try {
-    canvas = plotStates(stateList, type);
-  } catch (e) {
-    displayError(e);
-  }
-  div.appendChild(canvas);
-  document.getElementById("plotDrawBox").style.display = "block";
-  let solutionDiv = document.getElementById("solBox");
-  solutionDiv.style.display = "none";
-  editor.refresh();
-};
-
+let stateOptions; // Global variable for states
 const stateTable = document.querySelector(".stateTable");
 let tableSize = 1;
-let stateOptions; // Global variable for states
 
-function updateNumber() {
-  // Function: Update state numbers
-  for (let i = 0; i < stateTable.children.length; i++) {
-    let row = stateTable.children[i];
-    let number = i + 1;
-    row.children[0].innerHTML = "(" + number + ")";
-  }
-  return false;
-}
-function addState() {
-  // Function: creates a new state entry (change it to grids);
-  // Create elements
-  let stateRow = document.createElement("div");
-  let stateNumber = document.createElement("span");
-  let stateSelect = document.createElement("select");
-  let stateButton = document.createElement("button");
-  // Number
-  stateNumber.textContent = "(" + tableSize + ")";
-  tableSize += 1;
-  stateRow.appendChild(stateNumber);
-  // Options
-  stateSelect.options.length = 0;
-  for (let i = 0; i < stateOptions.length; i++) {
-    let option = document.createElement("option");
-    option.value = i;
-    option.text = stateOptions[i][0];
-    stateSelect.add(option);
-  }
-  stateRow.appendChild(stateSelect);
-  // Button
-  stateButton.textContent = "Delete";
-  stateButton.style.padding = "5px";
-  stateRow.appendChild(stateButton);
-  // Table
-  stateTable.appendChild(stateRow);
-  stateButton.onclick = function () {
-    stateTable.removeChild(stateRow);
-    tableSize -= 1;
-    updateNumber();
-  };
-  // Editor
-  editor.refresh();
-}
-const addStateButton = document.querySelector(".plotAddState");
-addStateButton.onclick = addState;
-
+/**
+ * Stores state option into a global variable
+ * @param {string} text - problem text
+ * @returns bool
+ */
 function checkStates(text) {
-  // Function : Creates the property plot menu
+  // Verify if the problem is valid
   try {
     laineSolver(text);
   } catch (e) {
-    //console.error(e);
     displayError(e);
     return false;
   }
@@ -587,7 +582,58 @@ function checkStates(text) {
   return true;
 }
 
-// CLOSE BUTTON
+/**
+ * Function to create a new state entry in the menu
+ */
+function addState() {
+  // Create elements
+  let stateRow = document.createElement("div");
+  let stateNumber = document.createElement("span");
+  let stateSelect = document.createElement("select");
+  let stateButton = document.createElement("button");
+  // Number
+  stateNumber.textContent = "(" + tableSize + ")";
+  tableSize += 1;
+  stateRow.appendChild(stateNumber);
+  // Options
+  stateSelect.options.length = 0;
+  for (let i = 0; i < stateOptions.length; i++) {
+    let option = document.createElement("option");
+    option.value = i;
+    option.text = stateOptions[i][0];
+    stateSelect.add(option);
+  }
+  stateRow.appendChild(stateSelect);
+  // Button
+  stateButton.textContent = "Delete";
+  stateButton.style.padding = "5px";
+  stateRow.appendChild(stateButton);
+  // Table
+  stateTable.appendChild(stateRow);
+  stateButton.onclick = function () {
+    stateTable.removeChild(stateRow);
+    tableSize -= 1;
+    // Updates state number
+    for (let i = 0; i < stateTable.children.length; i++) {
+      let row = stateTable.children[i];
+      let number = i + 1;
+      row.children[0].innerHTML = "(" + number + ")";
+    }
+  };
+  // Editor
+  editor.refresh();
+}
+const addStateButton = document.querySelector(".plotAddState");
+addStateButton.onclick = addState;
+
+/*
+  Close buttons for hidden menus
+*/
+
+/**
+ * Closes the menu based on the DOM position
+ * @param {element} button - A button
+ */
 function hideGrandParentDiv(button) {
   const grandparent = button.parentNode.parentNode;
   button.onclick = function () {
@@ -595,16 +641,126 @@ function hideGrandParentDiv(button) {
     editor.refresh();
   };
 }
-// Apply
+
+// Apply to all buttons
 const closeButtons = document.querySelectorAll(".hiddenMenuClose");
 for (let button of closeButtons) {
   hideGrandParentDiv(button);
 }
 
-// SOLVER AND REPORT
-// Button name
+/*
+  Create plots
+*/
+
+const plotButton = document.querySelector(".plotDraw");
+
+/**
+ * Creates parametric plots
+ */
+plotButton.onclick = function () {
+  clearDropdown();
+  clearHiddenMenus("contentParametric");
+  let div = document.getElementById("canvasDiv");
+  div.innerText = "";
+  let options = {
+    x: document.querySelector(".plotX").value,
+    y: document.querySelector(".plotY").value,
+    from: document.querySelector(".plotXfrom").value,
+    to: document.querySelector(".plotXto").value,
+    points: document.querySelector(".plotNpoints").value,
+  };
+  let canvas;
+  let text = editor.getValue();
+  try {
+    canvas = plotParametric(text, options);
+  } catch (e) {
+    displayError(e);
+    document.getElementById("plotDrawBox").style.display = "none";
+  }
+  div.appendChild(canvas);
+  document.getElementById("plotDrawBox").style.display = "block";
+  editor.refresh();
+};
+
+const propPlotButton = document.querySelector(".propPlotDraw");
+
+/**
+ * Creates a property plot
+ */
+propPlotButton.onclick = function () {
+  clearDropdown();
+  clearHiddenMenus("contentPropPlot");
+  let div = document.getElementById("canvasDiv");
+  div.innerText = "";
+  let canvas;
+  let stateList = []
+  let list = stateTable.children;
+  for (let i = 0; i < list.length; i++) {
+    const stateID = list[i].children[1].value;
+    const state = stateOptions[stateID][1];
+    stateList.push(state);
+  }
+  let type = document.querySelector(".propPlotType");
+  try {
+    canvas = plotStates(stateList, type);
+  } catch (e) {
+    displayError(e);
+  }
+  div.appendChild(canvas);
+  document.getElementById("plotDrawBox").style.display = "block";
+  let solutionDiv = document.getElementById("solBox");
+  solutionDiv.style.display = "none";
+  editor.refresh();
+};
+
+/*
+  Solve and report
+*/
+
 const solveButton = document.querySelector(".solve");
+/**
+ * Solver button
+ */
+solveButton.onclick = function () {
+  clearAll();
+  laine(true);
+  if (reportButton.innerText === "Edit (F4)") {
+    reportButton.click();
+  }
+};
+
 const reportButton = document.querySelector(".report");
+/**
+ * Report button
+ */
+reportButton.onclick = function () {
+  if (mathDiv.style.display === "none") {
+    clearDropdown();
+    clearHiddenMenus();
+    if (laine(false)) {
+      reportButton.innerText = window.innerWidth < 600 ? "Edit" : "Edit (F4)";
+    }
+  } else {
+    clearAll();
+  }
+};
+
+/**
+ * Keyboard shortcuts
+ * @param {key} key - A keyboard key
+ */
+function shortcut(key) {
+  if (key.code === "F2") {
+    solveButton.click();
+  } else if (key.code === "F4") {
+    reportButton.click();
+  }
+}
+document.onkeydown = shortcut;
+
+/**
+ * Changes the menu names for different screen sizes
+ */
 function changeTextButtons() {
   if (window.innerWidth < 600 && solveButton.innerText === "Solve (F2)") {
     solveButton.innerText = "Solve";
@@ -617,47 +773,22 @@ function changeTextButtons() {
   }
 }
 window.onresize = changeTextButtons;
-// Solver interface
-reportButton.onclick = function () {
-  if (mathDiv.style.display === "none") {
-    clearDropdown();
-    clearHiddenMenus();
-    if (laine(false)) {
-      reportButton.innerText = window.innerWidth < 600 ? "Edit" : "Edit (F4)";
-    }
-  } else {
-    clearAll();
-  }
-};
-solveButton.onclick = function () {
-  clearAll();
-  laine(true);
-  if (reportButton.innerText === "Edit (F4)") {
-    reportButton.click();
-  }
-};
-function shortcut(key) {
-  if (key.code === "F2") {
-    solveButton.click();
-  } else if (key.code === "F4") {
-    reportButton.click();
-  }
-}
-document.onkeydown = shortcut;
-// Write functions
-// PropsSI
+
+/*
+  Thermodynamic functions helper
+*/
+
+/**
+ * Write a PropsSI call in the editor
+ */
 function writePropsSI() {
   // Data
-  const fluid = document.querySelector(".FluidName");
-  const property = document.querySelector(".Property");
-  const input1 = document.querySelector(".Input1");
-  const input2 = document.querySelector(".Input2");
-  const value1 = document.querySelector(".value1");
-  const value2 = document.querySelector(".value2");
-  const fluidName = fluid.options[fluid.selectedIndex].value;
-  const propName = property.options[property.selectedIndex].value;
-  const input1Name = input1.options[input1.selectedIndex].value;
-  const input2Name = input2.options[input2.selectedIndex].value;
+  const fluid = document.querySelector(".FluidName").value;
+  const property = document.querySelector(".Property").value;
+  const input1 = document.querySelector(".Input1").value;
+  const input2 = document.querySelector(".Input2").value;
+  const value1 = document.querySelector(".value1").value;
+  const value2 = document.querySelector(".value2").value;
   // Check if is trivial
   const trivials = [
     "acentric",
@@ -669,15 +800,16 @@ function writePropsSI() {
   ];
   let flag, text;
   for (let trivial of trivials) {
-    if (propName == trivial) {
+    if (property == trivial) {
       flag = true;
       break;
     }
   }
+  // Write function
   if (flag) {
-    text = `property=Props1SI('${propName}','${fluidName}')`;
+    text = `property=Props1SI('${property}','${fluid}')`;
   } else {
-    text = `property=PropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${fluidName}')`;
+    text = `property=PropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${fluid}')`;
   }
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
@@ -685,39 +817,47 @@ function writePropsSI() {
 }
 const PropsSIButton = document.querySelector(".butPropsSI");
 PropsSIButton.onclick = writePropsSI;
-// HAPropsSI
+
+/**
+ * Write a HAPropsSI call in the editor
+ */
 function writeHAPropsSI() {
-  const property = document.querySelector(".HAProperty");
-  const input1 = document.querySelector(".HAInput1");
-  const input2 = document.querySelector(".HAInput2");
-  const input3 = document.querySelector(".HAInput3");
-  const value1 = document.querySelector(".HAvalue1");
-  const value2 = document.querySelector(".HAvalue2");
-  const value3 = document.querySelector(".HAvalue3");
-  const propName = property.options[property.selectedIndex].value;
-  const input1Name = input1.options[input1.selectedIndex].value;
-  const input2Name = input2.options[input2.selectedIndex].value;
-  const input3Name = input2.options[input3.selectedIndex].value;
-  const text = `property=HAPropsSI('${propName}','${input1Name}',${value1.value},'${input2Name}',${value2.value},'${input3Name}',${value3.value})`;
+  // Data
+  const property = document.querySelector(".HAProperty").value;
+  const input1 = document.querySelector(".HAInput1").value;
+  const input2 = document.querySelector(".HAInput2").value;
+  const input3 = document.querySelector(".HAInput3").value;
+  const value1 = document.querySelector(".HAvalue1").value;
+  const value2 = document.querySelector(".HAvalue2").value;
+  const value3 = document.querySelector(".HAvalue3").value;
+  // Write
+  const text = `property=HAPropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${input3}',${value3})`;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
 const HAPropsSIButton = document.querySelector(".butHAPropsSI");
 HAPropsSIButton.onclick = writeHAPropsSI;
-// Nasa Glenn
+
+/**
+ * Write a NasaSI call in the editor
+ */
 function writeNasa() {
+  // Data
   const property = document.querySelector(".nasaProp").value;
   const specie = document.querySelector(".nasaSpecie").value;
   const inputType = document.querySelector(".nasaInputType").value;
   const input = document.querySelector(".nasaInput").value;
-
+  // Write
   const text = `property=NasaSI('${property}','${inputType}',${input},'${specie}')`;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
 const NasaButton = document.querySelector(".butNasa");
 NasaButton.onclick = writeNasa;
-// Lee - Kesler
+
+/**
+ * Write a Lee-Kesler call in the editor
+ */
 function writelk() {
   const property = document.querySelector(".lkProp").value;
   const input1 = document.querySelector(".lkInput1").value;
@@ -730,23 +870,28 @@ function writelk() {
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
-// File menu
-// New file
+
+/*
+  File management
+*/
+
+/**
+ * Creates a new file
+ */
 function newFile() {
-  // Textbox defined in editor.js
   let confirmation = confirm("Are you sure?");
   if (confirmation) {
     textBox.value = "";
     editor.getDoc().setValue(textBox.value);
   }
-  clearDropdown();
+  clearAll();
 }
 const newButton = document.querySelector(".new");
 newButton.onclick = newFile;
-// Save a file
-function destroyClickedElement(event) {
-  document.body.removeChild(event.target);
-}
+
+/**
+ * Saves a file
+ */
 function saveFile() {
   let textToSave = document.getElementById("box").value;
   let textToSaveAsBlob = new Blob([textToSave], { type: "text/plain" });
@@ -761,6 +906,18 @@ function saveFile() {
   downloadLink.click();
   clearDropdown();
 }
+
+/**
+ * Destroys downloaded element
+ * @param {object} event - An event
+ */
+ function destroyClickedElement(event) {
+  document.body.removeChild(event.target);
+}
+
+/**
+ * Exports plot data
+ */
 function exportDataFile() {
   let textToSave = exportData;
   let textToSaveAsBlob = new Blob([textToSave], { type: "text/plain" });
@@ -774,15 +931,33 @@ function exportDataFile() {
   document.body.appendChild(downloadLink);
   downloadLink.click();
 }
-// Load a file
-let fileInput = document.getElementById("fileToLoad");
-function loadFileAsText() {
+
+/**
+ * Wrapper to load a file
+ */
+ function loadFileAsText() {
   clearAll();
   fileInput.click();
-  if (reportButton.innerText == "Edit (F4)") {
+  // Returns to normal editor
+  if (reportButton.innerText === "Edit (F4)") {
     reportButton.click();
   }
 }
+
+// A file to load (invisible button)
+let fileInput = document.getElementById("fileToLoad");
+fileInput.addEventListener(
+  "change",
+  function () {
+    changeText();
+    fileInput.value = "";
+  },
+  false
+);
+
+/**
+ * Loads the file into the editor
+ */
 function changeText() {
   let fileToLoad = fileInput.files[0];
   let fileReader = new FileReader();
@@ -792,15 +967,12 @@ function changeText() {
   };
   fileReader.readAsText(fileToLoad, "UTF-8");
 }
-fileInput.addEventListener(
-  "change",
-  function () {
-    changeText();
-    fileInput.value = "";
-  },
-  false
-);
-// Close warning
+
+/**
+ * Warning to close a window
+ * @param {object} e - event listener
+ * @returns string
+ */
 window.onbeforeunload = function (e) {
   e = e || window.event;
   // For IE and Firefox prior to version 4

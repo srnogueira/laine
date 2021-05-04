@@ -18,5 +18,6 @@
   "homepage": "https://github.com/srnogueira/laine#readme",
   "devDependencies": {
     "eslint": "^7.25.0"
-  }
+  },
+  "dependencies": {}
 }
