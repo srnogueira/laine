@@ -10,11 +10,8 @@ self.addEventListener("install", (e) => {
           "./img/laine.png",
           "./styles/style.css",
           "./styles/codemirror.css",
-          "./scripts/functions.js",
-          "./scripts/laine.js",
+          "./scripts/index.js",
           "./scripts/editor.js",
-          "./scripts/plots.js",
-          "./scripts/ui.js",
           "./scripts/third-party/coolprop.js",
           "./scripts/third-party/coolprop.wasm",
         ])
