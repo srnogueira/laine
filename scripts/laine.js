@@ -344,7 +344,14 @@ class Equation {
   update(name, value) {
     // Function: apply algebraic substituitions in a Equation
     if (name !== undefined && value !== undefined) {
-      const regex = new RegExp("\\b" + name + "\\b", "g");
+      // Ugly solution for $ and regex mismatch
+      // Still not capture things like "2varName"
+      if (name[0] == "$") {
+        name = "\\B\\" + name;
+      } else {
+        name = "\\b" + name;
+      }
+      const regex = new RegExp(name + "\\b", "g");
       const newText = `(${value.toString()})`;
       this.lhs = this.lhs.replace(regex, newText);
       this.rhs = this.rhs.replace(regex, newText);
@@ -379,11 +386,11 @@ class Equation {
 function singleVar(lhs, rhs) {
   const numb = /\d/;
   const op = /(\*|\/|\+|-|\^)/;
-  // Check if has a number or operation
+  // Check if starts with a number or has an operation
   if (numb.test(lhs[0]) || op.test(lhs)) {
     return false;
   }
-  let name = new RegExp(lhs.trim() + "[s|(\\*|\\+|\\-|\\/)]");
+  let name = new RegExp("[^\\w]" + lhs.trim() + "[^\\w]");
   // Now check if there the same variable is not on the other side
   if (name.test(rhs)) {
     return false;
@@ -461,11 +468,11 @@ function algebraicSubs(equations) {
   }
   // Subtstitute between substitutions (actually very important)
   if (simpleEquations.length > 0) {
-    let changeLine = true;
-    let maxTimes = 0;
-    substitutions: while (changeLine) {
+    let change = true;
+    let count = 0; // avoiding infinity loops, because some vars replaced by update function
+    while (count < 5 && change) {
+      change = false;
       for (let i = 0; i < simpleEquations.length; i++) {
-        changeLine = false;
         let name = simpleEquations[i].vars;
         for (let k = 0; k < name.length; k++) {
           for (let j = 0; j < simpleEquations.length; j++) {
@@ -474,18 +481,12 @@ function algebraicSubs(equations) {
             }
             if (name[k] === simpleEquations[j].lhs) {
               simpleEquations[i].update(name[k], simpleEquations[j].rhs);
-              changeLine = true;
+              change = true;
             }
           }
         }
-        // Check max number of substitutions
-        if (changeLine) {
-          maxTimes++;
-        }
-        if (maxTimes === simpleEquations.length - 1) {
-          break substitutions;
-        }
       }
+      count++;
     }
     // Substitute in equations
     for (let simpleEquation of simpleEquations) {
@@ -762,6 +763,9 @@ class Problem {
     let count = 0;
     const dimension = this.equations.length;
     const maxTimes = dimension > 1 ? 20 : 5;
+    if (dimension == 2) {
+      options.pairSearch = true;
+    }
     while (performance.now() - tStart < 3e3 && count < maxTimes) {
       count++;
       try {
@@ -769,19 +773,24 @@ class Problem {
       } catch {
         // Seems random, but it tries to cover all possibilities
         if (dimension === 1) {
+          // Exclude saved solution
           count = options.savedSolution !== undefined ? 0 : count;
           options.savedSolution = undefined;
+          // Use another set of guesses
           options.excludedList = count === 1 ? true : false;
+          // Use binary search
           options.binary = count === 2 ? true : false;
+          // Try negative guesses
           options.negative = count === 3 ? true : false;
         } else {
+          // Alter between guess lists
           options.excludedList = options.excludedList ? false : true;
-          if (count === 2 || count === 3 || count === 6 || count === 7) {
-            options.pairSearch = true;
-          } else {
+          // Disable pair search
+          if (count > 3) {
             options.pairSearch = false;
           }
-          if (count > 3 && count < 8) {
+          // Negative guesses
+          if (count > 1 && count < 4) {
             options.negative = true;
           } else {
             options.negative = false;
@@ -794,12 +803,12 @@ class Problem {
       "Difficult problem or there are no real solutions",
       "laine could not find a feasible solution",
       `Lines ${this.numbers.join(", ")}`,
-      `1. Check if the problem is correct and there are real solutions <br>`+
-      `2. Try to provide a guess for one (or more) of these variables:<br>`+
-      `<b>${this.names.join(", ")}</b><br>`+
-      `Input a guess by using a question mark (?):<br>`+
-      `<b>variable = value ?</b><br>`+
-      `3. Contact the developer`
+      `1. Check if the problem is correct and there are real solutions <br>` +
+        `2. Try to provide a guess for one (or more) of these variables:<br>` +
+        `<b>${this.names.join(", ")}</b><br>` +
+        `Input a guess by using a question mark (?):<br>` +
+        `<b>variable = value ?</b><br>` +
+        `3. Contact the developer`
     );
   }
 }
@@ -965,20 +974,7 @@ function binary_search(problem) {
   let scope = problem.scope;
   // Define variables : points respect the limits of thermodynamic functions
   const points = [
-    1e6,
-    1e4,
-    6e3,
-    273.15,
-    2e2,
-    1e2,
-    1,
-    1e-2,
-    0,
-    -1e-2,
-    -1,
-    -1e2,
-    -1e4,
-    -1e6,
+    1e6, 1e4, 6e3, 273.15, 2e2, 1e2, 1, 1e-2, 0, -1e-2, -1, -1e2, -1e4, -1e6,
   ];
   // First evaluation
   let sign, limits, mid;
@@ -1101,7 +1097,8 @@ function solver(problem, options) {
       // Line search loop
       count2 = 0;
       factor = 1;
-      lineSearch: while (count2 < 20) {
+      lineSearch: while (count2 < 10) {
+        // OBS: 10 times is more than sufficient
         // Try updated guess
         Xguesses = math.subtract(guesses, math.multiply(dx, factor));
         answers = calcFun(problem, Xguesses, answers);
@@ -1129,7 +1126,7 @@ function solver(problem, options) {
           break lineSearch;
         }
       }
-      if (count2 === 20) {
+      if (count2 === 10) {
         // Dead end : Line search has not converged
         guessOptions.shift();
         countOptions++;
@@ -1151,7 +1148,7 @@ function solver(problem, options) {
         } else {
           count++;
         }
-      } else if (guessChange === 0 && diff > tol) {
+      } else if (guessChange < 1e-3 && diff > tol) {
         // Bad start : Initial guess was a failure
         guessOptions.shift();
         countOptions++;
