@@ -144,12 +144,12 @@ function plotParametric(text, options) {
   // Store guesses
   let storeSolution = {};
   // Equations - get text and names
-  let equations = laineSolver(text,{returnProblem:true});
+  let equations = laineSolver(text, { returnProblem: true });
   let equationsText = "";
   let names = new Set();
-  for (let equation of equations){
-    equationsText += `${equation.lhs}=${equation.rhs}\n`
-    for (let name of equation.vars){
+  for (let equation of equations) {
+    equationsText += `${equation.lhs}=${equation.rhs}\n`;
+    for (let name of equation.vars) {
       names.add(name);
     }
   }
@@ -166,7 +166,7 @@ function plotParametric(text, options) {
           solveFor: yName,
         });
       }
-    } catch(e) {
+    } catch (e) {
       errors.push(from + delta * i);
       continue;
     }
@@ -183,7 +183,7 @@ function plotParametric(text, options) {
     storeSolution = parser.getAll();
 
     // Delete solutions from parser
-    for (let name of names){
+    for (let name of names) {
       parser.remove(name);
     }
   }
@@ -451,12 +451,16 @@ function plotStates(stateList, type) {
           // Check if the state is a mixture and the next state is not
           let thisState = stateList[i];
           let nextState = stateList[i + 1];
-          if (
-            thisState["Q"] !== -1 &&
-            nextState["Q"] === -1
-          ) {
+          if (thisState["Q"] !== -1 && nextState["Q"] === -1) {
             // 2 - gas ; 5 - supercritical gas ; 6 - two phase ; 0 - liquid ; 3 - supercritical liquid
-            let nextPhase = nextState["Phase"];
+            let nextPhase = Module.PropsSI(
+              "Phase",
+              nextState.first[0],
+              nextState.first[1],
+              nextState.second[0],
+              nextState.second[1],
+              nextState.fluid
+            );
             let Qpoint;
             if (nextPhase === 2 || nextPhase === 5) {
               Qpoint = 1;
