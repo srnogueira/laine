@@ -760,18 +760,30 @@ class Problem {
    */
   solve(options) {
     const tStart = performance.now();
-    let count = 0;
+    // Pair search
     const dimension = this.equations.length;
-    const maxTimes = dimension > 1 ? 20 : 5;
     if (dimension == 2) {
       options.pairSearch = true;
     }
-    while (performance.now() - tStart < 3e3 && count < maxTimes) {
-      count++;
+    // Main loop
+    let results;
+    const maxTimes = dimension > 1 ? 30 : 5;
+    for (let count = 0; !results && count < maxTimes;++count) {
       try {
-        return solver(this, options);
+        // Guesses
+        let guessOptions;
+        if (options.savedSolution === undefined) {
+          guessOptions = find_guess(this, options);
+        } else {
+          let values = [];
+          for (let name of this.names) {
+            values.push(options.savedSolution[name]);
+          }
+          guessOptions = [new Guess(values, 0)];
+        }
+        // Solver
+        results = solver(this, guessOptions);
       } catch {
-        // Seems random, but it tries to cover all possibilities
         if (dimension === 1) {
           // Exclude saved solution
           count = options.savedSolution !== undefined ? 0 : count;
@@ -790,26 +802,38 @@ class Problem {
             options.pairSearch = false;
           }
           // Negative guesses
-          if (count > 1 && count < 4) {
-            options.negative = true;
-          } else {
-            options.negative = false;
-          }
+          options.negative = (count > 1 && count < 4) ? true : false;
         }
       }
+      // Avoid large time consumption
+      if (performance.now() - tStart > 3e3){
+        break;
+      }
     }
-    // Out of while loop is an error
-    throw new laineError(
-      "Difficult problem or there are no real solutions",
-      "laine could not find a feasible solution",
-      `Lines ${this.numbers.join(", ")}`,
-      `1. Check if the problem is correct and there are real solutions <br>` +
-        `2. Try to provide a guess for one (or more) of these variables:<br>` +
-        `<b>${this.names.join(", ")}</b><br>` +
-        `Input a guess by using a question mark (?):<br>` +
-        `<b>variable = value ?</b><br>` +
-        `3. Contact the developer`
-    );
+    // Return value or give a error
+    if (results) {
+      if (options.returnValue) {
+        return results;
+      } else {
+        for (let i = 0; i < dimension; i++) {
+          parser.set(this.names[i], results.get([i, 0]));
+        }
+        return true;
+      }
+    } else {
+      // Out of while loop is an error
+      throw new laineError(
+        "Difficult problem or there are no real solutions",
+        "laine could not find a feasible solution",
+        `Lines ${this.numbers.join(", ")}`,
+        `1. Check if the problem is correct and there are real solutions <br>` +
+          `2. Try to provide a guess for one (or more) of these variables:<br>` +
+          `<b>${this.names.join(", ")}</b><br>` +
+          `Input a guess by using a question mark (?):<br>` +
+          `<b>variable = value ?</b><br>` +
+          `3. Contact the developer`
+      );
+    }
   }
 }
 
@@ -1051,143 +1075,88 @@ function binary_search(problem) {
  * @param {object} options - Solver options
  * @returns bool|number
  */
-function solver(problem, options) {
-  const names = problem.names;
-  const namesLength = names.length;
-  // First guess and evaluation
-  let guesses;
-  let Xguesses = math.zeros(namesLength, 1);
-  let answers = math.zeros(namesLength, 1);
-  let guessOptions, guessTry;
-  if (options.savedSolution === undefined) {
-    guessOptions = find_guess(problem, options);
-  } else {
-    let values = [];
-    for (let name of names) {
-      values.push(options.savedSolution[name]);
-    }
-    guessOptions = [new Guess(values, 0)];
-  }
-  let jac = math.zeros(namesLength, namesLength, "sparse");
-  let diff, jacInv, dx, Xdiff, factor, count, count2, guessChange;
-  let countOptions = 0;
+function solver(problem, guessOptions) {
   let tStart = performance.now();
-  let tol = 1e-6;
-  guessLoop: while (countOptions < 3 && guessOptions.length > 0) {
-    if (performance.now() - tStart > 3e3) {
-      throw new laineError(
-        "Max. Time [internal]",
-        "Max. evaluation time on solver",
-        this.numbers
-      );
-    }
-    guessTry = guessOptions[0];
-    guesses = math.zeros(namesLength, 1);
-    for (let i = 0; i < namesLength; i++) {
-      guesses.set([i, 0], guessTry.value[i]);
-    }
+  // Create (possibly) large matrix
+  let dimension = problem.equations.length;
+  let answers = math.zeros(dimension, 1);
+  let jac = math.zeros(dimension, dimension);
+  // Set initial conditions
+  let maxTries = guessOptions.length > 2 ? 2 : guessOptions.length;
+  let converged = false;
+  let guesses, dx;
+  // Loop guess options
+  guessLoop: for (let g = 0; !converged && g < maxTries; g++) {
+    // Guesses column
+    guesses = math.matrix(guessOptions[g].value);
+    guesses.resize([dimension, 1]);
+    // First evaluation
     answers = calcFun(problem, guesses, answers);
-    diff = Math.abs(math.sum(answers));
-    count = 0;
-    // Newton-Raphson
-    while (count < 200) {
-      jac = update_jac(problem, guesses, answers, jac); // this could be optimized
-      jacInv = math.inv(jac);
-      dx = math.multiply(jacInv, answers); // this could be optimized
+    let diff = Math.abs(math.sum(answers));
+    // Newton-Raphson loop
+    for (let i = 0; !converged && i < 200; ++i) {
+      jac = update_jac(problem, guesses, answers, jac);
+      dx = math.lusolve(jac, answers);
       // Line search loop
-      count2 = 0;
-      factor = 1;
-      lineSearch: while (count2 < 10) {
-        // OBS: 10 times is more than sufficient
-        // Try updated guess
+      let factor = 1;
+      let Xguesses, Xdiff;
+      do {
         Xguesses = math.subtract(guesses, math.multiply(dx, factor));
         answers = calcFun(problem, Xguesses, answers);
-        // Check if answer is a real number, continue if otherwise
-        for (let i = 0; i < namesLength; i++) {
+        // Check if answer is a real number
+        for (let i = 0; i < dimension; ++i) {
           if (
             isNaN(answers.get([i, 0])) ||
             typeof answers.get([i, 0]) !== "number"
           ) {
-            factor /= 2;
-            count2++;
-            continue lineSearch;
+            continue;
           }
         }
         // Calculate and check errors
         Xdiff = Math.abs(math.sum(answers));
-        if (Xdiff > diff) {
-          factor /= 2;
-          count2++;
-          continue lineSearch;
-        } else {
-          guessChange = Math.abs(1 - Xdiff / diff);
-          diff = Xdiff;
-          guesses = Xguesses;
-          break lineSearch;
-        }
-      }
-      if (count2 === 10) {
+        factor /= 2;
+        // Loop if convergence hasn't improved
+      } while (Xdiff > diff && factor > 1e-3);
+
+      if (factor <= 1e-3) {
         // Dead end : Line search has not converged
-        guessOptions.shift();
-        countOptions++;
         continue guessLoop;
       }
-      // Check convergence
-      if (diff < tol) {
-        // Check if dx is little compared with guess
+      
+      // Store guess change
+      let guessChange = Math.abs(1 - Xdiff / diff);
+      // Overwrite guesses, store diff
+      diff = Xdiff;
+      guesses = Xguesses;
+
+      // Check convergence criteria
+      if (diff < 1e-6) {
         let test = 0;
-        for (let i = 0; i < namesLength; i++) {
+        // Check if dx is little compared with guess
+        for (let i = 0; i < dimension; ++i) {
           if (guesses.get([i, 0]) !== 0) {
             test += Math.abs(dx.get([i, 0]) / guesses.get([i, 0]));
           } else {
             test += Math.abs(dx.get([i, 0]));
           }
         }
-        if (test < tol) {
-          break guessLoop;
-        } else {
-          count++;
+        if (test < 1e-6) {
+          converged = true;
         }
-      } else if (guessChange < 1e-3 && diff > tol) {
+      } else if (isNaN(diff) || guessChange < 1e-1) {
         // Bad start : Initial guess was a failure
-        guessOptions.shift();
-        countOptions++;
         continue guessLoop;
-      } else {
-        count++;
       }
       if (performance.now() - tStart > 3e3) {
-        throw new laineError(
-          "Max. Time [internal]",
-          "Max. evaluation time on solver",
-          this.numbers
-        );
-      }
-      // Break long iterations
-      if (count === 199) {
-        // Max. iterations : Exceeded the iteration limit',problem.numbers
-        guessOptions.shift();
-        countOptions++;
-        continue guessLoop;
+        throw Error("time limit");
       }
     }
   }
-  if (guessOptions.length === 0 || countOptions === 3) {
-    throw new laineError(
-      "Bad start [internal]",
-      "Initial guess was a failure",
-      problem.numbers
-    );
+  
+  if (!converged) {
+    throw Error("bad start");
   }
-  // Update on parser
-  if (options.returnValue) {
-    return guesses;
-  } else {
-    for (let i = 0; i < namesLength; i++) {
-      parser.set(names[i], guesses.get([i, 0]));
-    }
-    return true;
-  }
+  return guesses;
 }
 
 /**
@@ -1198,16 +1167,15 @@ function solver(problem, options) {
  * @returns anwers
  */
 function calcFun(problem, guesses, answers) {
-  let scope = problem.scope;
   const compiled = problem.compiled;
   const names = problem.names;
   // Set all guesses
-  for (let i = 0; i < names.length; i++) {
-    scope[names[i]] = guesses.get([i, 0]);
+  for (let i = 0; i < names.length; ++i) {
+    problem.scope[names[i]] = guesses.get([i, 0]);
   }
   // Calculate all lines
-  for (let i = 0; i < compiled.length; i++) {
-    answers.set([i, 0], compiled[i].evaluate(scope));
+  for (let i = 0; i < compiled.length; ++i) {
+    answers.set([i, 0], compiled[i].evaluate(problem.scope));
   }
   return answers;
 }
@@ -1224,9 +1192,9 @@ function update_jac(problem, guesses, answers, jac) {
   const compiled = problem.compiled;
   const names = problem.names;
   let der, jacAux;
-  for (let i = 0; i < names.length; i++) {
+  for (let i = 0; i < names.length; ++i) {
     jacAux = problem.jacAux[i];
-    for (let j = 0; j < jacAux.length; j++) {
+    for (let j = 0; j < jacAux.length; ++j) {
       der = derivative(
         problem.scope,
         compiled[i],
@@ -1251,19 +1219,16 @@ function update_jac(problem, guesses, answers, jac) {
  */
 function derivative(scope, compiled, name, f, x) {
   // Determine x+dx
-  const absDelta = 1e-8;
-  const relDelta = 1e-6;
   let xNear;
   if (x === 0) {
-    xNear = x + absDelta;
+    xNear = x + 1e-8;
   } else {
-    xNear = x * (1 + relDelta);
+    xNear = x * (1 + 1e-6);
   }
   // Calculate derivative
   scope[name] = xNear;
   const fNear = compiled.evaluate(scope);
-  const dfdx = (fNear - f) / (xNear - x);
-  // Change value back - parser scope
   scope[name] = x;
-  return dfdx;
+  // Change value back - parser scope
+  return (fNear - f) / (xNear - x);
 }

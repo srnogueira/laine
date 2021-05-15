@@ -258,8 +258,6 @@ function writeAns(solution, fast) {
   if (typeof value === "number") {
     value = value.toPrecision(5);
     text = value.toString();
-  } else if (typeof value === "function") {
-    return null;
   } else if (typeof value === "object") {
     value = Object.entries(value);
     text = "{";
@@ -274,6 +272,10 @@ function writeAns(solution, fast) {
       }
     }
     text += "}";
+  } else if(typeof value === "string"){
+    text = `"${value.toString()}"`;
+  } else{
+    return null;
   }
   // Render
   if (fast) {
