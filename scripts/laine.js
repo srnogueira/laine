@@ -152,7 +152,7 @@ function cleanLines(text, options) {
       const aux = lines[i].split(";");
       for (let subLine of aux) {
         // Check each subline
-        subLine = subLine.trim();
+        subLine = subLine.split("#")[0].trim(); // remove comments and trim()
         if (checkLine(subLine, i + 1)) {
           // Break into sides
           let sides = subLine.split("=");
@@ -315,11 +315,10 @@ class Equation {
    * @param {number} number - Line number
    */
   constructor(line, number) {
-    let equationText = line.split("#")[0];
     // line number
     this.number = number;
     // Equation sides
-    let sides = equationText.split("=");
+    let sides = line.split("=");
     this.lhs = sides[0].trim();
     this.rhs = sides[1].trim();
     // Is a simple equation? * Not a method because the function is used elsewhere
@@ -768,7 +767,7 @@ class Problem {
     // Main loop
     let results;
     const maxTimes = dimension > 1 ? 30 : 5;
-    for (let count = 0; !results && count < maxTimes;++count) {
+    for (let count = 0; !results && count < maxTimes; ++count) {
       try {
         // Guesses
         let guessOptions;
@@ -784,6 +783,7 @@ class Problem {
         // Solver
         results = solver(this, guessOptions);
       } catch {
+        //console.error(e);
         if (dimension === 1) {
           // Exclude saved solution
           count = options.savedSolution !== undefined ? 0 : count;
@@ -802,11 +802,11 @@ class Problem {
             options.pairSearch = false;
           }
           // Negative guesses
-          options.negative = (count > 1 && count < 4) ? true : false;
+          options.negative = count > 1 && count < 4 ? true : false;
         }
       }
       // Avoid large time consumption
-      if (performance.now() - tStart > 3e3){
+      if (performance.now() - tStart > 3e3) {
         break;
       }
     }
@@ -913,8 +913,21 @@ function find_guess(problem, options) {
     // Recursive search
     options.pairSearch = false;
     for (let name of problem.names) {
-      for (let guess of guessList) {
-        options.userGuess[name.trim()] = guess;
+      if (options.userGuess[name.trim()] === undefined) {
+        // Avoid overwrite the userGuess
+        for (let guess of guessList) {
+          options.userGuess[name.trim()] = guess;
+          try {
+            let result = find_guess(problem, options);
+            if (result !== undefined && result.length !== 0) {
+              guesses.push(result[0]);
+            }
+          } catch {
+            continue;
+          }
+        }
+        delete options.userGuess[name.trim()];
+      } else {
         try {
           let result = find_guess(problem, options);
           if (result !== undefined && result.length !== 0) {
@@ -924,7 +937,6 @@ function find_guess(problem, options) {
           continue;
         }
       }
-      delete options.userGuess[name.trim()];
     }
     if (guesses.length === 0) {
       throw laineError(
@@ -935,6 +947,17 @@ function find_guess(problem, options) {
     }
     options.pairSearch = true;
     guesses.sort((a, b) => a.error - b.error);
+    // Check for diversity (simple) - loop array
+    for (let i = 0; i < guesses.length - 1; ++i) {
+      let ratio = guesses[i].value[0] / guesses[i + 1].value[0];
+      if ((ratio >= 0.5 && ratio <= 2) || isNaN(ratio)) {
+        ratio = guesses[i].value[1] / guesses[i + 1].value[1];
+        if ((ratio >= 0.5 && ratio <= 2) || isNaN(ratio)){
+          guesses.splice(i + 1, 1);
+          i--;
+        }
+      }
+    }
     return guesses;
   }
 
@@ -1082,7 +1105,7 @@ function solver(problem, guessOptions) {
   let answers = math.zeros(dimension, 1);
   let jac = math.zeros(dimension, dimension);
   // Set initial conditions
-  let maxTries = guessOptions.length > 2 ? 2 : guessOptions.length;
+  let maxTries = guessOptions.length > 5 ? 5 : guessOptions.length; // Problema
   let converged = false;
   let guesses, dx;
   // Loop guess options
@@ -1096,7 +1119,11 @@ function solver(problem, guessOptions) {
     // Newton-Raphson loop
     for (let i = 0; !converged && i < 200; ++i) {
       jac = update_jac(problem, guesses, answers, jac);
-      dx = math.lusolve(jac, answers);
+      try{
+        dx = math.lusolve(jac, answers);
+      } catch{
+        continue guessLoop;
+      }
       // Line search loop
       let factor = 1;
       let Xguesses, Xdiff;
@@ -1122,7 +1149,7 @@ function solver(problem, guessOptions) {
         // Dead end : Line search has not converged
         continue guessLoop;
       }
-      
+
       // Store guess change
       let guessChange = Math.abs(1 - Xdiff / diff);
       // Overwrite guesses, store diff
@@ -1152,7 +1179,6 @@ function solver(problem, guessOptions) {
       }
     }
   }
-  
   if (!converged) {
     throw Error("bad start");
   }
