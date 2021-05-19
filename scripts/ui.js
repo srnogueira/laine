@@ -43,7 +43,6 @@ const outDiv = document.querySelector(".out");
  * @returns bool
  */
  function laine(isfast) {
-  clearAll();
   const lines = editor.getValue();
   if (!isfast) {
     writeEqs(lines);
@@ -359,7 +358,6 @@ function clearReportView() {
     editorDiv.style.display = "block";
     reportButton.innerText = window.innerWidth < 600 ? "Report" : "Report (F4)";
   }
-  editor.refresh();
 }
 
 /**
@@ -500,6 +498,7 @@ plotMenuButton.onclick = function () {
   }
   // Show menu
   document.getElementById("contentParametric").style.display = "block";
+  editor.refresh();
 };
 
 // Property plot (also needs special functions)
@@ -516,6 +515,7 @@ propPlotMenuButton.onclick = function () {
   if (check) {
     document.getElementById("contentPropPlot").style.display = "block";
   }
+  editor.refresh();
 };
 
 /*
@@ -622,8 +622,6 @@ function addState() {
       row.children[0].innerHTML = "(" + number + ")";
     }
   };
-  // Editor
-  editor.refresh();
 }
 const addStateButton = document.querySelector(".plotAddState");
 addStateButton.onclick = addState;
@@ -744,6 +742,7 @@ reportButton.onclick = function () {
     }
   } else {
     clearAll();
+    editor.refresh();
   }
 };
 
