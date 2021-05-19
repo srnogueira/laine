@@ -54,7 +54,9 @@ const outDiv = document.querySelector(".out");
     return false;
   }
   displayResults(isfast);
-  editor.refresh(); // avoid problems with resize
+  if (isfast){
+    editor.refresh(); // avoid problems with resize
+  }
   return true;
 }
 
@@ -115,6 +117,57 @@ function writeEqs(inputText) {
   }
 }
 
+const greek = [
+  "$alpha",
+  "$beta",
+  "$gamma",
+  "$delta",
+  "$epsilon",
+  "$zeta",
+  "$eta",
+  "$theta",
+  "$iota",
+  "$kappa",
+  "$lambda",
+  "$mu",
+  "$nu",
+  "$xi",
+  "$omicron",
+  "$pi",
+  "$rho",
+  "$sigma",
+  "$tau",
+  "$upsilon",
+  "$phi",
+  "$chi",
+  "$psi",
+  "$omega",
+  "$Alpha",
+  "$Beta",
+  "$Gamma",
+  "$Delta",
+  "$Epsilon",
+  "$Zeta",
+  "$Eta",
+  "$Theta",
+  "$Iota",
+  "$Kappa",
+  "$Lambda",
+  "$Mu",
+  "$Nu",
+  "$Xi",
+  "$Omicron",
+  "$Pi",
+  "$Rho",
+  "$Sigma",
+  "$Tau",
+  "$Upsilon",
+  "$Phi",
+  "$Chi",
+  "$Psi",
+  "$Omega",
+];
+
 /**
  * Formats an equation into MathJax
  * @param {string} line - An equation line
@@ -155,62 +208,14 @@ function formatMathJax(line) {
     }
   }
   // Change greek variables names into symbols (not optimized)
-  const greek = [
-    "$alpha",
-    "$beta",
-    "$gamma",
-    "$delta",
-    "$epsilon",
-    "$zeta",
-    "$eta",
-    "$theta",
-    "$iota",
-    "$kappa",
-    "$lambda",
-    "$mu",
-    "$nu",
-    "$xi",
-    "$omicron",
-    "$pi",
-    "$rho",
-    "$sigma",
-    "$tau",
-    "$upsilon",
-    "$phi",
-    "$chi",
-    "$psi",
-    "$omega",
-    "$Alpha",
-    "$Beta",
-    "$Gamma",
-    "$Delta",
-    "$Epsilon",
-    "$Zeta",
-    "$Eta",
-    "$Theta",
-    "$Iota",
-    "$Kappa",
-    "$Lambda",
-    "$Mu",
-    "$Nu",
-    "$Xi",
-    "$Omicron",
-    "$Pi",
-    "$Rho",
-    "$Sigma",
-    "$Tau",
-    "$Upsilon",
-    "$Phi",
-    "$Chi",
-    "$Psi",
-    "$Omega",
-  ];
-  for (let letter of greek) {
-    if (line.includes(letter)) {
-      const pieces = line.split(letter);
-      line = pieces[0];
-      for (let j = 1; j < pieces.length; j++) {
-        line += `${letter.slice(1)} ${pieces[j]}`; // just add a space
+  if (line.includes("$")){
+    for (let letter of greek) {
+      if (line.includes(letter)) {
+        const pieces = line.split(letter);
+        line = pieces[0];
+        for (let j = 1; j < pieces.length; j++) {
+          line += `${letter.slice(1)} ${pieces[j]}`; // just add a space
+        }
       }
     }
   }
