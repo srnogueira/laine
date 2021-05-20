@@ -761,12 +761,9 @@ class Problem {
     const tStart = performance.now();
     // Pair search
     const dimension = this.equations.length;
-    if (dimension == 2) {
-      options.pairSearch = true;
-    }
     // Main loop
     let results;
-    const maxTimes = dimension > 1 ? 30 : 5;
+    const maxTimes = dimension > 1 ? 30 : 3;
     for (let count = 0; !results && count < maxTimes; ++count) {
       try {
         // Guesses
@@ -781,28 +778,25 @@ class Problem {
           guessOptions = [new Guess(values, 0)];
         }
         // Solver
-        results = solver(this, guessOptions);
-      } catch {
+        results = solver(this, guessOptions, options);
+      } catch (e) {
         //console.error(e);
         if (dimension === 1) {
           // Exclude saved solution
           count = options.savedSolution !== undefined ? 0 : count;
           options.savedSolution = undefined;
-          // Use another set of guesses
-          options.excludedList = count === 1 ? true : false;
           // Use binary search
-          options.binary = count === 2 ? true : false;
+          options.binary = count === 1 ? true : false;
           // Try negative guesses
-          options.negative = count === 3 ? true : false;
+          options.negative = count === 2 ? true : false;
         } else {
-          // Alter between guess lists
-          options.excludedList = options.excludedList ? false : true;
-          // Disable pair search
-          if (count > 3) {
-            options.pairSearch = false;
-          }
+          // Alter between pairSearch
+          options.pairSearch =
+            dimension == 2 && options.pairSearch ? false : true;
           // Negative guesses
           options.negative = count > 1 && count < 4 ? true : false;
+          // Try all if nothing is working
+          options.tryAll = count > maxTimes / 2 ? true : false;
         }
       }
       // Avoid large time consumption
@@ -850,7 +844,7 @@ function solveOptions(laineOptions) {
     pairSearch: false,
     savedSolution: laineOptions.savedSolution,
     userGuess: laineOptions.userGuess,
-    excludedList: false,
+    tryAll: false,
   };
 }
 
@@ -864,9 +858,7 @@ function solveOptions(laineOptions) {
  * @returns number[]
  */
 function getGuessList(options) {
-  let guessList = options.excludedList
-    ? [0, 1e-4, 1e-2, 1, 100, 1e4, 1e6]
-    : [0, 1e-5, 1e-3, 0.1, 10, 150, 1e3, 1e5];
+  let guessList = [0, 1e-3, 0.1, 1, 10, 150, 1e3, 1e5];
   // 150 was included because in some cases the temperature range is quite short (120-300K)
   if (options.negative) {
     for (let i = 0; i < guessList.length; i++) {
@@ -939,7 +931,7 @@ function find_guess(problem, options) {
       }
     }
     if (guesses.length === 0) {
-      throw laineError(
+      throw new laineError(
         "Guess error [internal]",
         "Pair seach could not find a guess",
         problem.numbers
@@ -952,7 +944,7 @@ function find_guess(problem, options) {
       let ratio = guesses[i].value[0] / guesses[i + 1].value[0];
       if ((ratio >= 0.5 && ratio <= 2) || isNaN(ratio)) {
         ratio = guesses[i].value[1] / guesses[i + 1].value[1];
-        if ((ratio >= 0.5 && ratio <= 2) || isNaN(ratio)){
+        if ((ratio >= 0.5 && ratio <= 2) || isNaN(ratio)) {
           guesses.splice(i + 1, 1);
           i--;
         }
@@ -970,15 +962,21 @@ function find_guess(problem, options) {
   equationLoop: for (let i = 0; i < guessList.length; i++) {
     let varsList = []; // not ideal, but fast
     // Update guess
+    let flag = false;
     for (let name of names) {
       let value;
       if (options.userGuess[name] !== undefined) {
         value = options.userGuess[name];
       } else {
         value = guessList[i] * (1 + Math.random());
+        flag = true;
       }
       scope[name] = value;
       varsList.push(value);
+    }
+    // Jump if there is no random guesses
+    if (!flag) {
+      i = guessList.length;
     }
     // Calculate
     error = 0;
@@ -1098,14 +1096,15 @@ function binary_search(problem) {
  * @param {object} options - Solver options
  * @returns bool|number
  */
-function solver(problem, guessOptions) {
+function solver(problem, guessOptions, options) {
   let tStart = performance.now();
   // Create (possibly) large matrix
   let dimension = problem.equations.length;
   let answers = math.zeros(dimension, 1);
   let jac = math.zeros(dimension, dimension);
   // Set initial conditions
-  let maxTries = guessOptions.length > 5 ? 5 : guessOptions.length; // Problema
+  let maxTries =
+    guessOptions.length > 2 && !options.tryAll ? 3 : guessOptions.length; // Problema
   let converged = false;
   let guesses, dx;
   // Loop guess options
@@ -1119,32 +1118,31 @@ function solver(problem, guessOptions) {
     // Newton-Raphson loop
     for (let i = 0; !converged && i < 200; ++i) {
       jac = update_jac(problem, guesses, answers, jac);
-      try{
+      try {
         dx = math.lusolve(jac, answers);
-      } catch{
+      } catch {
         continue guessLoop;
       }
       // Line search loop
       let factor = 1;
-      let Xguesses, Xdiff;
-      do {
+      let Xguesses;
+      let Xdiff = Infinity;
+      linesearch: while (Xdiff > diff && factor > 1e-3) {
         Xguesses = math.subtract(guesses, math.multiply(dx, factor));
         answers = calcFun(problem, Xguesses, answers);
+        factor /= 2;
         // Check if answer is a real number
         for (let i = 0; i < dimension; ++i) {
           if (
             isNaN(answers.get([i, 0])) ||
             typeof answers.get([i, 0]) !== "number"
           ) {
-            continue;
+            continue linesearch;
           }
         }
         // Calculate and check errors
         Xdiff = Math.abs(math.sum(answers));
-        factor /= 2;
-        // Loop if convergence hasn't improved
-      } while (Xdiff > diff && factor > 1e-3);
-
+      }
       if (factor <= 1e-3) {
         // Dead end : Line search has not converged
         continue guessLoop;
@@ -1170,7 +1168,7 @@ function solver(problem, guessOptions) {
         if (test < 1e-6) {
           converged = true;
         }
-      } else if (isNaN(diff) || guessChange < 1e-1) {
+      } else if (isNaN(diff) || guessChange < 5e-2) {
         // Bad start : Initial guess was a failure
         continue guessLoop;
       }
