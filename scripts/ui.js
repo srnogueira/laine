@@ -234,6 +234,7 @@ function formatMathJax(line) {
 function displayResults(fast) {
   outDiv.innerText = ""; // clear space
   const solutions = Object.entries(parser.getAll());
+  solutions.sort(); // alphabetically
   for (let solution of solutions) {
     writeAns(solution, fast);
   }
