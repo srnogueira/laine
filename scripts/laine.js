@@ -48,7 +48,7 @@ function laineSolver(text, laineOptions) {
   equations.sort((a, b) => a.vars.length - b.vars.length);
 
   // Solve 1-2D problems in equations
-  equations = solve1D2D(equations, laineOptions);
+  equations = solve1D(equations, laineOptions);
   // Short-circut if only the solution of one variable is important
   if (laineOptions.solveFor !== undefined) {
     if (parser.get(laineOptions.solveFor) !== undefined) {
@@ -73,7 +73,7 @@ function laineSolver(text, laineOptions) {
   laineOptions.simples = true;
 
   // Solves 1-2D problems in substitutions
-  simpleEquations = solve1D2D(simpleEquations, laineOptions);
+  simpleEquations = solve1D(simpleEquations, laineOptions);
   // Short-circut if only the solution of one variable is important
   if (laineOptions.solveFor !== undefined) {
     if (parser.get(laineOptions.solveFor) !== undefined) {
@@ -234,7 +234,6 @@ function cleanLines(text, options) {
             try {
               equations.push(new Equation(subLine, i + 1));
             } catch (e) {
-              //console.error(e);
               throw new laineError(
                 "Parsing error",
                 `laine could not parse the equation in line ${i + 1}`,
@@ -366,13 +365,16 @@ class Equation {
     const names = this.vars;
     let namesLength = names.length;
     // Remove if computed;
+    let flag = false;
     for (let i = 0; i < namesLength; i++) {
       if (scope[names[i]] !== undefined) {
         names.splice(i, 1);
         i--;
         namesLength--;
+        flag = true;
       }
     }
+    return flag;
   }
 }
 
@@ -512,10 +514,10 @@ function algebraicSubs(equations) {
  * @param {object} laineOptions - Options object
  * @returns Equation[]
  */
-function solve1D2D(equations, laineOptions) {
-  let name, scope;
+function solve1D(equations, laineOptions) {
+  let name;
   let t1 = performance.now();
-  loop1D_2D: while (equations.length > 0) {
+  loop1D: while (equations.length > 0) {
     // Avoid long loops
     if (performance.now() - t1 > 3e3) {
       throw new laineError(
@@ -547,9 +549,9 @@ function solve1D2D(equations, laineOptions) {
           parser.evaluate(`${equations[0].lhs}=${equations[0].rhs}`);
           if (parser.get(name[0]) !== undefined) {
             equations.shift();
-            continue loop1D_2D;
+            continue loop1D;
           }
-        } catch (e) {
+        } catch {
           //console.error(e);
         }
       }
@@ -568,68 +570,17 @@ function solve1D2D(equations, laineOptions) {
       equations.shift(); // clear solved line
     } else {
       // TRY TO REDUCE PROBLEM DIMENSIONS
-      // (1) Remove vars that already have been computed
-      let loop1D = false; // flag
-      scope = parser.getAll();
+      let change = false; // flag
       for (let i = 0; i < equations.length; i++) {
-        name = equations[i].vars;
-        for (let j = 0; j < name.length; j++) {
-          if (scope[name[j]] !== undefined) {
-            equations[i].updateComputedVars();
-            loop1D = true; // flag
-            break;
-          }
+        let flag = equations[i].updateComputedVars();
+        if (flag){
+          change = true;
         }
       }
       equations.sort((a, b) => a.vars.length - b.vars.length);
       // If no variables were removed than:
-      if (!loop1D) {
-        if (equations[0].vars.length !== 1) {
-          // TRY TO FIND 2D PROBLEMS AND SOLVE
-          let changed = false;
-          let varsA, varsB;
-          loop2D: for (let i = 0; i < equations.length; i++) {
-            if (equations[i].vars.length === 2) {
-              for (let j = i + 1; j < equations.length; j++) {
-                if (equations[j].vars.length === 2) {
-                  varsA = equations[i].vars;
-                  varsB = equations[j].vars;
-                  if (
-                    (varsA[0] === varsB[0] && varsA[1] === varsB[1]) ||
-                    (varsA[1] === varsB[0] && varsA[0] === varsB[1])
-                  ) {
-                    let options2D = solveOptions(laineOptions);
-                    let problem = new Problem([equations[i], equations[j]]);
-                    problem.solve(options2D);
-                    equations.splice(i, 1);
-                    equations.splice(j - 1, 1);
-                    changed = true;
-                    break loop2D;
-                  }
-                } else {
-                  continue loop2D;
-                }
-              }
-            } else {
-              break loop2D;
-            }
-          }
-          // If sucessfull, update equations and loop; else, break the loop.
-          if (changed) {
-            for (let i = 0; i < equations.length; i++) {
-              let varsEquation = equations[i].vars;
-              if (
-                varsEquation.includes(varsA[0]) ||
-                varsEquation.includes(varsA[1])
-              ) {
-                equations[i].updateComputedVars();
-              }
-            }
-            equations.sort((a, b) => a.vars.length - b.vars.length);
-          } else {
-            break loop1D_2D;
-          }
-        }
+      if (!change){
+        break loop1D;
       }
     }
   }
@@ -779,8 +730,7 @@ class Problem {
         }
         // Solver
         results = solver(this, guessOptions, options);
-      } catch (e) {
-        //console.error(e);
+      } catch {
         if (dimension === 1) {
           // Exclude saved solution
           count = options.savedSolution !== undefined ? 0 : count;
@@ -1030,8 +980,7 @@ function binary_search(problem) {
     scope[name] = points[i];
     try {
       ans[i] = compiled.evaluate(scope);
-    } catch (e) {
-      //console.error(e);
+    } catch {
       ans[i] = undefined;
       sign = undefined;
       continue;
@@ -1108,7 +1057,7 @@ function solver(problem, guessOptions, options) {
   let converged = false;
   let guesses, dx;
   // Loop guess options
-  guessLoop: for (let g = 0; !converged && g < maxTries; g++) {
+  guessLoop: for (let g = 0; !converged && g < maxTries; ++g) {
     // Guesses column
     guesses = math.matrix(guessOptions[g].value);
     guesses.resize([dimension, 1]);
@@ -1127,7 +1076,7 @@ function solver(problem, guessOptions, options) {
       let factor = 1;
       let Xguesses;
       let Xdiff = Infinity;
-      linesearch: while (Xdiff > diff && factor > 1e-3) {
+      linesearch: while (Xdiff > diff && factor > 1e-2) {
         Xguesses = math.subtract(guesses, math.multiply(dx, factor));
         answers = calcFun(problem, Xguesses, answers);
         factor /= 2;
@@ -1143,7 +1092,7 @@ function solver(problem, guessOptions, options) {
         // Calculate and check errors
         Xdiff = Math.abs(math.sum(answers));
       }
-      if (factor <= 1e-3) {
+      if (factor <= 1e-2) {
         // Dead end : Line search has not converged
         continue guessLoop;
       }
@@ -1155,7 +1104,7 @@ function solver(problem, guessOptions, options) {
       guesses = Xguesses;
 
       // Check convergence criteria
-      if (diff < 1e-6) {
+      if (diff < 5e-6) {
         let test = 0;
         // Check if dx is little compared with guess
         for (let i = 0; i < dimension; ++i) {
@@ -1165,7 +1114,7 @@ function solver(problem, guessOptions, options) {
             test += Math.abs(dx.get([i, 0]));
           }
         }
-        if (test < 1e-6) {
+        if (test < 5e-6) {
           converged = true;
         }
       } else if (isNaN(diff) || guessChange < 5e-2) {
