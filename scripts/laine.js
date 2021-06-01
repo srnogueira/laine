@@ -687,6 +687,7 @@ class Problem {
    */
   constructor(equations) {
     this.compiled = [];
+    this.lhs = []; // include to determine the order of magnitude
     this.equations = equations;
     this.names = []; // simple to use a set
     this.numbers = [];
@@ -695,6 +696,7 @@ class Problem {
     for (let i = 0; i < equations.length; i++) {
       // It is faster to compile only in the Problem
       this.compiled[i] = math.compile(equations[i].text());
+      this.lhs[i] = math.compile(equations[i].lhs);
       this.numbers[i] = equations[i].number;
       this.jacAux.push([]);
       // Store variables names and the variables in each line
@@ -1097,6 +1099,7 @@ function solver(problem, guessOptions, options) {
         for (let i = 0; i < dimension; ++i) {
           if (
             isNaN(answers.get([i, 0])) ||
+            !isFinite(answers.get([i,0])) ||
             typeof answers.get([i, 0]) !== "number"
           ) {
             continue linesearch;
@@ -1109,15 +1112,15 @@ function solver(problem, guessOptions, options) {
         // Dead end : Line search has not converged
         continue guessLoop;
       }
-
       // Store guess change
       let guessChange = Math.abs(1 - Xdiff / diff);
       // Overwrite guesses, store diff
       diff = Xdiff;
       guesses = Xguesses;
+      let relError = calcError(problem,answers);
 
       // Check convergence criteria
-      if (diff < 5e-6) {
+      if (relError < 1e-3) {
         let test = 0;
         // Check if dx is little compared with guess
         for (let i = 0; i < dimension; ++i) {
@@ -1146,11 +1149,34 @@ function solver(problem, guessOptions, options) {
 }
 
 /**
+ * Calculate relative error
+ * @param {Problem} problem - A problem object
+ * @param {matrix} answers - Matrix of answers math.js
+ * @returns errors
+ */
+function calcError(problem,answers){
+  const lhs = problem.lhs;
+  let error = 0;
+  // Calculate all lines
+  for (let i = 0; i < lhs.length; ++i) {
+    let ansValue = Math.abs(answers.get([i, 0]));
+    let lhsValue = Math.abs(lhs[i].evaluate(problem.scope));
+    let rhsValue = Math.abs(lhsValue-ansValue);
+    if (lhsValue !== 0 && rhsValue !== 0){
+      error+= lhsValue > rhsValue ? ansValue/lhsValue : ansValue/rhsValue;
+    } else {
+      error+= ansValue;
+    }
+  }
+  return error;
+}
+
+/**
  * Updates the value of answers for a new guess
  * @param {Problem} problem - A problem object
  * @param {matrix} guesses - a math.js matrix
  * @param {matrix} answers - Matrix of answers math.js
- * @returns anwers
+ * @returns answers
  */
 function calcFun(problem, guesses, answers) {
   const compiled = problem.compiled;
