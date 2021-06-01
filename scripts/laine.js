@@ -177,17 +177,26 @@ function cleanLines(text, options) {
           }
           // Check if is a single variable
           if (singleVar(sides[0], sides[1])) {
+            let flag = true;
             // Check if is already computed
             if (parser.get(sides[0].trim()) !== undefined) {
+              // Store value to replace
+              let value = parser.get(sides[0].trim());
               // Try to evaluate
               try {
-                parser.evaluate(subLine);
-                throw new laineError(
-                  "Redefined variable",
-                  `Variable ${sides[0].trim()} has been redefined`,
-                  `Line ${i + 1}`,
-                  `Remove or correct line ${i + 1}`
-                );
+                let ans = parser.evaluate(subLine);
+                if (typeof ans !== "object") {
+                  throw new laineError(
+                    "Redefined variable",
+                    `Variable ${sides[0].trim()} has been redefined`,
+                    `Line ${i + 1}`,
+                    `Remove or correct line ${i + 1}`
+                  );
+                } else {
+                  // Restore value
+                  parser.set(sides[0].trim(), value);
+                }
+                flag = false;
               } catch (e) {
                 if (e.name === "Redefined variable") {
                   throw e;
@@ -208,12 +217,16 @@ function cleanLines(text, options) {
             }
             // Try to simply evaluate the expression;
             try {
-              const ans = parser.evaluate(subLine);
-              // Check if the parser did not mistaked as "unit"
-              if (ans.type === "Unit") {
-                // Remove object from parser scope
-                const lhs = sides[0].trim();
-                parser.remove(lhs);
+              if (flag) {
+                const ans = parser.evaluate(subLine);
+                // Check if the parser did not mistaked as "unit"
+                if (ans.type === "Unit") {
+                  // Remove object from parser scope
+                  const lhs = sides[0].trim();
+                  parser.remove(lhs);
+                  throw new Error("dummy"); // jump to catch
+                }
+              } else{
                 throw new Error("dummy"); // jump to catch
               }
             } catch {
@@ -573,13 +586,13 @@ function solve1D(equations, laineOptions) {
       let change = false; // flag
       for (let i = 0; i < equations.length; i++) {
         let flag = equations[i].updateComputedVars();
-        if (flag){
+        if (flag) {
           change = true;
         }
       }
       equations.sort((a, b) => a.vars.length - b.vars.length);
       // If no variables were removed than:
-      if (!change){
+      if (!change) {
         break loop1D;
       }
     }
