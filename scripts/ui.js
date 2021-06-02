@@ -785,6 +785,9 @@ window.onresize = changeTextButtons;
   Thermodynamic functions helper
 */
 
+// Counter
+let number = 1;
+
 /**
  * Write a PropsSI call in the editor
  */
@@ -814,10 +817,11 @@ function writePropsSI() {
   }
   // Write function
   if (flag) {
-    text = `property=Props1SI('${property}','${fluid}')`;
+    text = `${property}_${number}=Props1SI('${property}','${fluid}')`;
   } else {
-    text = `property=PropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${fluid}')`;
+    text = `${property}_${number}=PropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${fluid}')`;
   }
+  number+=1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
   clearDropdown();
@@ -838,7 +842,8 @@ function writeHAPropsSI() {
   const value2 = document.querySelector(".HAvalue2").value;
   const value3 = document.querySelector(".HAvalue3").value;
   // Write
-  const text = `property=HAPropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${input3}',${value3})`;
+  const text = `${property}_${number}=HAPropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${input3}',${value3})`;
+  number+=1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
@@ -855,7 +860,8 @@ function writeNasa() {
   const inputType = document.querySelector(".nasaInputType").value;
   const input = document.querySelector(".nasaInput").value;
   // Write
-  const text = `property=NasaSI('${property}','${inputType}',${input},'${specie}')`;
+  const text = `${property}_${number}=NasaSI('${property}','${inputType}',${input},'${specie}')`;
+  number+=1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
@@ -871,7 +877,8 @@ function writelk() {
   const inputType1 = document.querySelector(".lkInputType1").value;
   const input2 = document.querySelector(".lkInput2").value;
   const inputType2 = document.querySelector(".lkInputType2").value;
-  let text = `property=LeeKesler('${property}','${inputType1}',${input1},'${inputType2}',${input2})`;
+  let text = `${property}_${number}=LeeKesler('${property}','${inputType1}',${input1},'${inputType2}',${input2})`;
+  number+=1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
