@@ -823,7 +823,7 @@ function solveOptions(laineOptions) {
  * @returns number[]
  */
 function getGuessList(options) {
-  let guessList = [0, 1e-3, 0.1, 1, 10, 150, 1e3, 1e5];
+  let guessList = [0, 1e-3, 0.1, 1, 10, 200, 1e3, 1e5];
   // 150 was included because in some cases the temperature range is quite short (120-300K)
   if (options.negative) {
     for (let i = 0; i < guessList.length; i++) {
