@@ -729,7 +729,7 @@ class Problem {
     const dimension = this.equations.length;
     // Main loop
     let results;
-    const maxTimes = dimension > 1 ? 30 : 3;
+    const maxTimes = dimension > 1 ? 30 : 4;
     for (let count = 0; !results && count < maxTimes; ++count) {
       try {
         // Guesses
