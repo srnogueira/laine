@@ -740,7 +740,7 @@ const reportButton = document.querySelector(".report");
  * Report button
  */
 reportButton.onclick = function () {
-  if (mathDiv.style.display === "none") {
+  if (!mathDiv.style.display || mathDiv.style.display === "none") {
     clearDropdown();
     clearHiddenMenus();
     if (laine(false)) {
