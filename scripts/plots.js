@@ -234,7 +234,12 @@ class State {
     // State definition
     this.first = [pieces[1].slice(1, -1), parser.evaluate(pieces[2])];
     this.second = [pieces[3].slice(1, -1), parser.evaluate(pieces[4])];
-    this.fluid = pieces[5].slice(1, -1);
+    // Word or variable?
+    if (pieces[5][0] !== '"' && pieces[5][0] !== "'"){
+      this.fluid = parser.get(pieces[5]);
+    } else{
+      this.fluid = pieces[5].slice(1, -1);
+    }
     this.memory = {};
     // Is much faster to just store this values here
     this.T = Module.PropsSI(
