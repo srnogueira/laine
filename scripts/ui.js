@@ -492,14 +492,16 @@ plotMenuButton.onclick = function () {
   xSelect.options.length = 0;
   ySelect.options.length = 0;
   // Include options
-  for (const name of names) {
+  for (const name of names.x) {
     let optX = document.createElement("option");
-    let optY = document.createElement("option");
     optX.value = name;
     optX.text = name;
+    xSelect.add(optX);
+  }
+  for (const name of names.y) {
+    let optY = document.createElement("option");
     optY.value = name;
     optY.text = name;
-    xSelect.add(optX);
     ySelect.add(optY);
   }
   // Show menu

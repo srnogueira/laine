@@ -67,6 +67,20 @@ function laineSolver(text, laineOptions) {
     }
   }
 
+  // Delivers a problem if requested
+  if (laineOptions.returnProblem) {
+    // Update
+    for (let equation of equations) {
+      equation.updateComputedVars();
+    }
+    for (let simpleEquation of simpleEquations) {
+      simpleEquation.updateComputedVars();
+    }
+    // Join arrays
+    let allEqs = {e:equations, s:simpleEquations};
+    return allEqs;
+  }
+
   // Sort substitutions
   simpleEquations.sort((a, b) => a.vars.length - b.vars.length); // sorting
   // Activate simple evaluation mode - It will try to evaluated first, usually works and is faster
@@ -90,20 +104,6 @@ function laineSolver(text, laineOptions) {
     if (parser.get(laineOptions.solveFor) !== undefined) {
       return false;
     }
-  }
-
-  // Delivers a problem if requested
-  if (laineOptions.returnProblem) {
-    // Update
-    for (let equation of equations) {
-      equation.updateComputedVars();
-    }
-    for (let simpleEquation of simpleEquations) {
-      simpleEquation.updateComputedVars();
-    }
-    // Join arrays
-    let allEqs = equations.concat(simpleEquations);
-    return allEqs;
   }
 
   const t2 = performance.now();
@@ -220,7 +220,7 @@ function cleanLines(text, options) {
               if (flag) {
                 const ans = parser.evaluate(subLine);
                 // Check if the parser did not mistaked as "unit"
-                if (ans.type === "Unit") {
+                if (ans.type === "Unit" || isNaN(ans)) {
                   // Remove object from parser scope
                   const lhs = sides[0].trim();
                   parser.remove(lhs);

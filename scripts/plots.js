@@ -93,15 +93,22 @@ function checkParametric(text) {
   let equations = laineSolver(text, { returnProblem: true });
 
   // Get names of variables
-  let names = new Set();
-  for (let equation of equations) {
+  let namesX = new Set();
+  let namesY = new Set();
+  for (let equation of equations.e) {
     for (let name of equation.vars) {
-      names.add(name);
+      namesX.add(name);
+      namesY.add(name)
+    }
+  }
+  for (let equation of equations.s) {
+    for (let name of equation.vars) {
+      namesY.add(name)
     }
   }
 
   // If there is no degree of freedom
-  if (!equations || names.size === 0) {
+  if (!equations || namesX.size === 0) {
     throw new laineError(
       "No degree of freedom",
       "Parametric analysis requires a problem with one degree of freedom",
@@ -111,7 +118,7 @@ function checkParametric(text) {
   }
 
   // Calculate degree of freedom and verify if is one
-  const degrees = names.size - equations.length;
+  const degrees = namesX.size - equations.e.length;
   if (degrees > 1) {
     throw new laineError(
       `${degrees} degrees of freedom`,
@@ -120,7 +127,7 @@ function checkParametric(text) {
       `Try to include ${degrees - 1} equation(s)`
     );
   }
-  return names;
+  return {x:namesX,y:namesY};
 }
 
 /**
@@ -147,7 +154,13 @@ function plotParametric(text, options) {
   let equations = laineSolver(text, { returnProblem: true });
   let equationsText = "";
   let names = new Set();
-  for (let equation of equations) {
+  for (let equation of equations.e) {
+    equationsText += `${equation.lhs}=${equation.rhs}\n`;
+    for (let name of equation.vars) {
+      names.add(name);
+    }
+  }
+  for (let equation of equations.s) {
     equationsText += `${equation.lhs}=${equation.rhs}\n`;
     for (let name of equation.vars) {
       names.add(name);
