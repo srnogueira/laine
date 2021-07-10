@@ -98,17 +98,33 @@ function checkParametric(text) {
   for (let equation of equations.e) {
     for (let name of equation.vars) {
       namesX.add(name);
-      namesY.add(name)
+      namesY.add(name);
     }
   }
+  let counter = {};
   for (let equation of equations.s) {
     for (let name of equation.vars) {
-      namesY.add(name)
+      namesY.add(name);
+      // To verify if there is a exception
+      if (counter[name] === undefined){
+        counter[name]=1;
+      } else{
+        counter[name]+=1;
+      }
     }
   }
 
   // If there is no degree of freedom
   if (!equations || namesX.size === 0) {
+    // Check if there is only simple equations in function of a common variable
+    if(namesY.size !== 0){
+      for (let name of namesY){
+        if (counter[name]===equations.s.length){
+          namesX.add(name);
+          return {x:namesX, y:namesY}
+        }
+      }
+    }
     throw new laineError(
       "No degree of freedom",
       "Parametric analysis requires a problem with one degree of freedom",
