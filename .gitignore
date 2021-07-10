@@ -1,7 +1,2 @@
 node_modules/
 minified/
-.eslintignore
-.eslingrc.json
-manifest.json
-package-lock.json
-package.json
