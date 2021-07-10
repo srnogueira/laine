@@ -652,7 +652,7 @@ function solveND(equations, laineOptions) {
         throw new laineError(
           "Degrees of freedom",
           `The problem has ${problem.names.length} variables and ${block.length} equations`,
-          `Line(s) ${problem.numbers}`,
+          `Line(s) ${problem.numbers.join(", ")}`,
           help
         );
       } else {
