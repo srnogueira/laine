@@ -264,19 +264,28 @@ function writeAns(solution, fast) {
     value = value.toPrecision(5);
     text = value.toString();
   } else if (typeof value === "object") {
-    value = Object.entries(value);
-    text = "{";
-    const valueLength = value.length;
-    for (let i = 0; i < valueLength; i++) {
-      if (typeof value[i][1] === "number") {
-        value[i][1] = value[i][1].toPrecision(5);
+    // Print common objects
+    if (value.type === undefined){
+      value = Object.entries(value);
+      text = "{";
+      const valueLength = value.length;
+      for (let i = 0; i < valueLength; i++) {
+        if (typeof value[i][1] === "number") {
+          value[i][1] = value[i][1].toPrecision(5);
+        }
+        text += value[i][0] + " : " + value[i][1];
+        if (i < valueLength - 1) {
+          text += " ,";
+          if(fast){
+            text += "<br>"; 
+          }
+        }
       }
-      text += value[i][0] + " : " + value[i][1];
-      if (i < valueLength - 1) {
-        text += " ,";
-      }
+      text += "}";
+    } else{
+      // Print units, matrix and etc.
+      text = value.toString();
     }
-    text += "}";
   } else if(typeof value === "string"){
     text = `"${value.toString()}"`;
   } else{
@@ -288,7 +297,7 @@ function writeAns(solution, fast) {
     let varCell = para.insertCell(0);
     varCell.textContent = key;
     let valueCell = para.insertCell(1);
-    valueCell.textContent = text;
+    valueCell.innerHTML = text;
   } else {
     msg = key + " = " + text;
     let para = document.createElement("p");
