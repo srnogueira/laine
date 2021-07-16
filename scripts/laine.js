@@ -725,11 +725,10 @@ class Problem {
    */
   solve(options) {
     const tStart = performance.now();
-    // Pair search
     const dimension = this.equations.length;
-    // Main loop
-    let results;
     const maxTimes = dimension > 1 ? 30 : 4;
+    let results;
+    // Main loop
     for (let count = 0; !results && count < maxTimes; ++count) {
       try {
         // Guesses
@@ -754,6 +753,10 @@ class Problem {
           options.binary = count === 1 ? true : false;
           // Try negative guesses
           options.negative = count === 2 ? true : false;
+          // Try more if there is enough time
+          if (count === 3 && (performance.now() - tStart < 3e3/2) ){
+            count = 0;
+          }
         } else {
           // Alter between pairSearch
           options.pairSearch =
