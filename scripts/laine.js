@@ -145,14 +145,14 @@ function cleanLines(text, options) {
   let lines = text.split("\n");
   let equations = [];
   for (let i = 0; i < lines.length; i++) {
-    lines[i] = lines[i].trim();
+    lines[i] = lines[i].replace(/\s/g,'');
     // Check if is an equation
     if (checkLine(lines[i], i + 1)) {
       // Break multi-lines
       const aux = lines[i].split(";");
       for (let subLine of aux) {
         // Check each subline
-        subLine = subLine.split("#")[0].trim(); // remove comments and trim()
+        subLine = subLine.split("#")[0]; // remove comments
         if (checkLine(subLine, i + 1)) {
           // Break into sides
           let sides = subLine.split("=");
@@ -160,7 +160,7 @@ function cleanLines(text, options) {
           if (subLine.endsWith("?")) {
             // Check if line is valid
             let value;
-            sides[1] = sides[1].trim().slice(0, -1);
+            sides[1] = sides[1].slice(0, -1);
             try {
               value = math.evaluate(sides[1]);
             } catch (e) {
@@ -171,7 +171,7 @@ function cleanLines(text, options) {
                 "Change the guess to a valid input or remove it"
               );
             }
-            let name = sides[0].trim();
+            let name = sides[0];
             options.userGuess[name] = value;
             continue;
           }
@@ -179,22 +179,22 @@ function cleanLines(text, options) {
           if (singleVar(sides[0], sides[1])) {
             let flag = true;
             // Check if is already computed
-            if (parser.get(sides[0].trim()) !== undefined) {
+            if (parser.get(sides[0]) !== undefined) {
               // Store value to replace
-              let value = parser.get(sides[0].trim());
+              let value = parser.get(sides[0]);
               // Try to evaluate
               try {
                 let ans = parser.evaluate(subLine);
                 if (typeof ans !== "object") {
                   throw new laineError(
                     "Redefined variable",
-                    `Variable ${sides[0].trim()} has been redefined`,
+                    `Variable ${sides[0]} has been redefined`,
                     `Line ${i + 1}`,
                     `Remove or correct line ${i + 1}`
                   );
                 } else {
                   // Restore value
-                  parser.set(sides[0].trim(), value);
+                  parser.set(sides[0], value);
                 }
                 flag = false;
               } catch (e) {
@@ -206,10 +206,10 @@ function cleanLines(text, options) {
             // Check if is a function erasing a variable
             if (sides[0].endsWith(")")) {
               let name = sides[0].split("(");
-              if (parser.get(name[0].trim()) !== undefined) {
+              if (parser.get(name[0]) !== undefined) {
                 throw new laineError(
                   "Redefined variable with a function",
-                  `Variable ${name[0].trim()} has been redefined with a function`,
+                  `Variable ${name[0]} has been redefined with a function`,
                   `Line ${i + 1}`,
                   `Remove or correct line ${i + 1}`
                 );
@@ -219,10 +219,10 @@ function cleanLines(text, options) {
             try {
               if (flag) {
                 const ans = parser.evaluate(subLine);
-                // Check if the parser did not mistaked as "unit"
-                if (ans.type === "Unit" || isNaN(ans)) {
+                // Check if the parser did not mistaked as "unit" and is not a "function"
+                if (typeof(ans) !=="function" && (ans.type === "Unit" || isNaN(ans))) {
                   // Remove object from parser scope
-                  const lhs = sides[0].trim();
+                  const lhs = sides[0];
                   parser.remove(lhs);
                   throw new Error("dummy"); // jump to catch
                 }
@@ -331,8 +331,8 @@ class Equation {
     this.number = number;
     // Equation sides
     let sides = line.split("=");
-    this.lhs = sides[0].trim();
-    this.rhs = sides[1].trim();
+    this.lhs = sides[0];
+    this.rhs = sides[1];
     // Is a simple equation? * Not a method because the function is used elsewhere
     this.simple = singleVar(this.lhs, this.rhs);
     // Store vars names * Not included as a method because is time consuming
@@ -404,7 +404,7 @@ function singleVar(lhs, rhs) {
   if (numb.test(lhs[0]) || op.test(lhs)) {
     return false;
   }
-  let name = new RegExp("[^\\w]" + lhs.trim() + "[^\\w]");
+  let name = new RegExp("[^\\w]" + lhs + "[^\\w]");
   // Now check if there the same variable is not on the other side
   if (name.test(rhs)) {
     return false;
@@ -468,7 +468,7 @@ function algebraicSubs(equations) {
   // Get algebraic substitutions
   for (let i = 0; i < equations.length; i++) {
     equations[i].updateComputedVars();
-    let name = equations[i].lhs.trim();
+    let name = equations[i].lhs;
     if (
       equations[i].simple &&
       scope[name] === undefined &&
@@ -504,7 +504,7 @@ function algebraicSubs(equations) {
     }
     // Substitute in equations
     for (let simpleEquation of simpleEquations) {
-      let subs = simpleEquation.lhs.trim();
+      let subs = simpleEquation.lhs;
       for (let equation of equations) {
         for (let name of equation.vars) {
           if (name === subs) {
@@ -870,10 +870,10 @@ function find_guess(problem, options) {
     // Recursive search
     options.pairSearch = false;
     for (let name of problem.names) {
-      if (options.userGuess[name.trim()] === undefined) {
+      if (options.userGuess[name] === undefined) {
         // Avoid overwrite the userGuess
         for (let guess of guessList) {
-          options.userGuess[name.trim()] = guess;
+          options.userGuess[name] = guess;
           try {
             let result = find_guess(problem, options);
             if (result !== undefined && result.length !== 0) {
@@ -883,7 +883,7 @@ function find_guess(problem, options) {
             continue;
           }
         }
-        delete options.userGuess[name.trim()];
+        delete options.userGuess[name];
       } else {
         try {
           let result = find_guess(problem, options);
