@@ -103,17 +103,28 @@ function checkParametric(text) {
   }
   let counter = {};
   for (let equation of equations.s) {
-    for (let name of equation.vars) {
-      namesY.add(name);
-      // To verify if there is a exception
-      if (counter[name] === undefined){
-        counter[name]=1;
-      } else{
-        counter[name]+=1;
+    if (namesX.size === 0){
+      for (let name of equation.vars) {
+        namesY.add(name);
+        // To verify if there is a exception
+        if (counter[name] === undefined){
+          counter[name]=1;
+        } else{
+          counter[name]+=1;
+        }
+      }
+    } else{
+      let varList = [];
+      for (let name of equation.vars){
+        if (!namesX.has(name)){
+          varList.push(name);
+        }
+      }
+      if (varList.length === 1){
+        namesY.add(varList[0]);
       }
     }
   }
-
   // If there is no degree of freedom
   if (!equations || namesX.size === 0) {
     // Check if there is only simple equations in function of a common variable

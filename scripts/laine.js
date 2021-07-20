@@ -41,6 +41,11 @@ function laineSolver(text, laineOptions) {
   // Check duplicates
   checkDuplicates(equations);
 
+  // Check number of equations and variables
+  if (laineOptions.returnProblem){
+    checkVarNumber(equations);
+  }
+
   // Reduce problem size and split equations in two types
   let simpleEquations = algebraicSubs(equations);
 
@@ -67,20 +72,6 @@ function laineSolver(text, laineOptions) {
     }
   }
 
-  // Delivers a problem if requested
-  if (laineOptions.returnProblem) {
-    // Update
-    for (let equation of equations) {
-      equation.updateComputedVars();
-    }
-    for (let simpleEquation of simpleEquations) {
-      simpleEquation.updateComputedVars();
-    }
-    // Join arrays
-    let allEqs = {e:equations, s:simpleEquations};
-    return allEqs;
-  }
-
   // Sort substitutions
   simpleEquations.sort((a, b) => a.vars.length - b.vars.length); // sorting
   // Activate simple evaluation mode - It will try to evaluated first, usually works and is faster
@@ -93,6 +84,20 @@ function laineSolver(text, laineOptions) {
     if (parser.get(laineOptions.solveFor) !== undefined) {
       return false;
     }
+  }
+
+  // Delivers a problem if requested
+  if (laineOptions.returnProblem) {
+    // Update
+    for (let equation of equations) {
+      equation.updateComputedVars();
+    }
+    for (let simpleEquation of simpleEquations) {
+      simpleEquation.updateComputedVars();
+    }
+    // Join arrays
+    let allEqs = {e:equations, s:simpleEquations};
+    return allEqs;
   }
 
   // Solved n-D problems in substitutions
@@ -450,6 +455,32 @@ function varsName(line) {
   }
   return symbols;
 }
+
+/**
+ * Check if the problem has only one variable
+ * @param {Equations[]} equations Array of equations
+ * @returns bool
+ */
+function checkVarNumber(equations){
+  let names = new Set();
+  for (let equation of equations){
+    for (let name of equation.vars){
+      equation.updateComputedVars();
+      names.add(name);
+    }
+  }
+  if(names.size - equations.length !== 1){
+    throw new laineError(
+      "Zero or more than one degree of freedom",
+      "Parametric analysis requires a problem with one degree of freedom",
+      "All lines",
+      "Try to remove an equation which constrains the problem"
+    );
+  } else{
+    return true;
+  }
+}
+
 
 /*
   Algebraic substitution
