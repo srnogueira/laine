@@ -201,13 +201,18 @@ function plotParametric(text, options) {
       if (i === 0) {
         laineSolver(stateVar + text);
       } else {
-        laineSolver(stateVar + equationsText, {
+        parser.set(xName,from+delta*i);
+        laineSolver(equationsText, {
           savedSolution: storeSolution,
           solveFor: yName,
         });
       }
-    } catch (e) {
+    } catch {
       errors.push(from + delta * i);
+      // Delete solutions from parser
+      for (let name of names) {
+        parser.remove(name);
+      }
       continue;
     }
 

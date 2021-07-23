@@ -168,7 +168,7 @@ function cleanLines(text, options) {
             sides[1] = sides[1].slice(0, -1);
             try {
               value = math.evaluate(sides[1]);
-            } catch (e) {
+            } catch {
               throw new laineError(
                 "Guess syntax",
                 "Guesses should follow this syntax: variable = value ?",
@@ -367,7 +367,7 @@ class Equation {
       } else {
         name = "\\b" + name;
       }
-      const regex = new RegExp(name + "\\b", "g");
+      const regex = new RegExp(name + "(?!(\"|'))\\b", "g"); // to avoid "name"
       const newText = `(${value.toString()})`;
       this.lhs = this.lhs.replace(regex, newText);
       this.rhs = this.rhs.replace(regex, newText);
@@ -764,29 +764,26 @@ class Problem {
       try {
         // Guesses
         let guessOptions;
-        if (options.savedSolution === undefined) {
-          guessOptions = find_guess(this, options);
-        } else {
+        if (options.savedSolution !== undefined && count === 0) {
           let values = [];
           for (let name of this.names) {
             values.push(options.savedSolution[name]);
           }
           guessOptions = [new Guess(values, 0)];
+        } else {
+          guessOptions = find_guess(this, options);
         }
-        // Solver
+        // Solver 
         results = solver(this, guessOptions, options);
       } catch {
         if (dimension === 1) {
-          // Exclude saved solution
-          count = options.savedSolution !== undefined ? 0 : count;
-          options.savedSolution = undefined;
           // Use binary search
           options.binary = count === 1 ? true : false;
           // Try negative guesses
           options.negative = count === 2 ? true : false;
           // Try more if there is enough time
-          if (count === 3 && (performance.now() - tStart < 3e3/2) ){
-            count = 0;
+          if (count === 3 && (performance.now() - tStart < 1e3) ){
+            count = 1;
           }
         } else {
           // Alter between pairSearch
