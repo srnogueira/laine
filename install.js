@@ -2,7 +2,7 @@
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches
-      .open("laine-store.12.08.21")
+      .open("laine-store.24.08.21")
       .then((cache) =>
         cache.addAll([
           "./",
@@ -25,7 +25,7 @@ self.addEventListener("install", (e) => {
 
 // Delete old cache
 self.addEventListener('activate', (event) => {
-  var cacheKeeplist = ['laine-store.12.08.21'];
+  var cacheKeeplist = ['laine-store.24.08.21'];
   event.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
