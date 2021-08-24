@@ -1,18 +1,6 @@
 "use strict";
-/*
-  imports
-*/
-// from scripts
 /*global math*/
-
-/*
-  exports
-*/
-// for plots.js
 /*exported laineSolver, laineError, parser*/
-
-// for ui.js
-/*exported laineSolver, parser*/
 
 // Create a parser object as global object
 const parser = math.parser();
@@ -1092,13 +1080,13 @@ function binary_search(problem) {
  * @returns bool|number
  */
 function solver(problem, guessOptions, options) {
-  let tStart = performance.now();
+  const tStart = performance.now();
   // Create (possibly) large matrix
-  let dimension = problem.equations.length;
+  const dimension = problem.equations.length;
   let answers = math.zeros(dimension, 1);
   let jac = math.zeros(dimension, dimension);
   // Set initial conditions
-  let maxTries =
+  const maxTries =
     guessOptions.length > 2 && !options.tryAll ? 3 : guessOptions.length; // Problema
   let converged = false;
   let guesses, dx;
@@ -1262,12 +1250,7 @@ function update_jac(problem, guesses, answers, jac) {
  */
 function derivative(scope, compiled, name, f, x) {
   // Determine x+dx
-  let xNear;
-  if (x === 0) {
-    xNear = x + 1e-8;
-  } else {
-    xNear = x * (1 + 1e-6);
-  }
+  const xNear = x===0 ? x + 1e-8 : x * (1 + 1e-8);
   // Calculate derivative
   scope[name] = xNear;
   const fNear = compiled.evaluate(scope);
