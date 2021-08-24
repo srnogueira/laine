@@ -557,7 +557,12 @@ function checkStates(text) {
     return false;
   }
   // Parse PropsSI calls into states
-  let states = getStates(text);
+  let states;
+  try {
+    states=getStates(text);
+  } catch (e) {
+    displayError(e);
+  }
   // Create the menu
   let optionText;
   let fluids = [];

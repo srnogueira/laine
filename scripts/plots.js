@@ -1,17 +1,5 @@
 "use strict";
-/*
-  imports
-*/
-// imported from third-party code
-/*global Module Chart */
-
-// imported from laine.js
-/*global laineSolver, laineError, parser*/
-
-/*
-  exports
-*/
-// exported for ui.js
+/*global Module Chart, laineSolver, laineError, parser*/
 /*exported getStates, exportData, checkParametric, plotParametric, checkStates, plotStates */
 
 // Data for download
@@ -266,12 +254,11 @@ function plotParametric(text, options) {
 */
 
 /**
- * State object
+ * Stores the info about a thermodynamic state
  * @class
  */
 class State {
   /**
-   * Stores the important info about the state
    * @param {string} text - Text inside the PropsSI() function
    */
   constructor(text) {
@@ -347,7 +334,7 @@ function getStates(text) {
   let states = [];
   // Grab text and match PropsSI calls
   const regexComment = /#.*/g; // removes comments
-  const regex = /PropsSI\(.*(?=\))/g; // captures PropsSI(...
+  const regex = /(?<!HA)PropsSI\(.*(?=\))/g; // captures PropsSI(...
   const found = text.replace(regexComment, "").match(regex);
   if (found) {
     for (let i = 0; i < found.length; i++) {
