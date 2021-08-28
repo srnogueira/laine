@@ -26,6 +26,13 @@ function laineSolver(text, laineOptions) {
   // Parse lines
   let equations = cleanLines(text, laineOptions);
 
+  // Include constants if they are not defined
+  let hasConstants = false;
+  if(parser.get("R") == undefined){
+    parser.set("R",8.314462618);
+    hasConstants = true;
+  }
+
   // Check duplicates
   checkDuplicates(equations);
 
@@ -99,6 +106,20 @@ function laineSolver(text, laineOptions) {
     }
   }
 
+  // Remove constants from parser
+  if(hasConstants){
+    parser.remove("R");
+  }
+
+  // Display only selected variables
+  if (laineOptions.showOnly){
+    let scope={};
+    for (let name of laineOptions.showOnly){
+      scope[name] = parser.get(name);
+    }
+    parser.scope = scope;
+  }
+
   const t2 = performance.now();
   console.log("evaluation time:", t2 - t1, "ms");
   return false;
@@ -140,13 +161,13 @@ function cleanLines(text, options) {
   for (let i = 0; i < lines.length; i++) {
     lines[i] = lines[i].replace(/\s/g,'');
     // Check if is an equation
-    if (checkLine(lines[i], i + 1)) {
+    if (checkLine(lines[i], i + 1, options)) {
       // Break multi-lines
       const aux = lines[i].split(";");
       for (let subLine of aux) {
         // Check each subline
         subLine = subLine.split("#")[0]; // remove comments
-        if (checkLine(subLine, i + 1)) {
+        if (checkLine(subLine, i + 1, options)) {
           // Break into sides
           let sides = subLine.split("=");
           // Check if is a guess
@@ -261,9 +282,22 @@ function cleanLines(text, options) {
  * @param {number} number - The line number
  * @returns bool
  */
-function checkLine(line, number) {
+function checkLine(line, number, options={}) {
   // Function: checks if the line is an equation
   if (line === "" || line.startsWith("#")) {
+    return false;
+  }
+  if (line.startsWith("solve")){
+    // Store info about the variables that should be shown
+    let names = line.slice(5);
+    names = names.split(",");
+    if (options.showOnly){
+      for (let name of names){
+        options.showOnly.push(name);
+      }
+    } else{
+      options.showOnly = names;
+    }
     return false;
   }
   const form = /=/;

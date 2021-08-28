@@ -95,23 +95,26 @@ function writeEqs(inputText) {
         mathDiv.appendChild(para);
       }
     } else {
-      // Disables markdown format if there is an equation
-      let flag = false;
-      const dels = [
-        new RegExp("\\$\\$"),
-        new RegExp("\\\\\\("),
-        new RegExp("\\\\\\["),
-      ];
-      for (let del of dels) {
-        if (lines[i].match(del)) {
-          flag = true;
-          break;
+      // Disables for solve
+      if (!lines[i].startsWith("solve")){
+        // Disables markdown format if there is an equation
+        let flag = false;
+        const dels = [
+          new RegExp("\\$\\$"),
+          new RegExp("\\\\\\("),
+          new RegExp("\\\\\\["),
+        ];
+        for (let del of dels) {
+          if (lines[i].match(del)) {
+            flag = true;
+            break;
+          }
         }
-      }
-      if (flag) {
-        mathDiv.innerHTML += `<p>${lines[i].slice(1)}</p>`;
-      } else {
-        mathDiv.innerHTML += converter.makeHtml(lines[i].slice(1));
+        if (flag) {
+          mathDiv.innerHTML += `<p>${lines[i].slice(1)}</p>`;
+        } else {
+          mathDiv.innerHTML += converter.makeHtml(lines[i].slice(1));
+        }
       }
     }
   }
@@ -823,6 +826,7 @@ function writePropsSI() {
     "TCRIT",
     "RHOCRIT",
     "RHOMOLAR_CRITICAL",
+    "Rbar"
   ];
   let flag, text;
   for (let trivial of trivials) {

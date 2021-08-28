@@ -8,6 +8,7 @@ CodeMirror.defineSimpleMode("laine", {
     { regex: /'(?:[^\\]|\\.)*?(?:'|$)/, token: "string" },
     { regex: /(#.*(?=;)|#.*)/, token: "comment" },
     { regex: /\w+(?=\()/, token: "keyword" },
+    { regex: /solve/, token: "keyword" },
     { regex: /((\d+(\.|E|e))+(\+|-)?\d+|\d+)/, token: "number" },
     { regex: /[a-zA-Z$][\w$]*/, token: "variable" },
   ],

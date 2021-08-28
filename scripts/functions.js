@@ -835,7 +835,16 @@ function lkWrapper(prop, xType, x, yType, y) {
   return ans;
 }
 
-// Importing functions
+// Wrapping CoolProp functions
+function w_Props1SI(prop,subs){
+  // Adding a Rbar property
+  if (prop == "Rbar"){
+    return 8.314462618/(Module.Props1SI("M",subs)*1E3);
+  } else{
+    return Module.Props1SI(prop,subs);
+  }
+}
+
 
 // Import functions to math.js parser
 math.import({
@@ -844,7 +853,7 @@ math.import({
     return Module.PropsSI(prop, xType, x, yType, y, subs);
   },
   Props1SI: function (prop, subs) {
-    return Module.Props1SI(prop, subs);
+    return w_Props1SI(prop, subs);
   },
   // HAPropsSI
   HAPropsSI: function (prop, xType, x, yType, y, zType, z) {
