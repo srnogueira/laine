@@ -845,6 +845,46 @@ function w_Props1SI(prop,subs){
   }
 }
 
+// Saturation pressures - ASHRAE
+function ASHRAE_Psat(T){
+  let C;
+  if (T<273.15){
+    C = [-5.6745359E3,6.3925247,-9.6778430E-3,
+          6.2215701E-7,2.0747825E-9,-9.4840240E-13,4.1635019];
+  } else{
+    C = [-5.8002206E3,1.3914993,-4.8640239E-2,
+          4.1764768E-5,-1.4452093E-8,0,6.5459673];
+  }
+  let lnP = C[0]/T+C[1]+C[2]*T+C[3]*T**2+C[4]*T**3+C[5]*T**4+C[6]*math.log(T);
+  return math.exp(lnP);
+}
+
+// Wrapping HAPropsSI
+function w_HAPropsSI(prop,xType,x,yType,y,zType,z){
+  // Create a object to verify inputs
+  let inputs = {};
+  inputs[xType]=x;
+  inputs[yType]=y;
+  inputs[zType]=z;
+
+  // Use special routines to bypass CoolProp issue
+  if(inputs['R']){
+    if (inputs['W'] && inputs['P']){
+      let MW_water = 0.018015268;
+      let MW_air = 0.02896546;
+      let Y = 1/(MW_water/MW_air/inputs['W']+1);
+      return Module.HAPropsSI(prop,'R',inputs['R'],'P',inputs['P'],'Y',Y)
+    } else if (inputs['D'] && inputs['P']){
+      // Here we approximate the P_sat in air as P_sat of pure water (very close, but not the same)
+      let P_h2o = ASHRAE_Psat(inputs['D']); // because PropsSI does not work below 0°C
+      let Y = P_h2o/inputs['P'];
+      return Module.HAPropsSI(prop,'R',inputs['R'],'P',inputs['P'],'Y',Y);
+    }
+  }
+
+  // Esle return normal HAPropsSI
+  return Module.HAPropsSI(prop,xType,x,yType,y,zType,z);
+}
 
 // Import functions to math.js parser
 math.import({
@@ -857,7 +897,7 @@ math.import({
   },
   // HAPropsSI
   HAPropsSI: function (prop, xType, x, yType, y, zType, z) {
-    return Module.HAPropsSI(prop, xType, x, yType, y, zType, z);
+    return w_HAPropsSI(prop, xType, x, yType, y, zType, z);
   },
   // Nasa Glenn
   NasaSI: function (prop, xType, x, subs) {
