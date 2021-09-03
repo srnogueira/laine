@@ -768,7 +768,7 @@ function lkWrapper(prop, xType, x, yType, y) {
     case "dh":
       propFun = deltaH_TrVr;
       break;
-    case "dst":
+    case "ds":
       propFun = deltaSt_TrVr;
       break;
     case "Pr":
