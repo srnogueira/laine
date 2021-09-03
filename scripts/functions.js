@@ -728,6 +728,30 @@ function deltaSt_TrVr(Tr, Vr) {
 }
 
 /**
+ * Fugacity for Tr and Vr
+ * @param {number} Tr - Reduced temperature
+ * @param {number} Vr - Reduced volume
+ * @returns number
+ */
+ function fP_TrVr(Tr, Vr) {
+  // Constants
+  const lk = lkConstants();
+  const Z = Z_TrVr(Tr, Vr);
+  const B =
+    lk.b[0] - lk.b[1] / Tr - lk.b[2] / (Tr * Tr) - lk.b[3] / (Tr * Tr * Tr);
+  const C = lk.c[0] - lk.c[1] / Tr + lk.c[2] / (Tr * Tr * Tr);
+  const D = lk.d[0] + lk.d[1] / Tr;
+  const E =
+    (lk.c[3] / (2 * Tr * Tr * Tr * lk.gamma)) *
+    (lk.beta +
+      1 -
+      (lk.beta + 1 + lk.gamma / (Vr * Vr)) * Math.exp(-lk.gamma / (Vr * Vr)));
+
+  const lnfP = Z-1-Math.log(Z)+B/Vr+C/(2*Vr*Vr)+D/(5*Vr**5)+E;
+  return Math.exp(lnfP);
+}
+
+/**
  * Calculates a Z for Tr,Vr,Pr or Q pairs
  * @param {string} xType - Input x type
  * @param {number} x - Value of input x
@@ -770,6 +794,9 @@ function lkWrapper(prop, xType, x, yType, y) {
       break;
     case "ds":
       propFun = deltaSt_TrVr;
+      break;
+    case "fP":
+      propFun = fP_TrVr;
       break;
     case "Pr":
       propFun = (Tr, Vr) => (Z_TrVr(Tr, Vr) * Tr) / Vr;

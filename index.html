@@ -322,7 +322,7 @@ x*y=3
                   <optgroup label="Extensive">
                     <option value="P">Pressure (Pa)</option>
                     <option value="T">Temperature (K)</option>
-                    <option value="Q">Mass vapor quality (mol/mol)</option>
+                    <option value="Q">Mass vapor quality (-)</option>
                     <option value="acentric">Acentric factor (-)</option>
                     <option value="Z">Compressibility factor (-)</option>
                   </optgroup>
@@ -389,7 +389,7 @@ x*y=3
                       <option value="T" selected="selected">
                         Temperature (K)
                       </option>
-                      <option value="Q">Mass vapor quality (mol/mol)</option>
+                      <option value="Q">Mass vapor quality (-)</option>
                     </optgroup>
                     <optgroup label="Mass specific">
                       <option value="D">Density (kg/m^3)</option>
@@ -437,7 +437,7 @@ x*y=3
                         Pressure (Pa)
                       </option>
                       <option value="T">Temperature (K)</option>
-                      <option value="Q">Mass vapor quality (mol/mol)</option>
+                      <option value="Q">Mass vapor quality (-)</option>
                     </optgroup>
                     <optgroup label="Mass specific">
                       <option value="D">Density (kg/m^3)</option>
@@ -751,11 +751,11 @@ x*y=3
               <div class="hiddenMenuInputs">
                 <span>Property:</span>
                 <select class="lkProp">
-                  <option value="Tr">Reduced temperature</option>
-                  <option value="Pr">Reduced pressure</option>
-                  <option value="Vr">Reduced volume</option>
+                  <option value="Tr">Reduced temperature (-)</option>
+                  <option value="Pr">Reduced pressure (-)</option>
+                  <option value="Vr">Reduced volume (-)</option>
                   <option value="Z" selected="selected">
-                    Compressibility factor
+                    Compressibility factor (-)
                   </option>
                   <option value="dh">
                     Specific enthalpy departure : (h*-h)/R.Tc
@@ -763,40 +763,31 @@ x*y=3
                   <option value="ds">
                     Specific entropy departure : (s*-s)/R
                   </option>
+                  <option value="fP">
+                    Fugacity coefficient : f/P
+                  </option>
                 </select>
                 <span>Input (1):</span>
                 <div class="doubleInput">
                   <select class="lkInputType1">
                     <option value="Tr" selected="selected">
-                      Reduced temperature
+                      Reduced temperature (-)
                     </option>
-                    <option value="Pr">Reduced pressure</option>
-                    <option value="Vr">Reduced volume</option>
-                    <option value="Z">Compressibility factor</option>
-                    <option value="dh">
-                      Specific enthalpy departure : (h*-h)/R.Tc
-                    </option>
-                    <option value="ds">
-                      Specific entropy departure : (s*-s)/R
-                    </option>
+                    <option value="Pr">Reduced pressure (-)</option>
+                    <option value="Vr">Reduced volume (-)</option>
+                    <option value="Q">Mass vapor quality (-)</option>
                   </select>
                   <input class="lkInput1" placeholder="value" />
                 </div>
                 <span>Input (2):</span>
                 <div class="doubleInput">
                   <select class="lkInputType2">
-                    <option value="Tr">Reduced temperature</option>
+                    <option value="Tr">Reduced temperature (-)</option>
                     <option value="Pr" selected="selected">
-                      Reduced pressure
+                      Reduced pressure (-)
                     </option>
-                    <option value="Vr">Reduced volume</option>
-                    <option value="Z">Compressibility factor</option>
-                    <option value="dh">
-                      Specific enthalpy departure : (h*-h)/R.Tc
-                    </option>
-                    <option value="ds">
-                      Specific entropy departure : (s*-s)/R
-                    </option>
+                    <option value="Vr">Reduced volume (-)</option>
+                    <option value="Q">Mass vapor quality (-)</option>
                   </select>
                   <input class="lkInput2" placeholder="value" />
                 </div>
