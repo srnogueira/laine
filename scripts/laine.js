@@ -290,6 +290,7 @@ function checkLine(line, number, options={}) {
   if (line.startsWith("solve")){
     // Store info about the variables that should be shown
     let names = line.slice(5);
+    names = names.split("#")[0]; // remove comments in the same line
     names = names.split(",");
     if (options.showOnly){
       for (let name of names){
