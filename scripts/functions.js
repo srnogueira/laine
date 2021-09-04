@@ -802,13 +802,23 @@ function lkWrapper(prop, xType, x, yType, y) {
       propFun = (Tr, Vr) => (Z_TrVr(Tr, Vr) * Tr) / Vr;
       break;
     case "Vr":
-      return Vr;
+      if (Vr!==undefined){
+        return Vr;
+      } else{
+        propFun = (Tr,Vr) => Vr;
+      }
+      break;
     case "Tr":
-      return Tr;
+      if (Tr!==undefined){
+        return Tr;
+      } else{
+        propFun = (Tr,Vr) => Tr;
+      }
+      break;
     default:
       throw Error("Property not found");
   }
-
+    
   // Calculate property
   let fun;
   if (Tr !== undefined) {
@@ -848,8 +858,16 @@ function lkWrapper(prop, xType, x, yType, y) {
       ans = propFun(Tr, Vr);
     } else if (Q !== undefined) {
       fun = (x) => Pr_sat(x) - Pr;
-      Tr = rootFind(fun, 1.0); // Not tested
-      ans = lkWrapper(prop, "Tr", Tr, "Q", Q);
+      Tr = rootFind(fun, 1.0); 
+      if (Q === 1) {
+        ans = lkWrapper(prop, "Tr", Tr, "Pr", Pr);
+      } else if (Q === 0) {
+        ans = lkWrapper(prop, "Tr", Tr, "Pr", Pr + 1e-5);
+      } else {
+        ans =
+          lkWrapper(prop, "Tr", Tr, "Pr", Pr) * Q +
+          lkWrapper(prop, "Tr", Tr, "Pr", Pr + 1e-5) * (1 - Q);
+      }
     }
   } else if (Vr !== undefined) {
     if (Q !== undefined) {
