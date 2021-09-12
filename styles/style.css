@@ -13,7 +13,8 @@ input, select{
 }
 /* Site header */
 #laineID {
-    display:flex;
+    display:grid;
+    grid-template-columns: auto 1fr auto;
     padding-bottom:5px;
     align-items:end;
 }
