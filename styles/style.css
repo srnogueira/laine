@@ -172,6 +172,10 @@ table th, table td, table tr{
 #solBox, #errorBox , #about, #plotDrawBox{
     position:initial;
 }
+#solBox p{
+    margin-top:-5px;
+    margin-bottom: -5px;
+}
 #about{
     display:block;
     text-align: justify;
@@ -234,18 +238,19 @@ footer p{
 }
 @media print {
     .sideBar{
+    margin-top: 25px;
     display:block;
 	justify-content:center;
     }
     .interface {
 	display:flex;
-	flex-wrap:nowrap;
+	flex-wrap:wrap;
 	justify-content:center;
     }
     header {
 	display:none;
     }
-    .printFooter {
-	display:block;
+    footer {
+	display:none;
     }
 }

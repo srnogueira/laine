@@ -236,6 +236,9 @@ function formatMathJax(line) {
  */
 function displayResults(fast) {
   outDiv.innerText = ""; // clear space
+  while (solBox.lastChild.nodeName == "P"){
+    solBox.removeChild(solBox.lastChild);
+  }
   const solutions = Object.entries(parser.getAll());
   solutions.sort(); // alphabetically
   for (let solution of solutions) {
@@ -305,7 +308,7 @@ function writeAns(solution, fast) {
     msg = key + " = " + text;
     let para = document.createElement("p");
     para.textContent = "$$" + formatMathJax(msg) + "$$";
-    outDiv.appendChild(para);
+    solBox.appendChild(para);
   }
 }
 
