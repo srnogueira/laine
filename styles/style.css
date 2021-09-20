@@ -234,19 +234,15 @@ footer p{
 }
 @media print {
     .sideBar{
-	display:block;
-	flex-wrap:wrap;
+    display:block;
 	justify-content:center;
     }
     .interface {
 	display:flex;
-	flex-wrap:wrap;
+	flex-wrap:nowrap;
 	justify-content:center;
     }
-    .solBox{
-	margin-top:20px;
-    }
-    .laineMenu {
+    header {
 	display:none;
     }
     .printFooter {
