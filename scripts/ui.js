@@ -181,7 +181,7 @@ function formatMathJax(line) {
   const sides = line.split("=");
   line = sides[0] + "==" + sides[1];
   // Change underlines to [] to render correctly
-  const symbols = /(\*|\+|-|\/|\(|\^|=|,|\))/;
+  const symbols = /(\*|\+|-|\/|\(|\^|=|,|\)|')/;
   if (line.includes("_")) {
     const pieces = line.split("_");
     line = pieces[0];
