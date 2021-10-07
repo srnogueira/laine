@@ -99,8 +99,11 @@ class NasaData {
    * @returns - coefficient
    */
   getCoefs(T) {
+    if (T < this.rangeT[0]){
+      throw Error(`Temperature out of the range ${this.rangeT}`);
+    }
     for (let i = 1; i < this.rangeT.length; i++) {
-      if (T < this.rangeT[i]) {
+      if (T <= this.rangeT[i]) {
         return this.coeffs[i - 1];
       }
     }
@@ -479,10 +482,42 @@ function defaultDatabase() {
       [273.15, 373.1507, 600],
       18.01528
     ),
+    Ar: new NasaData(
+      [
+        [
+          0.000000000, 0.000000000, 2.500000000, 0.000000000,
+          0.000000000, 0.000000000, 0.000000000, -7.453750000e2,
+          4.379674910
+        ],
+        [
+          2.010538475e1, -5.992661070e-2, 2.500069401, -3.992141160e-8,
+          1.205272140e-11, -1.819015576e-15, 1.078576636e-19, -7.449939610e2,
+          4.379180110
+        ],
+      ],
+      [200, 1000, 6000],
+      39.9480000
+    ),
+    Air: new NasaData(
+      [
+        [
+          10047.2144946, -196.05300159, 5.00452822261, -0.0057523964993999996,
+          0.000010656677963280001, -7.9330272906e-9, 2.1835689348e-12, -165.19932561999997,
+          -4.464663567100001
+        ],
+        [
+          240448.68311384748, -1254.2005169861072, 5.13936481317, -0.000212647875994116,
+          7.041161374121402e-8, -1.068742987195576e-11, 6.56262691606636e-16, 6454.66834649,
+          -8.680695746900001
+        ],
+      ],
+      [200, 1000, 6000],
+      28.96968,
+    ),
   };
   return speciesNasa;
 }
-let speciesNasa = defaultDatabase();
+const speciesNasa = defaultDatabase();
 
 /**
  * Specific molar enthalpy - Nasa Glenn
@@ -576,9 +611,6 @@ function nasaFun(prop, xType, x, subs) {
   }
 
   switch (prop) {
-    case "MW":
-      return MW / 1e3;
-
     case "H0molar":
       return nasaH(T, a);
 
@@ -602,6 +634,22 @@ function nasaFun(prop, xType, x, subs) {
 
     case "G0":
       return ((nasaH(T, a) - T * nasaS(T, a)) / MW) * 1e3;
+
+    default:
+      throw "Undefined property";
+  }
+}
+
+function nasa1Fun(prop, subs) {
+  // Constants
+  const MW = speciesNasa[subs].MW;
+
+  switch (prop) {
+    case "M":
+      return MW / 1e3;
+
+    case "Rbar":
+      return 8.31451/MW;
 
     default:
       throw "Undefined property";
@@ -947,6 +995,10 @@ math.import({
   // Nasa Glenn
   NasaSI: function (prop, xType, x, subs) {
     return nasaFun(prop, xType, x, subs);
+  },
+  // Nasa Glenn trivials
+  Nasa1SI: function(prop,subs) {
+    return nasa1Fun(prop,subs);
   },
   // LeeKesler
   LeeKesler: function (prop, xType, x, yType, y) {

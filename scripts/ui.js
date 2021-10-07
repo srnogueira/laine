@@ -883,7 +883,24 @@ function writeNasa() {
   const inputType = document.querySelector(".nasaInputType").value;
   const input = document.querySelector(".nasaInput").value;
   // Write
-  const text = `${property}_${number}=NasaSI('${property}','${inputType}',${input},'${specie}')`;
+  // Check if is trivial
+  const trivials = [
+    "M",
+    "Rbar"
+  ];
+  let flag, text;
+  for (let trivial of trivials) {
+    if (property == trivial) {
+      flag = true;
+      break;
+    }
+  }
+  // Write function
+  if (flag) {
+    text = `${property}_${number}=Nasa1SI('${property}','${specie}')`;
+  } else {
+    text = `${property}_${number}=NasaSI('${property}','${inputType}',${input},'${specie}')`;
+  }
   number+=1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);

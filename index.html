@@ -60,7 +60,7 @@
           <div class="dropdownContent">
             <button id="openPropsSI">Pure substance</button>
             <button id="openHAPropsSI">Humid air</button>
-            <button id="openNasa">Reactions</button>
+            <button id="openNasa">NASA Glenn</button>
             <button id="openLk">Lee-Kesler</button>
           </div>
         </div>
@@ -638,6 +638,7 @@ x*y=3
               <div class="hiddenMenuInputs">
                 <span> Fluid: </span>
                 <select class="nasaSpecie">
+                  <option value="Air">Air | Air(g)</option>
                   <optgroup label="Carbon">
                     <option value="C_s">Carbon | C(s)</option>
                     <option value="CO">Carbon monoxide | CO(g)</option>
@@ -671,11 +672,14 @@ x*y=3
                     <option value="O2">Oxygen gas | O2(g)</option>
                     <option value="OH">Hydroxide | OH(g)</option>
                   </optgroup>
+                  <optgroup label="Others">
+                    <option value="Ar">Argon | Ar(g)</option>
+                  </optgroup>
                 </select>
                 <span>Property: </span>
                 <select class="nasaProp">
                   <option value="T">Temperature (K)</option>
-                  <option value="MW">Molecular mass (kg/mol)</option>
+                  <option value="M">Molecular mass (kg/mol)</option>
                   <optgroup label="Mass basis">
                     <option value="Cp0">
                       Specific heat for standard state (J/kg.K)
@@ -712,7 +716,6 @@ x*y=3
                     <option value="T" selected="selected">
                       Temperature (K)
                     </option>
-                    <option value="MW">Molecular mass (kg/mol)</option>
                     <optgroup label="Mass basis">
                       <option value="Cp0">
                         Specific heat for standard state (J/kg.K)
