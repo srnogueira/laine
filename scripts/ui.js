@@ -886,7 +886,9 @@ function writeNasa() {
   // Check if is trivial
   const trivials = [
     "M",
-    "Rbar"
+    "Rbar",
+    "Hf",
+    "Hfmolar"
   ];
   let flag, text;
   for (let trivial of trivials) {

@@ -86,11 +86,13 @@ class NasaData {
    * @param {[number[]]} coeffs - Array of possible coefficients
    * @param {number[]} rangeT - Temperature limits
    * @param {number} MW - Molecular weight
+   * @param {number} hf - Heat of formation
    */
-  constructor(coeffs, rangeT, MW) {
+  constructor(coeffs, rangeT, MW, hf) {
     this.coeffs = coeffs;
     this.rangeT = rangeT;
     this.MW = MW;
+    this.hf = hf;
   }
 
   /**
@@ -131,7 +133,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      28.0134
+      28.0134,
+      0,
     ),
     O2: new NasaData(
       [
@@ -147,7 +150,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      31.9988
+      31.9988,
+      0
     ),
     CO2: new NasaData(
       [
@@ -163,7 +167,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      44.0095
+      44.0095,
+      -393510
     ),
     CO: new NasaData(
       [
@@ -179,7 +184,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      28.0101
+      28.0101,
+      -110535
     ),
     H2O: new NasaData(
       [
@@ -195,7 +201,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      18.01528
+      18.01528,
+      -241826
     ),
     OH: new NasaData(
       [
@@ -211,7 +218,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      17.00734
+      17.00734,
+      37278
     ),
     H2: new NasaData(
       [
@@ -227,7 +235,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      2.01588
+      2.01588,
+      0
     ),
     H: new NasaData(
       [
@@ -239,7 +248,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      1.00794
+      1.00794,
+      217999
     ),
     NO: new NasaData(
       [
@@ -255,7 +265,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      30.0061
+      30.0061,
+      91271
     ),
     NO2: new NasaData(
       [
@@ -271,7 +282,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      46.0055
+      46.0055,
+      34193
     ),
     N: new NasaData(
       [
@@ -283,7 +295,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      14.0067
+      14.0067,
+      472680
     ),
     O: new NasaData(
       [
@@ -299,7 +312,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      15.9994
+      15.9994,
+      249175
     ),
     CH4: new NasaData(
       [
@@ -315,7 +329,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      16.04246
+      16.04246,
+      -74600
     ),
     C2H4: new NasaData(
       [
@@ -331,7 +346,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      28.05316
+      28.05316,
+      52500
     ),
     C2H6: new NasaData(
       [
@@ -347,7 +363,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      30.06904
+      30.06904,
+      -83852
     ),
     C3H8: new NasaData(
       [
@@ -363,7 +380,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      44.09562
+      44.09562,
+      -104680
     ),
     C4H10: new NasaData(
       [
@@ -379,7 +397,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      58.1222
+      58.1222,
+      -125790
     ),
     C5H12: new NasaData(
       [
@@ -395,7 +414,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      72.14878
+      72.14878,
+      -146760
     ),
     C6H14: new NasaData(
       [
@@ -411,7 +431,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      86.17536
+      86.17536,
+      -166920
     ),
     C7H16: new NasaData(
       [
@@ -427,7 +448,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      100.20194
+      100.20194,
+      -187780
     ),
     C8H18: new NasaData(
       [
@@ -443,7 +465,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1e3, 6e3],
-      114.22852
+      114.22852,
+      -208750
     ),
     C_s: new NasaData(
       [
@@ -464,7 +487,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 600, 2e3, 6e3],
-      12.0107
+      12.0107,
+      0
     ),
     H2O_l: new NasaData(
       [
@@ -480,7 +504,8 @@ function defaultDatabase() {
         ],
       ],
       [273.15, 373.1507, 600],
-      18.01528
+      18.01528,
+      -285830,
     ),
     Ar: new NasaData(
       [
@@ -496,7 +521,8 @@ function defaultDatabase() {
         ],
       ],
       [200, 1000, 6000],
-      39.9480000
+      39.9480000,
+      0
     ),
     Air: new NasaData(
       [
@@ -513,6 +539,7 @@ function defaultDatabase() {
       ],
       [200, 1000, 6000],
       28.9651159,
+      -126
     ),
     C8H18_l: new NasaData(
       [
@@ -524,6 +551,31 @@ function defaultDatabase() {
       ],
       [216.370,400.0007],
       114.2285200,
+      -250260
+    ),
+    C7H16_l: new NasaData(
+      [],
+      [],
+      100.20194,
+      -224350
+    ),
+    C5H12_l: new NasaData(
+      [],
+      [],
+      72.14878,
+      -173490
+    ),
+    C4H10_l: new NasaData(
+      [],
+      [],
+      58.12220,
+      -150664
+    ),
+    C3H8_l: new NasaData(
+      [],
+      [],
+      44.09562,
+      -128228
     ),
   };
   return speciesNasa;
@@ -654,13 +706,20 @@ function nasaFun(prop, xType, x, subs) {
 function nasa1Fun(prop, subs) {
   // Constants
   const MW = speciesNasa[subs].MW;
+  const hf = speciesNasa[subs].hf;
 
   switch (prop) {
     case "M":
       return MW / 1e3;
 
     case "Rbar":
-      return 8.31451/MW;
+      return 8.31451 / MW;
+
+    case "Hfmolar":
+      return hf;
+    
+    case "Hf":
+      return hf / MW * 1e3;
 
     default:
       throw "Undefined property";

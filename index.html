@@ -647,10 +647,15 @@ x*y=3
                     <option value="C2H4">Ethene | C2H4(g)</option>
                     <option value="C2H6">Ethane | C2H6(g)</option>
                     <option value="C3H8">Propane | C3H8(g)</option>
+                    <option value="C3H8_l">Propane liquid* | C3H8(l)</option>
                     <option value="C4H10">n-Butane | C4H10(g)</option>
+                    <option value="C4H10_l">n-Butane liquid* | C4H10(l)</option>
                     <option value="C5H12">n-Pentane | C5H12(g)</option>
+                    <option value="C5H12_l">n-Pentane liquid* | C5H12(l)</option>
                     <option value="C6H14">n-Hexane | C6H14(g)</option>
+                    <option value="C6H14_l">n-Hexane liquid* | C6H14(l)</option>
                     <option value="C7H16">n-Heptane | C7H16(g)</option>
+                    <option value="C7H16_l">n-Heptane liquid* | C7H16(l)</option>
                     <option value="C8H18">n-Octane | C8H18(g)</option>
                     <option value="C8H18_l">n-Octane liquid | C8H18(l)</option>
                   </optgroup>
@@ -680,8 +685,12 @@ x*y=3
                 <span>Property: </span>
                 <select class="nasaProp">
                   <option value="T">Temperature (K)</option>
-                  <option value="M">Molecular mass (kg/mol)</option>
-                  <option value="Rbar">Gas constant (J/g/K)</option>
+                  <optgroup label="Constants">
+                    <option value="M">Molecular mass (kg/mol)</option>
+                    <option value="Rbar">Gas constant (J/g/K)</option>
+                    <option value="Hf">Heat of formation [mass] (J/kg)</option>
+                    <option value="Hfmolar">Heat of formation [molar] (J/mol)</option>
+                  </optgroup>
                   <optgroup label="Mass basis">
                     <option value="Cp0">
                       Specific heat for standard state (J/kg.K)
@@ -748,6 +757,14 @@ x*y=3
                     </optgroup>
                   </select>
                 </div>
+                <span>Standard state:</span>
+                <ul>
+                  <li>Gases: ideal gas at 1 bar</li>
+                  <li>Liquid: liquid at 1 atm</li>
+                  <li>Solid: pure cristalline at 1 atm</li>
+                </ul>
+                <span>Observation:</span> 
+                <span>Substances marked with * only have constant properties</span>
                 <button class="butNasa">Add as a new line of code!</button>
               </div>
             </div>
