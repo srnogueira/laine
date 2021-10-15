@@ -1,24 +1,10 @@
 "use strict";
 
-/*
-  imported
-*/ 
-// from third-party
 /*global showdown, MathJax, math */
-
-// from laine.js
 /*global checkLine, parser, laineSolver */
-
-// Imported from plots.js
 /*global checkParametric, plotParametric, plotStates, exportData, getStates */
-
-// Imported from editor.js
 /*global editor, textBox*/
 
-/*
-  exported
-*/
-// to html
 /*exported saveFile, exportDataFile, loadFileAsText */
 
 /*
@@ -32,6 +18,7 @@ const plotPropBox = document.getElementById("contentParametric");
 const parametricBox = document.getElementById("contentPropPlot");
 const mathDiv = document.querySelector(".mathDiv");
 const outDiv = document.querySelector(".out");
+const aboutDiv = document.getElementById("about");
 
 /*
   Solver wrapper
@@ -42,7 +29,7 @@ const outDiv = document.querySelector(".out");
  * @param {bool} isfast - If is fast
  * @returns bool
  */
- function laine(isfast) {
+function laine(isfast) {
   const lines = editor.getValue();
   if (!isfast) {
     writeEqs(lines);
@@ -54,7 +41,7 @@ const outDiv = document.querySelector(".out");
     return false;
   }
   displayResults(isfast);
-  if (isfast){
+  if (isfast) {
     editor.refresh(); // avoid problems with resize
   }
   return true;
@@ -62,7 +49,7 @@ const outDiv = document.querySelector(".out");
 
 /*
   Render equations
-*/ 
+*/
 
 /**
  * Formats the equations for MathJax render and using showdown
@@ -96,7 +83,7 @@ function writeEqs(inputText) {
       }
     } else {
       // Disables for solve
-      if (!lines[i].startsWith("solve")){
+      if (!lines[i].startsWith("solve")) {
         // Disables markdown format if there is an equation
         let flag = false;
         const dels = [
@@ -211,7 +198,7 @@ function formatMathJax(line) {
     }
   }
   // Change greek variables names into symbols (not optimized)
-  if (line.includes("$")){
+  if (line.includes("$")) {
     for (let letter of greek) {
       if (line.includes(letter)) {
         const pieces = line.split(letter);
@@ -236,7 +223,7 @@ function formatMathJax(line) {
  */
 function displayResults(fast) {
   outDiv.innerText = ""; // clear space
-  while (solBox.lastChild.nodeName == "P"){
+  while (solBox.lastChild.nodeName == "P") {
     solBox.removeChild(solBox.lastChild);
   }
   const solutions = Object.entries(parser.getAll());
@@ -259,7 +246,7 @@ function displayResults(fast) {
  * Writes the answers in the results box
  * @param {[string,number|object]} solution - Solution from parser
  * @param {bool} fast - If the option is fast
- * @returns 
+ * @returns
  */
 function writeAns(solution, fast) {
   let key = solution[0];
@@ -271,7 +258,7 @@ function writeAns(solution, fast) {
     text = value.toString();
   } else if (typeof value === "object") {
     // Print common objects
-    if (value.type === undefined){
+    if (value.type === undefined) {
       value = Object.entries(value);
       text = "{";
       const valueLength = value.length;
@@ -282,19 +269,19 @@ function writeAns(solution, fast) {
         text += value[i][0] + " : " + value[i][1];
         if (i < valueLength - 1) {
           text += " ,";
-          if(fast){
-            text += "<br>"; 
+          if (fast) {
+            text += "<br>";
           }
         }
       }
       text += "}";
-    } else{
+    } else {
       // Print units, matrix and etc.
       text = value.toString();
     }
-  } else if(typeof value === "string"){
+  } else if (typeof value === "string") {
     text = `"${value.toString()}"`;
-  } else{
+  } else {
     return null;
   }
   // Render
@@ -472,6 +459,7 @@ function hiddenMenu(openId, contentId, closeId) {
   const content = document.getElementById(contentId);
   const close = document.getElementById(closeId);
   open.onclick = function () {
+    aboutDiv.style.display = "none";
     clearDropdown();
     content.style.display = "block";
     editor.refresh();
@@ -482,7 +470,7 @@ function hiddenMenu(openId, contentId, closeId) {
   };
 }
 
-// Applies function to hidden menus 
+// Applies function to hidden menus
 hiddenMenu("openPropsSI", "contentPropsSI", "closePropsSI");
 hiddenMenu("openHAPropsSI", "contentHAPropsSI", "closeHAPropsSI");
 hiddenMenu("openNasa", "contentNasa", "closeNasa");
@@ -493,6 +481,7 @@ hiddenMenu("openParametric", "contentParametric", "closeParametric");
 const plotMenuButton = document.getElementById("openParametric");
 plotMenuButton.onclick = function () {
   clearDropdown();
+  aboutDiv.style.display = "none";
   // Get names from problem
   let names;
   try {
@@ -529,6 +518,7 @@ hiddenMenu("openPropPlot", "contentPropPlot", "closePropPlot");
 const propPlotMenuButton = document.getElementById("openPropPlot");
 propPlotMenuButton.onclick = function () {
   clearDropdown();
+  aboutDiv.style.display = "none";
   // Erase state table
   stateTable.innerHTML = "";
   tableSize = 1;
@@ -540,6 +530,59 @@ propPlotMenuButton.onclick = function () {
   }
   editor.refresh();
 };
+
+/**
+ * Hide inputs for certain options
+ */
+
+// NasaSI
+const nasaProp = document.querySelector(".nasaProp");
+
+function hideNasa() {
+  if (
+    nasaProp.value == "M" ||
+    nasaProp.value == "Rbar" ||
+    nasaProp.value == "Hf" ||
+    nasaProp.value == "Hfmolar"
+  ) {
+    document.getElementById("nasaInputTitle").style.display = "none";
+    document.getElementById("nasaInputDiv").style.display = "none";
+  } else {
+    document.getElementById("nasaInputTitle").style.display = "";
+    document.getElementById("nasaInputDiv").style.display = "";
+  }
+}
+
+hideNasa();
+nasaProp.addEventListener("change", hideNasa);
+
+// PropsSI
+const propsSIselect = document.querySelector(".Property");
+
+function hidePropsSI() {
+  if (
+    propsSIselect.value == "acentric" ||
+    propsSIselect.value == "M" ||
+    propsSIselect.value == "PCRIT" ||
+    propsSIselect.value == "TCRIT" ||
+    propsSIselect.value == "RHOCRIT" ||
+    propsSIselect.value == "RHOMOLAR_CRITICAL" ||
+    propsSIselect.value == "Rbar"
+  ) {
+    document.getElementById("propsSItext1").style.display = "none";
+    document.getElementById("propsSIinput1").style.display = "none";
+    document.getElementById("propsSItext2").style.display = "none";
+    document.getElementById("propsSIinput2").style.display = "none";
+  } else {
+    document.getElementById("propsSItext1").style.display = "";
+    document.getElementById("propsSIinput1").style.display = "";
+    document.getElementById("propsSItext2").style.display = "";
+    document.getElementById("propsSIinput2").style.display = "";
+  }
+}
+
+hidePropsSI();
+propsSIselect.addEventListener("change", hidePropsSI);
 
 /*
   Special functions for Property plots
@@ -565,7 +608,7 @@ function checkStates(text) {
   // Parse PropsSI calls into states
   let states;
   try {
-    states=getStates(text);
+    states = getStates(text);
   } catch (e) {
     displayError(e);
   }
@@ -721,7 +764,7 @@ propPlotButton.onclick = function () {
   let div = document.getElementById("canvasDiv");
   div.innerText = "";
   let canvas;
-  let stateList = []
+  let stateList = [];
   let list = stateTable.children;
   for (let i = 0; i < list.length; i++) {
     const stateID = list[i].children[1].value;
@@ -829,7 +872,7 @@ function writePropsSI() {
     "TCRIT",
     "RHOCRIT",
     "RHOMOLAR_CRITICAL",
-    "Rbar"
+    "Rbar",
   ];
   let flag, text;
   for (let trivial of trivials) {
@@ -844,7 +887,7 @@ function writePropsSI() {
   } else {
     text = `${property}_${number}=PropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${fluid}')`;
   }
-  number+=1;
+  number += 1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
   clearDropdown();
@@ -866,7 +909,7 @@ function writeHAPropsSI() {
   const value3 = document.querySelector(".HAvalue3").value;
   // Write
   const text = `${property}_${number}=HAPropsSI('${property}','${input1}',${value1},'${input2}',${value2},'${input3}',${value3})`;
-  number+=1;
+  number += 1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
@@ -884,12 +927,7 @@ function writeNasa() {
   const input = document.querySelector(".nasaInput").value;
   // Write
   // Check if is trivial
-  const trivials = [
-    "M",
-    "Rbar",
-    "Hf",
-    "Hfmolar"
-  ];
+  const trivials = ["M", "Rbar", "Hf", "Hfmolar"];
   let flag, text;
   for (let trivial of trivials) {
     if (property == trivial) {
@@ -903,7 +941,7 @@ function writeNasa() {
   } else {
     text = `${property}_${number}=NasaSI('${property}','${inputType}',${input},'${specie}')`;
   }
-  number+=1;
+  number += 1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
@@ -920,7 +958,7 @@ function writelk() {
   const input2 = document.querySelector(".lkInput2").value;
   const inputType2 = document.querySelector(".lkInputType2").value;
   let text = `${property}_${number}=LeeKesler('${property}','${inputType1}',${input1},'${inputType2}',${input2})`;
-  number+=1;
+  number += 1;
   textBox.value += "\n" + text;
   editor.getDoc().setValue(textBox.value);
 }
@@ -967,7 +1005,7 @@ function saveFile() {
  * Destroys downloaded element
  * @param {object} event - An event
  */
- function destroyClickedElement(event) {
+function destroyClickedElement(event) {
   document.body.removeChild(event.target);
 }
 
@@ -991,7 +1029,7 @@ function exportDataFile() {
 /**
  * Wrapper to load a file
  */
- function loadFileAsText() {
+function loadFileAsText() {
   clearAll();
   fileInput.click();
   // Returns to normal editor

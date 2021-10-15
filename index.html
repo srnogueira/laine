@@ -36,11 +36,28 @@
       <div id="laineID">
         <img alt="laine-logo" width="45" height="45" src="img/laine.png" />
         <h1>laine</h1>
-        <form action="https://www.paypal.com/donate" method="post" target="_top">
+        <form
+          action="https://www.paypal.com/donate"
+          method="post"
+          target="_top"
+        >
           <input type="hidden" name="hosted_button_id" value="7XR3MYS7H92Q8" />
-          <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-          <img alt="" border="0" src="https://www.paypal.com/en_BR/i/scr/pixel.gif" width="1" height="1" />
-        </form>    
+          <input
+            type="image"
+            src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif"
+            border="0"
+            name="submit"
+            title="PayPal - The safer, easier way to pay online!"
+            alt="Donate with PayPal button"
+          />
+          <img
+            alt=""
+            border="0"
+            src="https://www.paypal.com/en_BR/i/scr/pixel.gif"
+            width="1"
+            height="1"
+          />
+        </form>
       </div>
       <!-- Navigation menu -->
       <nav id="laineMenu">
@@ -382,12 +399,9 @@ x*y=3
                     <option value="V">Viscosity (Pa.s)</option>
                   </optgroup>
                 </select>
-                <span>Input (1): </span>
-                <div class="doubleInput">
-                  <input
-                    class="value1"
-                    placeholder="input a value or variable"
-                  />
+                <span id="propsSItext1">Input (1): </span>
+                <div id="propsSIinput1" class="doubleInput">
+                  <input class="value1" placeholder="value or variable (1)" />
                   <select class="Input1">
                     <optgroup label="Extensive">
                       <option value="P">Pressure (Pa)</option>
@@ -430,12 +444,9 @@ x*y=3
                     </optgroup>
                   </select>
                 </div>
-                <span>Input (2):</span>
-                <div class="doubleInput">
-                  <input
-                    class="value2"
-                    placeholder="input a value or variable"
-                  />
+                <span id="propsSItext2">Input (2):</span>
+                <div id="propsSIinput2" class="doubleInput">
+                  <input class="value2" placeholder="value or variable (2)" />
                   <select class="Input2">
                     <optgroup label="Extensive">
                       <option value="P" selected="selected">
@@ -537,22 +548,18 @@ x*y=3
                 </select>
                 <span>Input (1):</span>
                 <div class="doubleInput">
-                  <input
-                    class="HAvalue1"
-                    placeholder="input a value or variable"
-                  />
+                  <input class="HAvalue1" placeholder="value or variable (1)" />
                   <select class="HAInput1">
                     <optgroup label="Obligatory">
-                      <option value="P" selected="selected">Pressure (Pa)</option>
+                      <option value="P" selected="selected">
+                        Pressure (Pa)
+                      </option>
                     </optgroup>
                   </select>
                 </div>
                 <span>Input (2):</span>
                 <div class="doubleInput">
-                  <input
-                    class="HAvalue2"
-                    placeholder="input a value or variable"
-                  />
+                  <input class="HAvalue2" placeholder="value or variable (2)" />
                   <select class="HAInput2">
                     <optgroup label="Temperatures">
                       <option value="B">Wet-Bulb Temperature (K)</option>
@@ -587,10 +594,7 @@ x*y=3
                 </div>
                 <span>Input (3):</span>
                 <div class="doubleInput">
-                  <input
-                    class="HAvalue3"
-                    placeholder="input a value or variable"
-                  />
+                  <input class="HAvalue3" placeholder="value or variable (3)" />
                   <select class="HAInput3">
                     <optgroup label="Temperatures">
                       <option value="B">Wet-Bulb Temperature (K)</option>
@@ -651,11 +655,15 @@ x*y=3
                     <option value="C4H10">n-Butane | C4H10(g)</option>
                     <option value="C4H10_l">n-Butane liquid* | C4H10(l)</option>
                     <option value="C5H12">n-Pentane | C5H12(g)</option>
-                    <option value="C5H12_l">n-Pentane liquid* | C5H12(l)</option>
+                    <option value="C5H12_l">
+                      n-Pentane liquid* | C5H12(l)
+                    </option>
                     <option value="C6H14">n-Hexane | C6H14(g)</option>
                     <option value="C6H14_l">n-Hexane liquid* | C6H14(l)</option>
                     <option value="C7H16">n-Heptane | C7H16(g)</option>
-                    <option value="C7H16_l">n-Heptane liquid* | C7H16(l)</option>
+                    <option value="C7H16_l">
+                      n-Heptane liquid* | C7H16(l)
+                    </option>
                     <option value="C8H18">n-Octane | C8H18(g)</option>
                     <option value="C8H18_l">n-Octane liquid | C8H18(l)</option>
                   </optgroup>
@@ -689,7 +697,9 @@ x*y=3
                     <option value="M">Molecular mass (kg/mol)</option>
                     <option value="Rbar">Gas constant (J/g/K)</option>
                     <option value="Hf">Heat of formation [mass] (J/kg)</option>
-                    <option value="Hfmolar">Heat of formation [molar] (J/mol)</option>
+                    <option value="Hfmolar">
+                      Heat of formation [molar] (J/mol)
+                    </option>
                   </optgroup>
                   <optgroup label="Mass basis">
                     <option value="Cp0">
@@ -720,9 +730,12 @@ x*y=3
                     </option>
                   </optgroup>
                 </select>
-                <span>Input:</span>
-                <div class="doubleInput">
-                  <input class="nasaInput" placeholder="value" />
+                <span id="nasaInputTitle">Input (1):</span>
+                <div id="nasaInputDiv" class="doubleInput">
+                  <input
+                    class="nasaInput"
+                    placeholder="value or variable (1)"
+                  />
                   <select class="nasaInputType">
                     <option value="T" selected="selected">
                       Temperature (K)
@@ -763,8 +776,10 @@ x*y=3
                   <li>Liquid: liquid at 1 atm</li>
                   <li>Solid: pure cristalline at 1 atm</li>
                 </ul>
-                <span>Observation:</span> 
-                <span>Substances marked with * only have constant properties</span>
+                <span>Observation:</span>
+                <span
+                  >Substances marked with * only have constant properties</span
+                >
                 <button class="butNasa">Add as a new line of code!</button>
               </div>
             </div>
@@ -790,12 +805,11 @@ x*y=3
                   <option value="ds">
                     Specific entropy departure : (s*-s)/R
                   </option>
-                  <option value="fP">
-                    Fugacity coefficient : f/P
-                  </option>
+                  <option value="fP">Fugacity coefficient : f/P</option>
                 </select>
                 <span>Input (1):</span>
                 <div class="doubleInput">
+                  <input class="lkInput1" placeholder="value or variable (1)" />
                   <select class="lkInputType1">
                     <option value="Tr" selected="selected">
                       Reduced temperature (-)
@@ -804,10 +818,10 @@ x*y=3
                     <option value="Vr">Reduced volume (-)</option>
                     <option value="Q">Mass vapor quality (-)</option>
                   </select>
-                  <input class="lkInput1" placeholder="value" />
                 </div>
                 <span>Input (2):</span>
                 <div class="doubleInput">
+                  <input class="lkInput2" placeholder="value or variable (2)" />
                   <select class="lkInputType2">
                     <option value="Tr">Reduced temperature (-)</option>
                     <option value="Pr" selected="selected">
@@ -816,7 +830,6 @@ x*y=3
                     <option value="Vr">Reduced volume (-)</option>
                     <option value="Q">Mass vapor quality (-)</option>
                   </select>
-                  <input class="lkInput2" placeholder="value" />
                 </div>
                 <button class="butlk">Add as a new line of code!</button>
               </div>
@@ -907,10 +920,10 @@ x*y=3
     ></script>
     <!-- thermodynamic functions javascript -->
     <script defer src="scripts/coolprop/coolprop.js"></script>
-    <script defer src="scripts/functions.js"></script> 
-    <script defer src="scripts/laine.js"></script> 
-    <script defer src="scripts/plots.js"></script> 
-    <script defer src="scripts/ui.js"></script> 
+    <script defer src="scripts/functions.js"></script>
+    <script defer src="scripts/laine.js"></script>
+    <script defer src="scripts/plots.js"></script>
+    <script defer src="scripts/ui.js"></script>
     <!-- not so important stuff -->
     <!-- Install -->
     <script src="app.js"></script>
@@ -936,11 +949,17 @@ x*y=3
       rel="stylesheet"
     />
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-L5F9LQ78HJ"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-L5F9LQ78HJ"
+    ></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-L5F9LQ78HJ');
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-L5F9LQ78HJ");
     </script>
+  </body>
 </html>

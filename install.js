@@ -2,7 +2,7 @@
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches
-      .open("laine-store.09.10.21")
+      .open("laine-store.15.10.21")
       .then((cache) =>
         cache.addAll([
           "./",
@@ -24,15 +24,17 @@ self.addEventListener("install", (e) => {
 });
 
 // Delete old cache
-self.addEventListener('activate', (event) => {
-  var cacheKeeplist = ['laine-store.09.10.21'];
+self.addEventListener("activate", (event) => {
+  var cacheKeeplist = ["laine-store.15.10.21"];
   event.waitUntil(
     caches.keys().then((keyList) => {
-      return Promise.all(keyList.map((key) => {
-        if (cacheKeeplist.indexOf(key) === -1) {
-          return caches.delete(key);
-        }
-      }));
+      return Promise.all(
+        keyList.map((key) => {
+          if (cacheKeeplist.indexOf(key) === -1) {
+            return caches.delete(key);
+          }
+        })
+      );
     })
   );
 });
