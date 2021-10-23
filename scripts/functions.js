@@ -101,7 +101,7 @@ class NasaData {
    * @returns - coefficient
    */
   getCoefs(T) {
-    if (T < this.rangeT[0]){
+    if (T < this.rangeT[0]) {
       throw Error(`Temperature out of the range ${this.rangeT}`);
     }
     for (let i = 1; i < this.rangeT.length; i++) {
@@ -134,7 +134,7 @@ function defaultDatabase() {
       ],
       [200, 1e3, 6e3],
       28.0134,
-      0,
+      0
     ),
     O2: new NasaData(
       [
@@ -505,36 +505,31 @@ function defaultDatabase() {
       ],
       [273.15, 373.1507, 600],
       18.01528,
-      -285830,
+      -285830
     ),
     Ar: new NasaData(
       [
+        [0.0, 0.0, 2.5, 0.0, 0.0, 0.0, 0.0, -7.45375e2, 4.37967491],
         [
-          0.000000000, 0.000000000, 2.500000000, 0.000000000,
-          0.000000000, 0.000000000, 0.000000000, -7.453750000e2,
-          4.379674910
-        ],
-        [
-          2.010538475e1, -5.992661070e-2, 2.500069401, -3.992141160e-8,
-          1.205272140e-11, -1.819015576e-15, 1.078576636e-19, -7.449939610e2,
-          4.379180110
+          2.010538475e1, -5.99266107e-2, 2.500069401, -3.99214116e-8,
+          1.20527214e-11, -1.819015576e-15, 1.078576636e-19, -7.44993961e2,
+          4.37918011,
         ],
       ],
       [200, 1000, 6000],
-      39.9480000,
+      39.948,
       0
     ),
     Air: new NasaData(
       [
         [
-          1.009950160e+04,-1.968275610e+02, 5.009155110e+00,-5.761013730e-03,
-          1.066859930e-05,-7.940297970e-09, 2.185231910e-12,-1.767967310e+02,
-          -3.921504225e+00
+          1.00995016e4, -1.96827561e2, 5.00915511, -5.76101373e-3,
+          1.06685993e-5, -7.94029797e-9, 2.18523191e-12, -1.76796731e2,
+          -3.921504225,
         ],
         [
-          2.415214430e+05,-1.257874600e+03, 5.144558670e+00,-2.138541790e-04,
-          7.065227840e-08,-1.071483490e-11,6.577800150e-16,6.462263190e+03,
-          -8.147411905e+00
+          2.41521443e5, -1.2578746e3, 5.14455867, -2.13854179e-4, 7.06522784e-8,
+          -1.07148349e-11, 6.57780015e-16, 6.46226319e3, -8.147411905,
         ],
       ],
       [200, 1000, 6000],
@@ -544,39 +539,19 @@ function defaultDatabase() {
     C8H18_l: new NasaData(
       [
         [
-          -1.683314826e+07, 3.532615080e+05, -2.967857531e+03, 1.316703807e+01,
-          -3.186822410e-02, 4.075748010e-05, -2.153277285e-08, -1.588494258e+06,
-           1.521639569e+04
-        ]
+          -1.683314826e7, 3.53261508e5, -2.967857531e3, 1.316703807e1,
+          -3.18682241e-2, 4.07574801e-5, -2.153277285e-8, -1.588494258e6,
+          1.521639569e4,
+        ],
       ],
-      [216.370,400.0007],
-      114.2285200,
+      [216.37, 400.0007],
+      114.22852,
       -250260
     ),
-    C7H16_l: new NasaData(
-      [],
-      [],
-      100.20194,
-      -224350
-    ),
-    C5H12_l: new NasaData(
-      [],
-      [],
-      72.14878,
-      -173490
-    ),
-    C4H10_l: new NasaData(
-      [],
-      [],
-      58.12220,
-      -150664
-    ),
-    C3H8_l: new NasaData(
-      [],
-      [],
-      44.09562,
-      -128228
-    ),
+    C7H16_l: new NasaData([], [297, 299], 100.20194, -224350),
+    C5H12_l: new NasaData([], [297, 299], 72.14878, -173490),
+    C4H10_l: new NasaData([], [297, 299], 58.1222, -150664),
+    C3H8_l: new NasaData([], [297, 299], 44.09562, -128228),
   };
   return speciesNasa;
 }
@@ -675,16 +650,26 @@ function nasaFun(prop, xType, x, subs) {
 
   switch (prop) {
     case "H0molar":
-      return nasaH(T, a);
+      if (a == undefined) {
+        // For liquids on reference
+        return speciesNasa[subs].hf;
+      } else {
+        return nasaH(T, a);
+      }
 
     case "S0molar":
-      return nasaS(T, a);
+      return nasaS(T, a); 
 
     case "Cp0molar":
       return nasaCp(T, a);
 
     case "H0":
-      return (nasaH(T, a) / MW) * 1e3;
+      if (a == undefined) {
+        // For liquids on reference
+        return (speciesNasa[subs].hf / MW) * 1e3;
+      } else {
+        return (nasaH(T, a) / MW) * 1e3;
+      }
 
     case "S0":
       return (nasaS(T, a) / MW) * 1e3;
@@ -717,9 +702,9 @@ function nasa1Fun(prop, subs) {
 
     case "Hfmolar":
       return hf;
-    
+
     case "Hf":
-      return hf / MW * 1e3;
+      return (hf / MW) * 1e3;
 
     default:
       throw "Undefined property";
@@ -851,7 +836,7 @@ function deltaSt_TrVr(Tr, Vr) {
  * @param {number} Vr - Reduced volume
  * @returns number
  */
- function fP_TrVr(Tr, Vr) {
+function fP_TrVr(Tr, Vr) {
   // Constants
   const lk = lkConstants();
   const Z = Z_TrVr(Tr, Vr);
@@ -865,7 +850,8 @@ function deltaSt_TrVr(Tr, Vr) {
       1 -
       (lk.beta + 1 + lk.gamma / (Vr * Vr)) * Math.exp(-lk.gamma / (Vr * Vr)));
 
-  const lnfP = Z-1-Math.log(Z)+B/Vr+C/(2*Vr*Vr)+D/(5*Vr**5)+E;
+  const lnfP =
+    Z - 1 - Math.log(Z) + B / Vr + C / (2 * Vr * Vr) + D / (5 * Vr ** 5) + E;
   return Math.exp(lnfP);
 }
 
@@ -920,23 +906,23 @@ function lkWrapper(prop, xType, x, yType, y) {
       propFun = (Tr, Vr) => (Z_TrVr(Tr, Vr) * Tr) / Vr;
       break;
     case "Vr":
-      if (Vr!==undefined){
+      if (Vr !== undefined) {
         return Vr;
-      } else{
-        propFun = (Tr,Vr) => Vr;
+      } else {
+        propFun = (Tr, Vr) => Vr;
       }
       break;
     case "Tr":
-      if (Tr!==undefined){
+      if (Tr !== undefined) {
         return Tr;
-      } else{
+      } else {
         propFun = (Tr) => Tr; // removed
       }
       break;
     default:
       throw Error("Property not found");
   }
-    
+
   // Calculate property
   let fun;
   if (Tr !== undefined) {
@@ -976,7 +962,7 @@ function lkWrapper(prop, xType, x, yType, y) {
       ans = propFun(Tr, Vr);
     } else if (Q !== undefined) {
       fun = (x) => Pr_sat(x) - Pr;
-      Tr = rootFind(fun, 1.0); 
+      Tr = rootFind(fun, 1.0);
       if (Q === 1) {
         ans = lkWrapper(prop, "Tr", Tr, "Pr", Pr);
       } else if (Q === 0) {
@@ -999,54 +985,65 @@ function lkWrapper(prop, xType, x, yType, y) {
 }
 
 // Wrapping CoolProp functions
-function w_Props1SI(prop,subs){
+function w_Props1SI(prop, subs) {
   // Adding a Rbar property
-  if (prop == "Rbar"){
-    return 8.314462618/(Module.Props1SI("M",subs)*1E3);
-  } else{
-    return Module.Props1SI(prop,subs);
+  if (prop == "Rbar") {
+    return 8.314462618 / (Module.Props1SI("M", subs) * 1e3);
+  } else {
+    return Module.Props1SI(prop, subs);
   }
 }
 
 // Saturation pressures - ASHRAE
-function ASHRAE_Psat(T){
+function ASHRAE_Psat(T) {
   let C;
-  if (T<273.15){
-    C = [-5.6745359E3,6.3925247,-9.6778430E-3,
-          6.2215701E-7,2.0747825E-9,-9.4840240E-13,4.1635019];
-  } else{
-    C = [-5.8002206E3,1.3914993,-4.8640239E-2,
-          4.1764768E-5,-1.4452093E-8,0,6.5459673];
+  if (T < 273.15) {
+    C = [
+      -5.6745359e3, 6.3925247, -9.677843e-3, 6.2215701e-7, 2.0747825e-9,
+      -9.484024e-13, 4.1635019,
+    ];
+  } else {
+    C = [
+      -5.8002206e3, 1.3914993, -4.8640239e-2, 4.1764768e-5, -1.4452093e-8, 0,
+      6.5459673,
+    ];
   }
-  let lnP = C[0]/T+C[1]+C[2]*T+C[3]*T**2+C[4]*T**3+C[5]*T**4+C[6]*math.log(T);
+  let lnP =
+    C[0] / T +
+    C[1] +
+    C[2] * T +
+    C[3] * T ** 2 +
+    C[4] * T ** 3 +
+    C[5] * T ** 4 +
+    C[6] * math.log(T);
   return math.exp(lnP);
 }
 
 // Wrapping HAPropsSI
-function w_HAPropsSI(prop,xType,x,yType,y,zType,z){
+function w_HAPropsSI(prop, xType, x, yType, y, zType, z) {
   // Create a object to verify inputs
   let inputs = {};
-  inputs[xType]=x;
-  inputs[yType]=y;
-  inputs[zType]=z;
+  inputs[xType] = x;
+  inputs[yType] = y;
+  inputs[zType] = z;
 
   // Use special routines to bypass CoolProp issue
-  if(inputs['R']){
-    if (inputs['W'] && inputs['P']){
+  if (inputs["R"]) {
+    if (inputs["W"] && inputs["P"]) {
       let MW_water = 0.018015268;
       let MW_air = 0.02896546;
-      let Y = 1/(MW_water/MW_air/inputs['W']+1);
-      return Module.HAPropsSI(prop,'R',inputs['R'],'P',inputs['P'],'Y',Y)
-    } else if (inputs['D'] && inputs['P']){
+      let Y = 1 / (MW_water / MW_air / inputs["W"] + 1);
+      return Module.HAPropsSI(prop, "R", inputs["R"], "P", inputs["P"], "Y", Y);
+    } else if (inputs["D"] && inputs["P"]) {
       // Here we approximate the P_sat in air as P_sat of pure water (very close, but not the same)
-      let P_h2o = ASHRAE_Psat(inputs['D']); // because PropsSI does not work below 0°C
-      let Y = P_h2o/inputs['P'];
-      return Module.HAPropsSI(prop,'R',inputs['R'],'P',inputs['P'],'Y',Y);
+      let P_h2o = ASHRAE_Psat(inputs["D"]); // because PropsSI does not work below 0°C
+      let Y = P_h2o / inputs["P"];
+      return Module.HAPropsSI(prop, "R", inputs["R"], "P", inputs["P"], "Y", Y);
     }
   }
 
   // Esle return normal HAPropsSI
-  return Module.HAPropsSI(prop,xType,x,yType,y,zType,z);
+  return Module.HAPropsSI(prop, xType, x, yType, y, zType, z);
 }
 
 // Import functions to math.js parser
@@ -1067,8 +1064,8 @@ math.import({
     return nasaFun(prop, xType, x, subs);
   },
   // Nasa Glenn trivials
-  Nasa1SI: function(prop,subs) {
-    return nasa1Fun(prop,subs);
+  Nasa1SI: function (prop, subs) {
+    return nasa1Fun(prop, subs);
   },
   // LeeKesler
   LeeKesler: function (prop, xType, x, yType, y) {

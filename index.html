@@ -11,7 +11,7 @@
     />
     <meta name="theme-color" content="#C93833" />
     <link rel="manifest" href="manifest.json" />
-    <!-- head -->
+    <!-- title -->
     <title>laine | a simple equation solver</title>
     <link rel="shortcut icon" type="image/x-icon" href="img/laine.png" />
     <link rel="apple-touch-icon" href="img/laineApple.png" />
@@ -29,8 +29,8 @@
     <link href="styles/style.css" rel="stylesheet" />
     <link rel="stylesheet" href="styles/codemirror.css" />
   </head>
-  <body class="body">
-    <!-- Main menu -->
+  <body>
+    <!-- main menu -->
     <header>
       <!-- laine logo -->
       <div id="laineID">
@@ -39,7 +39,7 @@
         <form
           action="https://www.paypal.com/donate"
           method="post"
-          target="_top"
+          target="_blank"
         >
           <input type="hidden" name="hosted_button_id" value="7XR3MYS7H92Q8" />
           <input
@@ -59,9 +59,9 @@
           />
         </form>
       </div>
-      <!-- Navigation menu -->
+      <!-- navigation menu -->
       <nav id="laineMenu">
-        <!-- File menu -->
+        <!-- file menu -->
         <div class="dropdownMenu">
           <button class="dropdownButton">File</button>
           <div class="dropdownContent">
@@ -71,7 +71,7 @@
             <button onclick="loadFileAsText()">Load</button>
           </div>
         </div>
-        <!-- Function menu -->
+        <!-- function menu -->
         <div class="dropdownMenu">
           <button class="dropdownButton">Functions</button>
           <div class="dropdownContent">
@@ -81,16 +81,16 @@
             <button id="openLk">Lee-Kesler</button>
           </div>
         </div>
+        <!-- solve and report-->
         <button class="solve">Solve (F2)</button>
         <button class="report">Report (F4)</button>
-        <!-- Change name if screen is small -->
         <script>
           if (window.innerWidth < 600) {
             document.querySelector(".solve").innerText = "Solve";
             document.querySelector(".report").innerText = "Report";
           }
         </script>
-        <!-- Plot menu -->
+        <!-- plot menu -->
         <div class="dropdownMenu">
           <button class="dropdownButton">Plots</button>
           <div class="dropdownContent">
@@ -101,28 +101,27 @@
       </nav>
     </header>
     <main>
-      <!-- Interface -->
+      <!-- interface -->
       <div class="interface">
-        <!-- Problem side -->
+        <!-- problem side -->
         <div class="problemBox">
-          <!-- Equations Box -->
+          <!-- equations box -->
           <textarea id="box" class="box" rows="7" cols="80" spellcheck="false">
 # Write and solve nonlinear system of equations
 x^2+y^2=10
 x*y=3
 # Press Solve to see the results</textarea
           >
-          <!-- codemirror javascript -->
-          <!-- loads faster -->
+          <!-- codemirror javascript / loads faster here -->
           <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"></script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/addon/mode/simple.min.js"></script>
           <script src="scripts/editor.js"></script>
-          <!-- Render results -->
+          <!-- render results -->
           <div class="mathDiv"></div>
         </div>
-        <!-- Results side -->
+        <!-- results side -->
         <div class="sideBar">
-          <!-- ErrorBox -->
+          <!-- error box -->
           <div class="hiddenMenu" id="errorBox">
             <div class="hiddenMenuName">
               <h2>Error</h2>
@@ -133,7 +132,7 @@ x*y=3
               <div class="errorGrid"></div>
             </div>
           </div>
-          <!-- Results -->
+          <!-- solution -->
           <div class="hiddenMenu" id="solBox">
             <div class="hiddenMenuName">
               <h2>Solution</h2>
@@ -142,7 +141,7 @@ x*y=3
             </div>
             <table class="out"></table>
           </div>
-          <!-- PlotBox -->
+          <!-- plot box -->
           <div class="hiddenMenu" id="plotDrawBox">
             <div id="plotName" class="hiddenMenuName">
               <h2>Plot</h2>
@@ -154,7 +153,7 @@ x*y=3
               <canvas id="myChart" height="400"></canvas>
             </div>
           </div>
-          <!-- About -->
+          <!-- about -->
           <div class="hiddenMenu" id="about">
             <div class="hiddenMenuName">
               <h2>About laine</h2>
@@ -197,8 +196,7 @@ x*y=3
               >.
             </p>
           </div>
-
-          <!-- Hidden menus -->
+          <!-- hidden menus -->
           <nav class="subMenus">
             <!-- PropsSI -->
             <div class="hiddenMenu" id="contentPropsSI">
@@ -783,7 +781,7 @@ x*y=3
                 <button class="butNasa">Add as a new line of code!</button>
               </div>
             </div>
-            <!-- Function Menu -->
+            <!-- Lee Kesler -->
             <div class="hiddenMenu" id="contentLk">
               <div class="hiddenMenuName">
                 <h2>Lee Kesler |</h2>
@@ -834,7 +832,7 @@ x*y=3
                 <button class="butlk">Add as a new line of code!</button>
               </div>
             </div>
-            <!-- Analysis box -->
+            <!-- parametric analysis box -->
             <div class="hiddenMenu" id="contentParametric">
               <div class="hiddenMenuName">
                 <h2>Plot y vs. x |</h2>
@@ -862,7 +860,7 @@ x*y=3
                 <button class="plotDraw">Plot!</button>
               </div>
             </div>
-            <!-- Property plot box -->
+            <!-- property plot box -->
             <div class="hiddenMenu" id="contentPropPlot">
               <div class="hiddenMenuName">
                 <h2>Property plot |</h2>
@@ -888,6 +886,7 @@ x*y=3
         </div>
       </div>
     </main>
+    <!-- footer -->
     <footer>
       <p class="printFooter">
         made with laine. Visit the website at
@@ -913,21 +912,20 @@ x*y=3
         >
       </p>
     </footer>
-    <!-- parser javascript -->
+    <!-- parser -->
     <script
       defer
       src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.3.0/math.min.js"
     ></script>
-    <!-- thermodynamic functions javascript -->
+    <!-- thermodynamic functions -->
     <script defer src="scripts/coolprop/coolprop.js"></script>
     <script defer src="scripts/functions.js"></script>
     <script defer src="scripts/laine.js"></script>
     <script defer src="scripts/plots.js"></script>
     <script defer src="scripts/ui.js"></script>
-    <!-- not so important stuff -->
-    <!-- Install -->
+    <!-- webapp install -->
     <script src="app.js"></script>
-    <!-- math render javascript -->
+    <!-- math render -->
     <script
       async
       id="MathJax-script"
@@ -943,12 +941,12 @@ x*y=3
       async
       src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"
     ></script>
-    <!-- Report fonts -->
+    <!-- fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Shippori+Mincho&display=swap"
       rel="stylesheet"
     />
-    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <!-- google analytics -->
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-L5F9LQ78HJ"
