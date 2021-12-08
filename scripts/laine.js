@@ -28,8 +28,8 @@ function laineSolver(text, laineOptions) {
 
   // Include constants if they are not defined
   let hasConstants = false;
-  if(parser.get("R") == undefined){
-    parser.set("R",8.314462618);
+  if (parser.get("R") == undefined) {
+    parser.set("R", 8.314462618);
     hasConstants = true;
   }
 
@@ -37,7 +37,7 @@ function laineSolver(text, laineOptions) {
   checkDuplicates(equations);
 
   // Check number of equations and variables
-  if (laineOptions.returnProblem){
+  if (laineOptions.returnProblem) {
     checkVarNumber(equations);
   }
 
@@ -91,7 +91,7 @@ function laineSolver(text, laineOptions) {
       simpleEquation.updateComputedVars();
     }
     // Join arrays
-    let allEqs = {e:equations, s:simpleEquations};
+    let allEqs = { e: equations, s: simpleEquations };
     return allEqs;
   }
 
@@ -107,14 +107,14 @@ function laineSolver(text, laineOptions) {
   }
 
   // Remove constants from parser
-  if(hasConstants){
+  if (hasConstants) {
     parser.remove("R");
   }
 
   // Display only selected variables
-  if (laineOptions.showOnly){
-    let scope={};
-    for (let name of laineOptions.showOnly){
+  if (laineOptions.showOnly) {
+    let scope = {};
+    for (let name of laineOptions.showOnly) {
       scope[name] = parser.get(name);
     }
     parser.scope = scope;
@@ -159,7 +159,7 @@ function cleanLines(text, options) {
   let lines = text.split("\n");
   let equations = [];
   for (let i = 0; i < lines.length; i++) {
-    lines[i] = lines[i].replace(/\s/g,'');
+    lines[i] = lines[i].replace(/\s/g, "");
     // Check if is an equation
     if (checkLine(lines[i], i + 1, options)) {
       // Break multi-lines
@@ -234,13 +234,16 @@ function cleanLines(text, options) {
               if (flag) {
                 const ans = parser.evaluate(subLine);
                 // Check if the parser did not mistaked as "unit" and is not a "function"
-                if (typeof(ans) !=="function" && (ans.type === "Unit" || isNaN(ans))) {
+                if (
+                  typeof ans !== "function" &&
+                  (ans.type === "Unit" || isNaN(ans))
+                ) {
                   // Remove object from parser scope
                   const lhs = sides[0];
                   parser.remove(lhs);
                   throw new Error("dummy"); // jump to catch
                 }
-              } else{
+              } else {
                 throw new Error("dummy"); // jump to catch
               }
             } catch {
@@ -282,21 +285,21 @@ function cleanLines(text, options) {
  * @param {number} number - The line number
  * @returns bool
  */
-function checkLine(line, number, options={}) {
+function checkLine(line, number, options = {}) {
   // Function: checks if the line is an equation
   if (line === "" || line.startsWith("#")) {
     return false;
   }
-  if (line.startsWith("solve")){
+  if (line.startsWith("solve")) {
     // Store info about the variables that should be shown
     let names = line.slice(5);
     names = names.split("#")[0]; // remove comments in the same line
     names = names.split(",");
-    if (options.showOnly){
-      for (let name of names){
+    if (options.showOnly) {
+      for (let name of names) {
         options.showOnly.push(name);
       }
-    } else{
+    } else {
       options.showOnly = names;
     }
     return false;
@@ -432,6 +435,11 @@ function singleVar(lhs, rhs) {
   if (numb.test(lhs[0]) || op.test(lhs)) {
     return false;
   }
+  const funs = /(exp\(|log\(|log10\(|cos\(|sin\(|tan\()/;
+  // Check if starts with (some) function (just the most commons)
+  if (funs.test(lhs)) {
+    return false;
+  }
   let name = new RegExp("[^\\w]" + lhs + "[^\\w]");
   // Now check if there the same variable is not on the other side
   if (name.test(rhs)) {
@@ -484,26 +492,25 @@ function varsName(line) {
  * @param {Equations[]} equations Array of equations
  * @returns bool
  */
-function checkVarNumber(equations){
+function checkVarNumber(equations) {
   let names = new Set();
-  for (let equation of equations){
-    for (let name of equation.vars){
+  for (let equation of equations) {
+    for (let name of equation.vars) {
       equation.updateComputedVars();
       names.add(name);
     }
   }
-  if(names.size - equations.length !== 1){
+  if (names.size - equations.length !== 1) {
     throw new laineError(
       "Zero or more than one degree of freedom",
       "Parametric analysis requires a problem with one degree of freedom",
       "All lines",
       "Try to remove an equation which constrains the problem"
     );
-  } else{
+  } else {
     return true;
   }
 }
-
 
 /*
   Algebraic substitution
@@ -781,6 +788,8 @@ class Problem {
     const tStart = performance.now();
     const dimension = this.equations.length;
     const maxTimes = dimension > 1 ? 30 : 4;
+    // Use pairSearch first if possible (get more solutions)
+    options.pairSearch = dimension == 2 ? true : false;
     let results;
     // Main loop
     for (let count = 0; !results && count < maxTimes; ++count) {
@@ -796,7 +805,7 @@ class Problem {
         } else {
           guessOptions = find_guess(this, options);
         }
-        // Solver 
+        // Solver
         results = solver(this, guessOptions, options);
       } catch {
         if (dimension === 1) {
@@ -805,7 +814,7 @@ class Problem {
           // Try negative guesses
           options.negative = count === 2 ? true : false;
           // Try more if there is enough time
-          if (count === 3 && (performance.now() - tStart < 1e3) ){
+          if (count === 3 && performance.now() - tStart < 1e3) {
             count = 1;
           }
         } else {
@@ -927,7 +936,8 @@ function find_guess(problem, options) {
       if (options.userGuess[name] === undefined) {
         // Avoid overwrite the userGuess
         for (let guess of guessList) {
-          options.userGuess[name] = guess;
+          let signal = Math.random() > 0.5 ? 1 : -1;
+          options.userGuess[name] = guess * (1 + signal*Math.random()/2);
           try {
             let result = find_guess(problem, options);
             if (result !== undefined && result.length !== 0) {
@@ -987,7 +997,8 @@ function find_guess(problem, options) {
       if (options.userGuess[name] !== undefined) {
         value = options.userGuess[name];
       } else {
-        value = guessList[i] * (1 + Math.random());
+        let signal = Math.random() > 0.5 ? 1 : -1;
+        value = guessList[i] * (1 + signal*Math.random()/2);
         flag = true;
       }
       scope[name] = value;
@@ -1153,7 +1164,7 @@ function solver(problem, guessOptions, options) {
         for (let i = 0; i < dimension; ++i) {
           if (
             isNaN(answers.get([i, 0])) ||
-            !isFinite(answers.get([i,0])) ||
+            !isFinite(answers.get([i, 0])) ||
             typeof answers.get([i, 0]) !== "number"
           ) {
             continue linesearch;
@@ -1171,7 +1182,7 @@ function solver(problem, guessOptions, options) {
       // Overwrite guesses, store diff
       diff = Xdiff;
       guesses = Xguesses;
-      let relError = calcError(problem,answers);
+      let relError = calcError(problem, answers);
 
       // Check convergence criteria
       if (relError < 1e-3) {
@@ -1208,18 +1219,18 @@ function solver(problem, guessOptions, options) {
  * @param {matrix} answers - Matrix of answers math.js
  * @returns errors
  */
-function calcError(problem,answers){
+function calcError(problem, answers) {
   const lhs = problem.lhs;
   let error = 0;
   // Calculate all lines
   for (let i = 0; i < lhs.length; ++i) {
     let ansValue = Math.abs(answers.get([i, 0]));
     let lhsValue = Math.abs(lhs[i].evaluate(problem.scope));
-    let rhsValue = Math.abs(lhsValue-ansValue);
-    if (lhsValue !== 0 && rhsValue !== 0){
-      error+= lhsValue > rhsValue ? ansValue/lhsValue : ansValue/rhsValue;
+    let rhsValue = Math.abs(lhsValue - ansValue);
+    if (lhsValue !== 0 && rhsValue !== 0) {
+      error += lhsValue > rhsValue ? ansValue / lhsValue : ansValue / rhsValue;
     } else {
-      error+= ansValue;
+      error += ansValue;
     }
   }
   return error;
@@ -1285,7 +1296,7 @@ function update_jac(problem, guesses, answers, jac) {
  */
 function derivative(scope, compiled, name, f, x) {
   // Determine x+dx
-  const xNear = x===0 ? x + 1e-8 : x * (1 + 1e-8);
+  const xNear = x === 0 ? x + 1e-8 : x * (1 + 1e-8);
   // Calculate derivative
   scope[name] = xNear;
   const fNear = compiled.evaluate(scope);
