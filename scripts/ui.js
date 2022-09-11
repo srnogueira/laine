@@ -475,6 +475,7 @@ hiddenMenu("openPropsSI", "contentPropsSI", "closePropsSI");
 hiddenMenu("openHAPropsSI", "contentHAPropsSI", "closeHAPropsSI");
 hiddenMenu("openNasa", "contentNasa", "closeNasa");
 hiddenMenu("openLk", "contentLk", "closeLk");
+hiddenMenu("openComp1D", "contentComp1D", "closeComp1D");
 
 // Parametric menu (needs special function)
 hiddenMenu("openParametric", "contentParametric", "closeParametric");
@@ -964,6 +965,38 @@ function writelk() {
 }
 const leeKeslerButton = document.querySelector(".butlk");
 leeKeslerButton.onclick = writelk;
+
+/**
+ * Write a Comp1D call in the editor
+ */
+ function writeComp1D() {
+  const property = document.querySelector(".comp1DProp").value;
+  const input1 = document.querySelector(".comp1DInput1").value;
+  const inputType1 = document.querySelector(".comp1DInputType1").value;
+  const input2 = document.querySelector(".comp1DInput2").value;
+  const inputType2 = document.querySelector(".comp1DInputType2").value;
+  const specie = document.querySelector(".comp1DSpecie").value;
+  let varNames = {
+    "T/T0" : "T_T0",
+    "P/P0" : "P_P0",
+    "rho/rho0" : "rho_rho0",
+    "T/T*" : "T_Tc",
+    "P/P*" : "P_Pc",
+    "rho/rho*" : "rho_rhoc",
+    "T*/T0" : "Tc_T0",
+    "P*/P0" : "Pc_P0",
+    "rho*/rho0" : "rhoc_rho0",
+    "A/A*" : "A_Ac"
+  };
+
+  let text = `${varNames[property]}_${number}=Comp1D('${property}','${inputType1}',${input1},'${inputType2}',${input2}, '${specie}')`;
+  number += 1;
+  textBox.value += "\n" + text;
+  editor.getDoc().setValue(textBox.value);
+}
+const comp1DButton = document.querySelector(".butComp1D");
+comp1DButton.onclick = writeComp1D;
+
 
 /*
   File management

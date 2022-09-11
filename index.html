@@ -36,28 +36,6 @@
       <div id="laineID">
         <img alt="laine-logo" width="45" height="45" src="img/laine.png" />
         <h1>laine</h1>
-        <form
-          action="https://www.paypal.com/donate"
-          method="post"
-          target="_blank"
-        >
-          <input type="hidden" name="hosted_button_id" value="7XR3MYS7H92Q8" />
-          <input
-            type="image"
-            src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif"
-            border="0"
-            name="submit"
-            title="PayPal - The safer, easier way to pay online!"
-            alt="Donate with PayPal button"
-          />
-          <img
-            alt=""
-            border="0"
-            src="https://www.paypal.com/en_BR/i/scr/pixel.gif"
-            width="1"
-            height="1"
-          />
-        </form>
       </div>
       <!-- navigation menu -->
       <nav id="laineMenu">
@@ -79,6 +57,7 @@
             <button id="openHAPropsSI">Humid air</button>
             <button id="openNasa">NASA Glenn</button>
             <button id="openLk">Lee-Kesler</button>
+            <button id="openComp1D">Isentropic flow</button>
           </div>
         </div>
         <!-- solve and report-->
@@ -701,7 +680,7 @@ x*y=3
                   </optgroup>
                   <optgroup label="Mass basis">
                     <option value="Cp0">
-                      Specific heat for standard state (J/kg.K)
+                      Constant pressure specific heat for standard state (J/kg.K)
                     </option>
                     <option value="H0" selected="selected">
                       Enthalpy for standard state (J/kg)
@@ -715,7 +694,7 @@ x*y=3
                   </optgroup>
                   <optgroup label="Molar basis">
                     <option value="Cp0molar">
-                      Specific heat for standard state (J/mol.K)
+                      Constant pressure specific heat for standard state (J/mol.K)
                     </option>
                     <option value="H0molar">
                       Enthalpy for standard state (J/mol)
@@ -740,7 +719,7 @@ x*y=3
                     </option>
                     <optgroup label="Mass basis">
                       <option value="Cp0">
-                        Specific heat for standard state (J/kg.K)
+                        Constant pressure specific heat for standard state (J/kg.K)
                       </option>
                       <option value="H0">
                         Enthalpy for standard state (J/kg)
@@ -754,7 +733,7 @@ x*y=3
                     </optgroup>
                     <optgroup label="Molar basis">
                       <option value="Cp0molar">
-                        Specific heat for standard state (J/mol.K)
+                        Constant pressure specific heat for standard state (J/mol.K)
                       </option>
                       <option value="H0molar">
                         Enthalpy for standard state (J/mol)
@@ -832,6 +811,74 @@ x*y=3
                 <button class="butlk">Add as a new line of code!</button>
               </div>
             </div>
+            <!-- Comp1D -->
+            <div class="hiddenMenu" id="contentComp1D">
+              <div class="hiddenMenuName">
+                <h2>Comp1D |</h2>
+                <span> Properties for isentropic flow</span>
+                <button id="closeComp1D">Close</button>
+              </div>
+              <div class="hiddenMenuInputs">
+                <span> Fluid: </span>
+                <select class="comp1DSpecie">
+                  <option value="Air">Air | Air(g)</option>
+                  <optgroup label="Carbon">
+                    <option value="CO">Carbon monoxide | CO(g)</option>
+                    <option value="CO2">Carbon dioxide | CO2(g)</option>
+                  </optgroup>
+                  <optgroup label="Hydrogen">
+                    <option value="H">Hydrogen element | H(g)</option>
+                    <option value="H2" selected="selected">
+                      Hydrogen gas | H2(g)
+                    </option>
+                  </optgroup>
+                  <optgroup label="Nitrogen">
+                    <option value="N">Nitrogen element | N(g)</option>
+                    <option value="N2">Nitrogen gas | N2(g)</option>
+                    <option value="NO">Nitrogen oxide | NO(g)</option>
+                  </optgroup>
+                  <optgroup label="Oxygen">
+                    <option value="O">Oxygen element | O(g)</option>
+                    <option value="O2">Oxygen gas | O2(g)</option>
+                  </optgroup>
+                  <optgroup label="Others">
+                    <option value="Ar">Argon | Ar(g)</option>
+                  </optgroup>
+                </select>
+                <span>Property: </span>
+                <select class="comp1DProp">
+                  <option value="T/T0">Static and stagnation T ratio: T/T0</option>
+                  <option value="P/P0">Static and stagnation P ratio: P/P0</option>
+                  <option value="rho/rho0">Static and stagnation ρ ratio: ρ/ρ0</option>
+                  <option value="T/T*">Static and critic T ratio: T/T*</option>
+                  <option value="P/P*">Static and critic P ratio: P/P*</option>
+                  <option value="rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
+                  <option value="T*/T0">Critic and stagnation T ratio: T*/T0</option>
+                  <option value="P*/P0">Critic and stagnation P ratio: P*/P0</option>
+                  <option value="rho*/rho0">Critic and stagnation ρ ratio: ρ*/ρ0</option>
+                  <option value="A/A*">Area and critic area ratio: A/A*</option>
+                </select>
+                <span>Input (1):</span>
+                <div class="doubleInput">
+                  <input class="comp1DInput1" placeholder="value or variable (1)" />
+                  <select class="comp1DInputType1">
+                    <option value="T" selected="selected">
+                      Temperature (K)
+                    </option>
+                  </select>
+                </div>
+                <span>Input (2):</span>
+                <div class="doubleInput">
+                  <input class="comp1DInput2" placeholder="value or variable (2)" />
+                  <select class="comp1DInputType2">
+                    <option value="M">Mach number</option>
+                  </select>
+                </div>
+                <button class="butComp1D">Add as a new line of code!</button>
+
+                </div>
+              </div>
+            </div>
             <!-- parametric analysis box -->
             <div class="hiddenMenu" id="contentParametric">
               <div class="hiddenMenuName">
@@ -895,8 +942,11 @@ x*y=3
         >
       </p>
       <p>
-        developed by Rafael Nogueira Nakashima <br />
-        <a href="mailto:rafaelnnakashima@usp.br">Email</a> |
+        developed by Dr. Rafael Nogueira Nakashima (DTU/USP), <br />
+        Prof. Antonio Luiz Pacífico (USP) and <br />
+        Prof. Silvio de Oliveira Junior (USP) <br />
+
+        <a href="mailto:rafnn@dtu.dk">Email</a> |
         <a
           target="_blank"
           rel="noopener"

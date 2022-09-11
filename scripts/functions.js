@@ -711,6 +711,53 @@ function nasa1Fun(prop, subs) {
   }
 }
 
+/**
+ * Compressible flow - isentropic functions wrapper
+ */
+ function comp1D_fun(prop, xType, x, yType, y, subs) {
+  // Select T and M from inputs
+  let T,M;
+  if (xType == "M" && yType == "T"){
+    M = x;
+    T = y;
+  } else if (xType == "T" && yType == "M"){
+      T = x;
+      M = y;
+  } else {
+    throw "Undefined combination of inputs"
+  }
+
+  const R = 8.31451;
+  const cp = nasaFun("Cp0molar","T",T,subs);
+  const gamma = cp/(cp-R);
+
+  // Find property
+  switch (prop) {
+    case "T/T0":
+      return Math.pow(1+(gamma-1)/2*(M*M),-1);
+    case "P/P0":
+      return Math.pow(1+(gamma-1)/2*(M*M),-gamma/(gamma-1));
+    case "rho/rho0":
+      return Math.pow(1+(gamma-1)/2*(M*M),-1/(gamma-1));
+    case "T/T*":
+      return (gamma+1)/(2+(gamma-1)*M*M)
+    case "P/P*":
+      return Math.pow((2+(gamma-1)*M*M)/(gamma+1),-gamma/(gamma-1));
+    case "rho/rho*":
+      return Math.pow((2+(gamma-1)*M*M)/(gamma+1),-1/(gamma-1));
+    case "T*/T0":
+      return 2/(gamma+1);
+    case "P*/P0":
+      return Math.pow(2/(gamma+1),gamma/(gamma-1));
+    case "rho*/rho0":
+      return Math.pow(2/(gamma+1),1/(gamma-1));
+    case "A/A*":
+      return 1/M*Math.pow(2/(gamma+1)*(1+(gamma-1)/2*(M*M)),(gamma+1)/(2*(gamma-1)))
+    default:
+      throw "Undefined property";
+  }
+}
+
 /*
   Lee-Kesler equation of state
 */
@@ -1066,6 +1113,10 @@ math.import({
   // Nasa Glenn trivials
   Nasa1SI: function (prop, subs) {
     return nasa1Fun(prop, subs);
+  },
+  // Compressible flow
+  Comp1D: function (prop,xType,x,yType,y,subs) {
+    return comp1D_fun(prop, xType, x, yType, y, subs);
   },
   // LeeKesler
   LeeKesler: function (prop, xType, x, yType, y) {
