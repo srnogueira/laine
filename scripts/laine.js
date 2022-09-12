@@ -39,6 +39,9 @@ function laineSolver(text, laineOptions) {
   // Check number of equations and variables
   if (laineOptions.returnProblem) {
     checkVarNumber(equations);
+    // Join arrays
+    let allEqs = { e: equations };
+    return allEqs;
   }
 
   // Reduce problem size and split equations in two types
@@ -81,6 +84,7 @@ function laineSolver(text, laineOptions) {
     }
   }
 
+  /*
   // Delivers a problem if requested
   if (laineOptions.returnProblem) {
     // Update
@@ -94,6 +98,7 @@ function laineSolver(text, laineOptions) {
     let allEqs = { e: equations, s: simpleEquations };
     return allEqs;
   }
+  */
 
   // Solved n-D problems in substitutions
   if (simpleEquations.length > 0) {

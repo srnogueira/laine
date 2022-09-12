@@ -89,6 +89,7 @@ function checkParametric(text) {
       namesY.add(name);
     }
   }
+  /*
   let counter = {};
   for (let equation of equations.s) {
     if (namesX.size === 0){
@@ -113,9 +114,11 @@ function checkParametric(text) {
       }
     }
   }
+  */
   // If there is no degree of freedom
   if (!equations || namesX.size === 0) {
     // Check if there is only simple equations in function of a common variable
+    /*
     if(namesY.size !== 0){
       for (let name of namesY){
         if (counter[name]===equations.s.length){
@@ -124,6 +127,7 @@ function checkParametric(text) {
         }
       }
     }
+    */
     throw new laineError(
       "No degree of freedom",
       "Parametric analysis requires a problem with one degree of freedom",
@@ -175,12 +179,14 @@ function plotParametric(text, options) {
       names.add(name);
     }
   }
+  /*
   for (let equation of equations.s) {
     equationsText += `${equation.lhs}=${equation.rhs}\n`;
     for (let name of equation.vars) {
       names.add(name);
     }
   }
+  */
   // Loop solver
   let errors = [];
   for (let i = 0; i < Npoints; i++) {
