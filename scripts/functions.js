@@ -716,23 +716,46 @@ function nasa1Fun(prop, subs) {
  */
  function comp1D_fun(prop, xType, x, yType, y, subs) {
   // Select T and M from inputs
-  let T,M;
-  if (xType == "M" && yType == "T"){
-    M = x;
-    T = y;
-  } else if (xType == "T" && yType == "M"){
-      T = x;
-      M = y;
-  } else {
-    throw "Undefined combination of inputs"
-  }
+  let inputs = new Object(); // Empty object
+  inputs[xType] = x;
+  inputs[yType] = y;
 
-  const R = 8.31451;
-  const cp = nasaFun("Cp0molar","T",T,subs);
-  const gamma = cp/(cp-R);
+  if (inputs["gamma"] == undefined){
+    if (inputs["T"] == undefined){
+      throw "T or gamma should be an input"
+    } else {
+      const R = 8.31451;
+      const cp = nasaFun("Cp0molar","T",inputs["T"],subs);
+      inputs["gamma"] = cp/(cp-R);
+    }
+  } 
+
+  const gamma = inputs["gamma"];
+
+  if (inputs["M"] == undefined){
+    let isX = (xType != "T" && xType != "gamma") ? true : false;
+    let given = isX ? xType : yType;
+    let value = isX ? x : y;
+    // Find T
+    let fun = (i) => comp1D_fun(given, "M", i, "gamma", gamma, subs) - value;
+    let guess;
+    if (given == "A/A*(sub)"){
+      guess = 0.1;
+    } else if (guess == "A/A*(sup)"){
+      guess = 2;
+    } else{
+      guess = 1;
+    }
+    inputs["M"] = rootFind(fun, guess); // This guess may not be the best
+  }
+  const M = inputs["M"];
 
   // Find property
   switch (prop) {
+    case "gamma":
+      return gamma;
+    case "M":
+      return M;
     case "T/T0":
       return Math.pow(1+(gamma-1)/2*(M*M),-1);
     case "P/P0":
@@ -752,7 +775,15 @@ function nasa1Fun(prop, subs) {
     case "rho*/rho0":
       return Math.pow(2/(gamma+1),1/(gamma-1));
     case "A/A*":
-      return 1/M*Math.pow(2/(gamma+1)*(1+(gamma-1)/2*(M*M)),(gamma+1)/(2*(gamma-1)))
+    case "A/A*(sub)":
+    case "A/A*(sup)":
+          return 1/M*Math.pow(2/(gamma+1)*(1+(gamma-1)/2*(M*M)),(gamma+1)/(2*(gamma-1)));
+    case "PA/P0A*":
+      {
+        let PP0 = Math.pow(1+(gamma-1)/2*(M*M),-gamma/(gamma-1));
+        let AAx = 1/M*Math.pow(2/(gamma+1)*(1+(gamma-1)/2*(M*M)),(gamma+1)/(2*(gamma-1)));
+        return PP0*AAx;
+      }
     default:
       throw "Undefined property";
   }

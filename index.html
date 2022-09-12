@@ -857,6 +857,7 @@ x*y=3
                   <option value="P*/P0">Critic and stagnation P ratio: P*/P0</option>
                   <option value="rho*/rho0">Critic and stagnation ρ ratio: ρ*/ρ0</option>
                   <option value="A/A*">Area and critic area ratio: A/A*</option>
+                  <option value="PA/P0A*"> PA/P0A*</option>
                 </select>
                 <span>Input (1):</span>
                 <div class="doubleInput">
@@ -865,6 +866,9 @@ x*y=3
                     <option value="T" selected="selected">
                       Temperature (K)
                     </option>
+                    <option value="gamma" selected="selected">
+                      Heat capacity ratio (-): cp/cv
+                    </option>
                   </select>
                 </div>
                 <span>Input (2):</span>
@@ -872,12 +876,22 @@ x*y=3
                   <input class="comp1DInput2" placeholder="value or variable (2)" />
                   <select class="comp1DInputType2">
                     <option value="M">Mach number</option>
+                    <option value="T/T0">Static and stagnation T ratio: T/T0</option>
+                    <option value="P/P0">Static and stagnation P ratio: P/P0</option>
+                    <option value="rho/rho0">Static and stagnation ρ ratio: ρ/ρ0</option>
+                    <option value="T/T*">Static and critic T ratio: T/T*</option>
+                    <option value="P/P*">Static and critic P ratio: P/P*</option>
+                    <option value="rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
+                    <option value="T*/T0">Critic and stagnation T ratio: T*/T0</option>
+                    <option value="P*/P0">Critic and stagnation P ratio: P*/P0</option>
+                    <option value="rho*/rho0">Critic and stagnation ρ ratio: ρ*/ρ0</option>
+                    <option value="A/A*(sub)">Subsonic area ratio: A/A*(sub)</option>
+                    <option value="A/A*(sup)">Supersonic area ratio: A/A*(sup)</option>
+                    <option value="PA/P0A*"> PA/P0A*</option>
                   </select>
                 </div>
                 <button class="butComp1D">Add as a new line of code!</button>
-
                 </div>
-              </div>
             </div>
             <!-- parametric analysis box -->
             <div class="hiddenMenu" id="contentParametric">
