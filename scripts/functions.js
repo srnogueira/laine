@@ -3,7 +3,7 @@
 /*global Module, math*/
 
 /**
- * A generic root-finding algorithm
+ * A "really bad" generic root-finding algorithm
  * @param {function} fun - function to find roots
  * @param {number} guess0 - a guess for the root
  */
@@ -13,9 +13,9 @@ function rootFind(fun, guess0) {
   let ans = [fun(guess0), 0];
   // Root-finding loop
   let count = 0;
-  const tol = 1e-6;
+  const tol = 1e-8;
   const maxCount = 100;
-  const maxDivisions = 10;
+  const maxDivisions = 20;
   let deriv, count2, factor, change;
   do {
     // Determine derivative
@@ -27,6 +27,10 @@ function rootFind(fun, guess0) {
       factor /= 2; // Try again with smaller step
       // Test new guess
       change = (ans[0] / deriv) * factor;
+      // Limit change
+      if (Math.abs(change)>Math.abs(guess[0]*1E3)){
+        change = guess[0]*1E3*change/Math.abs(change);
+      }
       guess[1] = guess[0] - change;
       ans[1] = fun(guess[1]);
       // Max iterations condition
@@ -34,7 +38,7 @@ function rootFind(fun, guess0) {
       if (count2 > maxDivisions) {
         break; // Prevent infinity loops
       }
-    } while (Math.abs(ans[1]) > Math.abs(ans[0]));
+    } while (isNaN(ans[1]) || !isFinite(ans[1]) || Math.abs(ans[1]) > Math.abs(ans[0]));
     ans[0] = ans[1];
     guess[0] = guess[1];
 
@@ -55,8 +59,8 @@ function rootFind(fun, guess0) {
  * @returns number
  */
 function numericDerivative(fun, f, x) {
-  const absDelta = 1e-4;
-  const relDelta = 1e-4; // Change to avoid zeros
+  const absDelta = 1e-8;
+  const relDelta = 1e-8; // Change to avoid zeros
   let xNear, fNear, dfdx;
 
   // Check if x is zero
@@ -736,19 +740,23 @@ function nasa1Fun(prop, subs) {
     let isX = (xType != "T" && xType != "gamma") ? true : false;
     let given = isX ? xType : yType;
     let value = isX ? x : y;
-    // Find T
+    // Find M
     let fun = (i) => comp1D_fun(given, "M", i, "gamma", gamma, subs) - value;
     let guess;
     if (given == "A/A*(sub)"){
       guess = 0.1;
     } else if (guess == "A/A*(sup)"){
-      guess = 2;
+      guess = 2;  
     } else{
-      guess = 1;
+      guess = 1.1;
     }
     inputs["M"] = rootFind(fun, guess); // This guess may not be the best
   }
   const M = inputs["M"];
+
+  if (M <= 0){
+    return NaN;
+  }
 
   // Find property
   switch (prop) {
@@ -763,7 +771,7 @@ function nasa1Fun(prop, subs) {
     case "rho/rho0":
       return Math.pow(1+(gamma-1)/2*(M*M),-1/(gamma-1));
     case "T/T*":
-      return (gamma+1)/(2+(gamma-1)*M*M)
+      return (gamma+1)/(2+(gamma-1)*M*M);
     case "P/P*":
       return Math.pow((2+(gamma-1)*M*M)/(gamma+1),-gamma/(gamma-1));
     case "rho/rho*":
@@ -784,6 +792,28 @@ function nasa1Fun(prop, subs) {
         let AAx = 1/M*Math.pow(2/(gamma+1)*(1+(gamma-1)/2*(M*M)),(gamma+1)/(2*(gamma-1)));
         return PP0*AAx;
       }
+    case "M2":
+      return Math.sqrt((M*M+2/(gamma-1))/(2*gamma/(gamma-1)*M*M-1));
+    case "T2/T1":
+      return (1+(gamma-1)/2*M*M)*(2*gamma/(gamma-1)*M*M-1)/(Math.pow(gamma+1,2)/2/(gamma-1)*M*M)
+    case "P2/P1":
+      return 2*gamma/(gamma+1)*M*M-(gamma-1)/(gamma+1);
+    case "rho2/rho1":
+      return (gamma+1)*M*M/((gamma-1)*M*M+2);
+    case "P02/P01":
+      {
+        let A = (gamma+1)/2*M*M/(1+(gamma-1)/2*M*M);
+        let B = 2*gamma/(gamma+1)*M*M-(gamma-1)/(gamma+1);
+        return Math.pow(A,gamma/(gamma-1))*Math.pow(B,1/(1-gamma));
+      }
+    case "P02/P1":
+      {
+        let A = (gamma+1)/2*M*M;
+        let B = 2*gamma/(gamma+1)*M*M-(gamma-1)/(gamma+1);
+        return Math.pow(A,gamma/(gamma-1))*Math.pow(B,1/(1-gamma));
+      }
+    case "dV/a":
+      return 2/(gamma+1)*(M*M-1)/M;
     default:
       throw "Undefined property";
   }

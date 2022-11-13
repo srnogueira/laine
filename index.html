@@ -57,7 +57,7 @@
             <button id="openHAPropsSI">Humid air</button>
             <button id="openNasa">NASA Glenn</button>
             <button id="openLk">Lee-Kesler</button>
-            <button id="openComp1D">Isentropic flow</button>
+            <button id="openComp1D">Compressible flow</button>
           </div>
         </div>
         <!-- solve and report-->
@@ -815,7 +815,7 @@ x*y=3
             <div class="hiddenMenu" id="contentComp1D">
               <div class="hiddenMenuName">
                 <h2>Comp1D |</h2>
-                <span> Properties for isentropic flow</span>
+                <span> Properties for compressible flow</span>
                 <button id="closeComp1D">Close</button>
               </div>
               <div class="hiddenMenuInputs">
@@ -847,17 +847,28 @@ x*y=3
                 </select>
                 <span>Property: </span>
                 <select class="comp1DProp">
-                  <option value="T/T0">Static and stagnation T ratio: T/T0</option>
-                  <option value="P/P0">Static and stagnation P ratio: P/P0</option>
-                  <option value="rho/rho0">Static and stagnation ρ ratio: ρ/ρ0</option>
-                  <option value="T/T*">Static and critic T ratio: T/T*</option>
-                  <option value="P/P*">Static and critic P ratio: P/P*</option>
-                  <option value="rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
-                  <option value="T*/T0">Critic and stagnation T ratio: T*/T0</option>
-                  <option value="P*/P0">Critic and stagnation P ratio: P*/P0</option>
-                  <option value="rho*/rho0">Critic and stagnation ρ ratio: ρ*/ρ0</option>
-                  <option value="A/A*">Area and critic area ratio: A/A*</option>
-                  <option value="PA/P0A*"> PA/P0A*</option>
+                  <optgroup label="Isentropic flow">
+                    <option value="T/T0">Static and stagnation T ratio: T/T0</option>
+                    <option value="P/P0">Static and stagnation P ratio: P/P0</option>
+                    <option value="rho/rho0">Static and stagnation ρ ratio: ρ/ρ0</option>
+                    <option value="T/T*">Static and critic T ratio: T/T*</option>
+                    <option value="P/P*">Static and critic P ratio: P/P*</option>
+                    <option value="rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
+                    <option value="T*/T0">Critic and stagnation T ratio: T*/T0</option>
+                    <option value="P*/P0">Critic and stagnation P ratio: P*/P0</option>
+                    <option value="rho*/rho0">Critic and stagnation ρ ratio: ρ*/ρ0</option>
+                    <option value="A/A*">Area and critic area ratio: A/A*</option>
+                    <option value="PA/P0A*"> PA/P0A*</option>
+                  </optgroup>
+                  <optgroup label = "Normal shock relations">
+                    <option value="M2">Post normal shock M: M2</option>
+                    <option value="T2/T1"> T ratio: T2/T1</option>
+                    <option value="P2/P1"> P ratio: P2/P1</option>
+                    <option value="rho2/rho1"> ρ ratio: ρ2/ρ1</option>
+                    <option value="P02/P01"> Stagnation P ratio: P02/P01</option>
+                    <option value="P02/P1"> Stagnation P / static P: P02/P1</option>
+                    <option value="dV/a"> Relative velocity change: ΔV/a</option>
+                  </optgroup>
                 </select>
                 <span>Input (1):</span>
                 <div class="doubleInput">
@@ -875,6 +886,7 @@ x*y=3
                 <div class="doubleInput">
                   <input class="comp1DInput2" placeholder="value or variable (2)" />
                   <select class="comp1DInputType2">
+                  <optgroup label="Isentropic flow">
                     <option value="M">Mach number</option>
                     <option value="T/T0">Static and stagnation T ratio: T/T0</option>
                     <option value="P/P0">Static and stagnation P ratio: P/P0</option>
@@ -888,6 +900,16 @@ x*y=3
                     <option value="A/A*(sub)">Subsonic area ratio: A/A*(sub)</option>
                     <option value="A/A*(sup)">Supersonic area ratio: A/A*(sup)</option>
                     <option value="PA/P0A*"> PA/P0A*</option>
+                  </optgroup>
+                  <optgroup label = "Normal shock relations">
+                    <option value="M2">Post normal shock M: M2</option>
+                    <option value="T2/T1"> T ratio: T2/T1</option>
+                    <option value="P2/P1"> P ratio: P2/P1</option>
+                    <option value="rho2/rho1"> ρ ratio: ρ2/ρ1</option>
+                    <option value="P02/P01"> Stagnation P ratio: P02/P01</option>
+                    <option value="P02/P1"> Stagnation P / static P: P02/P1</option>
+                    <option value="dV/a"> Relative velocity change: ΔV/a</option>
+                  </optgroup>
                   </select>
                 </div>
                 <button class="butComp1D">Add as a new line of code!</button>
