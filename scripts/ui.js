@@ -994,6 +994,13 @@ leeKeslerButton.onclick = writelk;
     "P02/P01" : "P02_P01",
     "P02/P1" : "P02_P1",
     "dV/a" : "dV_a",
+    "F-T/T*" : "T_Tc",
+    "F-P/P*" : "P_Pc",
+    "F-rho/rho*" : "rho_rhoc",
+    "F-V/V*" : "V_Vc",
+    "F-P0/P0*" : "P0_P0c",
+    "F-fL/D" : "fL_D",
+    "F-ds/R" : "ds_R",
   };
 
   let text = `${varNames[property]}_${number}=Comp1D('${property}','${inputType1}',${input1},'${inputType2}',${input2}, '${specie}')`;

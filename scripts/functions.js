@@ -814,6 +814,20 @@ function nasa1Fun(prop, subs) {
       }
     case "dV/a":
       return 2/(gamma+1)*(M*M-1)/M;
+    case "F-T/T*":
+      return (gamma+1)/(2+(gamma-1)*M*M);
+    case "F-P/P*":
+      return 1/M*Math.sqrt((gamma+1)/(2+(gamma-1)*M*M));
+    case "F-rho/rho*":
+      return 1/M*Math.sqrt(1/((gamma+1)/(2+(gamma-1)*M*M)));
+    case "F-V/V*":
+      return M*Math.sqrt((gamma+1)/(2+(gamma-1)*M*M));
+    case "F-P0/P0*":
+      return 1/M*Math.pow((2+(gamma-1)*M*M)/(gamma+1),(gamma+1)/2/(gamma-1));
+    case "F-fL/D":
+      return (gamma+1)/(2*gamma)*Math.log((gamma+1)*M*M/(2+(gamma-1)*M*M))+1/gamma*(1/(M*M)-1);
+    case "F-ds/R":
+      return Math.log(1/M*Math.pow(((2+(gamma-1)*M*M)/(2+(gamma-1))),(gamma+1)/(2*(gamma-1))));
     default:
       throw "Undefined property";
   }
