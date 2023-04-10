@@ -140,40 +140,45 @@ x*y=3
               <button class="hiddenMenuClose">Close</button>
             </div>
             <p>
+              <em> [NEWS] 04.10.23 </em>
+              - laine is using a new numerical solver (C++).
+              If you experience any bugs, please report it <a
+              target="_blank"
+              rel="noopener"
+              href="https://github.com/srnogueira/laine/issues"
+              >here (github)</a
+            > or <a
+            target="_blank"
+            rel="noopener"
+            href="https://forms.gle/hp3x7TQecY7Qq42T6"
+            >here (google forms)</a
+            >
+            </p>
+            <p>
+              <em> [UPDATE] 04.10.23 </em>
+              - included functions for Rayleigh flow
+            </p>
+            <hr>
+            <p>
               laine can solve <em>nonlinear systems of equations</em> in a easy
-              way. Just input your equations and press <em>Solve (F2)</em> or
-              <em>Report (F4)</em>:
+              way. Just input your equations and press <em>Solve (F2)</em>:
             </p>
             <p>$$\text{In math: }x^2+x=3$$ $$\text{In laine: x^2+x=3}$$</p>
             <p>
               You can also use <em>Functions</em> to input thermodynamic
-              properties in your problem. For example, the specific enthalpy of
-              Air at 298 K and 1E5 Pa can be written in laine as:
-            </p>
-            <p>$$h_{air} = \text{PropsSI('H','T',298,'P',1E5,'Air')}$$</p>
-            <p>
-              laine can also create a <em>Parametric Analysis</em> or a
-              <em>Property Plot</em> to visualize your results. Just remember
-              that a <em>Parametric Analysis</em> requires a problem with just
-              <em> one (1) degree of freedom</em>, while a
-              <em>Property Plot</em> requires that the problem
-              <em>calls the function PropsSI.</em>
-            </p>
-            <p>
-              If you need more details you can consult the
+              properties in your problem. If you need more details read the
               <a
                 target="_blank"
                 rel="noopener"
                 href="https://github.com/srnogueira/laine"
-                >Documentation</a
-              >. You can also report an issue on our
+                >README</a
+              > or
               <a
                 target="_blank"
                 rel="noopener"
-                href="https://github.com/srnogueira/laine/issues"
-                >Github page</a
+                href="mailto:rafnn@dtu.dk"
+                >mail me</a
               >.
-            </p>
           </div>
           <!-- hidden menus -->
           <nav class="subMenus">
@@ -847,6 +852,7 @@ x*y=3
                 </select>
                 <span>Property: </span>
                 <select class="comp1DProp">
+                  <option value="M">Mach number: M</option>
                   <optgroup label="Isentropic flow">
                     <option value="T/T0">Static and stagnation T ratio: T/T0</option>
                     <option value="P/P0">Static and stagnation P ratio: P/P0</option>
@@ -878,6 +884,15 @@ x*y=3
                     <option value="F-fL/D">Fanno flow parameter: fL/D</option>
                     <option value="F-ds/R">Dimensionless entropy variation: ds/R</option>
                   </optgroup>
+                  <optgroup label = "Rayleigh flow relations">
+                    <option value="R-T/T*">Static and critic T ratio: T/T*</option>
+                    <option value="R-P/P*">Static and critic P ratio: P/P*</option>
+                    <option value="R-rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
+                    <option value="R-P0/P0*">Stagnation P ratio: P0/P0*</option>
+                    <option value="R-T0/T0*">Stagnation T ratio: T0/T0*</option>                    
+                    <option value="R-ds/R">Dimensionless entropy variation: ds/R</option>
+                    <option value="R-V/V*">Static and critic V ratio: V/V*</option>
+                  </optgroup>
                 </select>
                 <span>Input (1):</span>
                 <div class="doubleInput">
@@ -895,8 +910,8 @@ x*y=3
                 <div class="doubleInput">
                   <input class="comp1DInput2" placeholder="value or variable (2)" />
                   <select class="comp1DInputType2">
+                  <option value="M">Mach number</option>
                   <optgroup label="Isentropic flow">
-                    <option value="M">Mach number</option>
                     <option value="T/T0">Static and stagnation T ratio: T/T0</option>
                     <option value="P/P0">Static and stagnation P ratio: P/P0</option>
                     <option value="rho/rho0">Static and stagnation ρ ratio: ρ/ρ0</option>
@@ -918,6 +933,31 @@ x*y=3
                     <option value="P02/P01"> Stagnation P ratio: P02/P01</option>
                     <option value="P02/P1"> Stagnation P / static P: P02/P1</option>
                     <option value="dV/a"> Relative velocity change: ΔV/a</option>
+                  </optgroup>
+                  <optgroup label = "Fanno flow relations">
+                    <option value="F-T/T*">Static and critic T ratio: T/T*</option>
+                    <option value="F-P/P*">Static and critic P ratio: P/P*</option>
+                    <option value="F-rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
+                    <option value="F-V/V*">Static and critic V ratio: V/V*</option>
+                    <option value="F-P0/P0(sub)*">Subsonic P0 ratio: P0/P0*(sub)</option>
+                    <option value="F-P0/P0(sup)*">Supersonic P0 ratio: P0/P0*(sup)</option>
+                    <option value="F-fL/D(sub)">Subsonic flow parameter: fL/D(sub)</option>
+                    <option value="F-fL/D(sup)">Supersonic flow parameter: fL/D(sup)</option>
+                    <option value="F-ds/R(sub)">Subsonic entropy variation: ds/R(sub)</option>
+                    <option value="F-ds/R(sup)">Supersonic entropy variation: ds/R(sup)</option>
+                  </optgroup>
+                  <optgroup label = "Rayleigh flow relations">
+                    <option value="R-T/T*(+)"> T ratio above max.: T/T*(+)</option>
+                    <option value="R-T/T*(-)"> T ratio below max.: T/T*(-)</option>
+                    <option value="R-P/P*">Static and critic P ratio: P/P*</option>
+                    <option value="R-rho/rho*">Static and critic ρ ratio: ρ/ρ*</option>
+                    <option value="R-P0/P0(sub)*">Subsonic P0 ratio: P0/P0*(sub)</option>
+                    <option value="R-P0/P0(sup)*">Supersoninc P0 ratio: P0/P0*(sup)</option>
+                    <option value="R-T0/T0(sub)*">Subsonic T0 ratio: T0/T0*(sub)</option>
+                    <option value="R-T0/T0(sup)*">Supersonic T0 ratio: T0/T0*(sup)</option>                    
+                    <option value="R-ds/R(sub)">Subsonic entropy variation: ds/R(sub)</option>           
+                    <option value="R-ds/R(sup)">Supersonic entropy variation: ds/R(sup)</option>
+                    <option value="R-V/V*">Static and critic V ratio: V/V*</option>
                   </optgroup>
                   </select>
                 </div>
@@ -1013,8 +1053,8 @@ x*y=3
       src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.3.0/math.min.js"
     ></script>
     <!-- thermodynamic functions -->
-    <script defer src="scripts/coolprop/coolprop.js"></script>
     <script defer src="scripts/functions.js"></script>
+    <script defer src="scripts/laine_wasm/laine.js"></script>
     <script defer src="scripts/laine.js"></script>
     <script defer src="scripts/plots.js"></script>
     <script defer src="scripts/ui.js"></script>

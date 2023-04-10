@@ -741,17 +741,25 @@ function nasa1Fun(prop, subs) {
     let given = isX ? xType : yType;
     let value = isX ? x : y;
     // Find M
-    let fun = (i) => comp1D_fun(given, "M", i, "gamma", gamma, subs) - value;
     let guess;
-    if (given == "A/A*(sub)"){
+    if (given.slice(-5) == "(sub)"){
       guess = 0.1;
-    } else if (guess == "A/A*(sup)"){
-      guess = 2;  
+      given = given.slice(0,-5);
+    } else if (given.slice(-5) == "(sup)"){
+      guess = 2;
+      given = given.slice(0,-5);
+    } else if (given.slice(-3) == "(+)"){
+      guess = 1/Math.sqrt(gamma)*2;
+      given = given.slice(0,-3);
+    } else if (given.slice(-3) == "(-)"){
+      guess = 1/Math.sqrt(gamma)*0.5;
+      given = given.slice(0,-3);
     } else{
       guess = 1.1;
     }
+    let fun = (i) => comp1D_fun(given, "M", i, "gamma", gamma, subs) - value;
     inputs["M"] = rootFind(fun, guess); // This guess may not be the best
-  }
+  } 
   const M = inputs["M"];
 
   if (M <= 0){
@@ -828,6 +836,20 @@ function nasa1Fun(prop, subs) {
       return (gamma+1)/(2*gamma)*Math.log((gamma+1)*M*M/(2+(gamma-1)*M*M))+1/gamma*(1/(M*M)-1);
     case "F-ds/R":
       return Math.log(1/M*Math.pow(((2+(gamma-1)*M*M)/(2+(gamma-1))),(gamma+1)/(2*(gamma-1))));
+    case "R-T/T*":
+      return M*M*(1+gamma)*(1+gamma)/(1+gamma*M*M)/(1+gamma*M*M);
+    case "R-P/P*":
+      return (1+gamma)/(1+gamma*M*M);
+    case "R-rho/rho*":
+      return (1+gamma*M*M)/((1+gamma)*M*M);
+    case "R-P0/P0*":
+      return (1+gamma)/(1+gamma*M*M)*Math.pow((2+(gamma-1)*M*M)/(gamma+1),gamma/(gamma-1))
+    case "R-T0/T0*":
+      return 2*(1+gamma)*M*M/Math.pow((1+gamma*M*M),2)*(1+(gamma-1)/2*M*M);
+    case "R-ds/R":
+      return gamma/(gamma-1)*Math.log(1/(M*M))+(gamma+1)/(gamma-1)*Math.log((1+gamma*M*M)/(1+gamma));
+    case "R-V/V*":
+      return (1+gamma)*M*M/(1+gamma*M*M);
     default:
       throw "Undefined property";
   }
@@ -1110,9 +1132,9 @@ function lkWrapper(prop, xType, x, yType, y) {
 function w_Props1SI(prop, subs) {
   // Adding a Rbar property
   if (prop == "Rbar") {
-    return 8.314462618 / (Module.Props1SI("M", subs) * 1e3);
+    return 8.314462618 / (Module.PropsSI("M", "", 0, "", 0,  subs) * 1e3);
   } else {
-    return Module.Props1SI(prop, subs);
+    return Module.PropsSI(prop, "", 0, "", 0,  subs);
   }
 }
 
@@ -1168,11 +1190,43 @@ function w_HAPropsSI(prop, xType, x, yType, y, zType, z) {
   return Module.HAPropsSI(prop, xType, x, yType, y, zType, z);
 }
 
+// Wrapping PropsSI
+function w_PropsSI(prop, xType, x, yType, y, subs) {
+  if (isNaN(x) || isNaN(y) ) {
+    return NaN;
+  }
+
+  let Tmin = Module.PropsSI("TMIN","",0,"",0,subs);
+  let Pmin = Module.PropsSI("PMIN","",0,"",0,subs);
+  let Tmax = Module.PropsSI("TMAX","",0,"",0,subs);
+  let Pmax = Module.PropsSI("PMAX","",0,"",0,subs);
+
+  if (xType == "T"){
+    if (x >= Tmax || x <= Tmin){
+      return NaN;
+    } else if (yType == "P"){
+      if (y >= Pmax || y <= Pmin){
+	return NaN;
+      }
+    }
+  } else if (yType == "T"){
+    if (y >= Tmax || y <= Tmin){
+      return NaN;
+    } else if (xType == "P"){
+      if (x >= Pmax || x <= Pmin){
+	return NaN;
+      }
+    }
+  }
+
+  return Module.PropsSI(prop, xType, x, yType, y, subs);
+}
+
 // Import functions to math.js parser
 math.import({
   // PropsSI
   PropsSI: function (prop, xType, x, yType, y, subs) {
-    return Module.PropsSI(prop, xType, x, yType, y, subs);
+    return w_PropsSI(prop, xType, x, yType, y, subs);
   },
   Props1SI: function (prop, subs) {
     return w_Props1SI(prop, subs);

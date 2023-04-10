@@ -2,7 +2,7 @@
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches
-      .open("laine-store.05.02.23")
+      .open("laine-store.10.04.23")
       .then((cache) =>
         cache.addAll([
           "./",
@@ -15,9 +15,9 @@ self.addEventListener("install", (e) => {
           "./scripts/plots.js",
           "./scripts/ui.js",
           "./scripts/editor.js",
-          "./scripts/coolprop/coolprop.js",
-          "./scripts/coolprop/coolprop.wasm",
-          "./scripts/coolprop/LICENSE",
+          "./scripts/laine_wasm/laine.js",
+          "./scripts/laine_wasm/laine.wasm",
+          "./scripts/laine_wasm/CoolProp_LICENSE",
         ])
       )
   );
@@ -25,7 +25,7 @@ self.addEventListener("install", (e) => {
 
 // Delete old cache
 self.addEventListener("activate", (event) => {
-  var cacheKeeplist = ["laine-store.05.02.23"];
+  var cacheKeeplist = ["laine-store.10.04.23"];
   event.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(

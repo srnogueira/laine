@@ -126,7 +126,7 @@ function laineSolver(text, laineOptions) {
   }
 
   const t2 = performance.now();
-  console.log("evaluation time:", t2 - t1, "ms");
+  console.log(t2 - t1);
   return false;
 }
 
@@ -500,11 +500,12 @@ function varsName(line) {
 function checkVarNumber(equations) {
   let names = new Set();
   for (let equation of equations) {
-    for (let name of equation.vars) {
-      equation.updateComputedVars();
+    equation.updateComputedVars();
+      for (let name of equation.vars) {
       names.add(name);
     }
   }
+  console.log(names.size - equations.length)
   if (names.size - equations.length !== 1) {
     throw new laineError(
       "Zero or more than one degree of freedom",

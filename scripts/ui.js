@@ -3,7 +3,7 @@
 /*global showdown, MathJax, math */
 /*global checkLine, parser, laineSolver */
 /*global checkParametric, plotParametric, plotStates, exportData, getStates */
-/*global editor, textBox*/
+/*global editor, textBox, Module*/
 
 /*exported saveFile, exportDataFile, loadFileAsText */
 
@@ -23,7 +23,7 @@ const aboutDiv = document.getElementById("about");
 /*
   Solver wrapper
 */
-
+let solution;
 /**
  * Calls the solver and display results/errors
  * @param {bool} isfast - If is fast
@@ -35,11 +35,22 @@ function laine(isfast) {
     writeEqs(lines);
   }
   try {
-    laineSolver(lines);
-  } catch (e) {
-    displayError(e);
-    return false;
+    const t1 = performance.now();
+    solution = JSON.parse(Module.laine(editor.getValue()));
+    const t2 = performance.now();
+    console.log(t2 - t1);
   }
+  catch(e) {
+    console.error(e);
+    try {
+      laineSolver(lines);
+      solution = parser.getAll()
+    } catch (e) {
+      displayError(e);
+      return false;
+    }
+  }
+  
   displayResults(isfast);
   if (isfast) {
     editor.refresh(); // avoid problems with resize
@@ -226,7 +237,7 @@ function displayResults(fast) {
   while (solBox.lastChild.nodeName == "P") {
     solBox.removeChild(solBox.lastChild);
   }
-  const solutions = Object.entries(parser.getAll());
+  const solutions = Object.entries(solution);
   solutions.sort(); // alphabetically
   for (let solution of solutions) {
     writeAns(solution, fast);
@@ -977,6 +988,7 @@ leeKeslerButton.onclick = writelk;
   const inputType2 = document.querySelector(".comp1DInputType2").value;
   const specie = document.querySelector(".comp1DSpecie").value;
   let varNames = {
+    "M" : "M",
     "T/T0" : "T_T0",
     "P/P0" : "P_P0",
     "rho/rho0" : "rho_rho0",
@@ -1001,6 +1013,13 @@ leeKeslerButton.onclick = writelk;
     "F-P0/P0*" : "P0_P0c",
     "F-fL/D" : "fL_D",
     "F-ds/R" : "ds_R",
+    "R-T/T*" : "T_Tc",
+    "R-P/P*" : "P_Pc",
+    "R-rho/rho*" : "rho_rhoc",
+    "R-V/V*" : "V_Vc",
+    "R-T0/T0*" : "T0_T0c",
+    "R-P0/P0*" : "P0_P0c",
+    "R-ds/R" : "ds_R",
   };
 
   let text = `${varNames[property]}_${number}=Comp1D('${property}','${inputType1}',${input1},'${inputType2}',${input2}, '${specie}')`;

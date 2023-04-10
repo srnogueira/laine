@@ -138,7 +138,7 @@ function checkParametric(text) {
 
   // Calculate degree of freedom and verify if is one
   const degrees = namesX.size - equations.e.length;
-  if (degrees > 1) {
+  if (degrees > 1 || degrees == 0) {
     throw new laineError(
       `${degrees} degrees of freedom`,
       "Parametric analysis requires a problem with just one degree of freedom",
