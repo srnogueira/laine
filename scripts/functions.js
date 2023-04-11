@@ -743,13 +743,13 @@ function nasa1Fun(prop, subs) {
     // Find M
     let guess;
     if (given.slice(-5) == "(sub)"){
-      guess = 0.1;
+      guess = 0.5;
       given = given.slice(0,-5);
     } else if (given.slice(-5) == "(sup)"){
-      guess = 2;
+      guess = 1.5;
       given = given.slice(0,-5);
     } else if (given.slice(-3) == "(+)"){
-      guess = 1/Math.sqrt(gamma)*2;
+      guess = 1/Math.sqrt(gamma)*1.5;
       given = given.slice(0,-3);
     } else if (given.slice(-3) == "(-)"){
       guess = 1/Math.sqrt(gamma)*0.5;
