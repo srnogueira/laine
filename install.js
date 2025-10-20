@@ -2,7 +2,7 @@
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches
-      .open("laine-store.20.10.25")
+      .open("laine-store.20.10.25.2")
       .then((cache) =>
         cache.addAll([
           "./",
@@ -25,7 +25,7 @@ self.addEventListener("install", (e) => {
 
 // Delete old cache
 self.addEventListener("activate", (event) => {
-  var cacheKeeplist = ["laine-store.20.10.25"];
+  var cacheKeeplist = ["laine-store.20.10.25.2"];
   event.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(
