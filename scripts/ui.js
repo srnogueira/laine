@@ -35,11 +35,20 @@ function laine(isfast) {
     writeEqs(lines);
   }
   try {
-    laineSolver(lines);
-    solution = parser.getAll()
-  } catch (e) {
-    displayError(e);
-    return false;
+    const t1 = performance.now();
+    solution = JSON.parse(Module.laine(editor.getValue()));
+    const t2 = performance.now();
+    console.log(t2 - t1);
+  }
+  catch(e) {
+    console.error(e);
+    try {
+      laineSolver(lines);
+      solution = parser.getAll()
+    } catch (e) {
+      displayError(e);
+      return false;
+    }
   }
   
   displayResults(isfast);
