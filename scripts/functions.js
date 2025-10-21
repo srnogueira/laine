@@ -1200,12 +1200,13 @@ function w_PropsSI(prop, xType, x, yType, y, subs) {
   let Pmin = Module.PropsSI("PMIN","",0,"",0,subs);
   let Tmax = Module.PropsSI("TMAX","",0,"",0,subs);
   let Pmax = Module.PropsSI("PMAX","",0,"",0,subs);
+  let Tt = Module.PropsSI("TTRIPLE","",0,"",0,subs);
 
   if (xType == "T"){
     if (x >= Tmax || x <= Tmin){
       return NaN;
     } else if (yType == "P"){
-      if (y >= Pmax || y <= Pmin){
+      if (y >= Pmax || (y <= Pmin &&  x < Tt)){
 	return NaN;
       }
     }
